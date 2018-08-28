@@ -14,16 +14,10 @@ public class SC_Tile : MonoBehaviour {
 
 
     // Use this for initialization
-    void Start () {
-        if(soldier != null) {
-            Debug.Log("I am " + this + " and I have " + soldier);
-        }
-	}
+    void Start () {	}
 	
 	// Update is called once per frame
-	void FixedUpdate () {
-
-    }
+	void FixedUpdate () { }
 
 
 

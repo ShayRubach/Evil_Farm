@@ -22,6 +22,8 @@ public class SC_GameController : MonoBehaviour {
     private GameObject duelSoldierPlayer;
     private Vector3 onScreenDuelSoldierVector;
     private Vector3 offScreenDuelSoldierVector;
+    private Animator soldierAnimator;
+    private GameObject pathIndicators;
 
 
     private static readonly string PLAYER_NAME_VAR = "soldier";
@@ -29,14 +31,65 @@ public class SC_GameController : MonoBehaviour {
     private static readonly string SPOTLIGHT_NAME_VAR = "spotlight";
     private static readonly string DUEL_SOLDIER_NAME_VAR = "duel_soldier_player";
 
+    void Awake() {
+        soldierAnimator = GetComponent<Animator>();
+    }
+
+    void OnEnable() {
+        SC_Soldier.OnStartDragging += OnStartDraggingSoldier;
+        SC_Soldier.OnFinishDragging += OnFinishDraggingSoldier;
+    }
+
+    void OnDisable() {
+        SC_Soldier.OnStartDragging -= OnStartDraggingSoldier;
+        SC_Soldier.OnFinishDragging -= OnFinishDraggingSoldier;
+    }
+
+    private void OnStartDraggingSoldier(Vector3 pos, Vector3 objTranslatePosition) {
+        Debug.Log("drag started at " + pos);
+        ShowDuelSoldier();
+        ShowPathIndicators(objTranslatePosition);
+    }
+
+    private void ShowPathIndicators(Vector3 pos) {
+        pathIndicators.transform.position = pos;
+    }
+
+    private void HidePathIndicators() {
+        pathIndicators.transform.position = offScreenDuelSoldierVector;
+    }
+
+    private void OnFinishDraggingSoldier(Vector3 pos, Vector3 objTranslatePosition) {
+        Debug.Log("drag finished at " + pos);
+        HideDuelSoldier();
+        DisplayMovementAnimation();
+        HidePathIndicators();
+    }
+
+    private void DisplayMovementAnimation() {
+        Debug.Log("DisplayMovementAnimation called.");
+        soldierAnimator.SetBool("IsMoving", true);
+    }
+
+    private void FixPositionAfterAnimation() {
+        Debug.Log("FixPositionAfterAnimation called.");
+        soldierAnimator.SetBool("IsMoving", false);
+
+
+    }
+
+
+
 
 
     // Use this for initialization
     void Start () {
         model = GameObject.Find("SC_GameModel").GetComponent<GameModel>();
+        pathIndicators = model.GetObjects()["path_indicators"];
         soldierSpotlight = model.GetObjects()[SPOTLIGHT_NAME_VAR].GetComponent<SC_Spotlight>();
         duelSoldierPlayer = model.GetObjects()[DUEL_SOLDIER_NAME_VAR];
-        CreateTapGesture();
+        
+        //CreateTapGesture();
 
         onScreenDuelSoldierVector = new Vector3(duelSoldierPlayer.transform.position.x, duelSoldierPlayer.transform.position.y, duelSoldierPlayer.transform.position.z);
         offScreenDuelSoldierVector = new Vector3(duelSoldierPlayer.transform.position.x, duelSoldierPlayer.transform.position.y - 10.0f, duelSoldierPlayer.transform.position.z);
@@ -71,14 +124,12 @@ public class SC_GameController : MonoBehaviour {
 
                 if (clickedObjectName.Contains(PLAYER_NAME_VAR)) {
                     Debug.Log("clicked on a player");
-                    eventManager.FireOnClickedSoldier(clickedObject);
                     soldierSpotlight.HighlightSoldier(clickedObject);
                     ShowDuelSoldier();
                 }
 
                 if (hit.transform.name.Contains(TILE_NAME_VAR)) {
                     Debug.Log("clicked on a tile");
-                    eventManager.FireOnClickedTile(clickedObject);
                     HideDuelSoldier();
                 }
 
