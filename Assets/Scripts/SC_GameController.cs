@@ -1,7 +1,5 @@
-﻿using DigitalRubyShared;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System;
+using DigitalRubyShared;
 using UnityEngine;
 
 /* 
@@ -11,85 +9,37 @@ using UnityEngine;
 
 public class SC_GameController : MonoBehaviour {
 
-    private SC_Spotlight soldierSpotlight;
-    private TapGestureRecognizer tapGesture;
-    private TapGestureRecognizer doubleTapGesture;
-    private SwipeGestureRecognizer swipeGesture;
-    private SC_EventManager eventManager = SC_EventManager.GetInstance;
+    private GameObject focusedSoldierParent;                //parent GameObject that holds the soldier and its weapon
     private GameModel model;
-    private Ray ray;
-    private RaycastHit hit;
     private GameObject duelSoldierPlayer;
-    private Vector3 onScreenDuelSoldierVector;
-    private Vector3 offScreenDuelSoldierVector;
-    private Animator soldierAnimator;
     private GameObject pathIndicators;
 
+    private SC_Spotlight soldierSpotlight;
+    private SC_EventManager eventManager = SC_EventManager.GetInstance;
 
-    private static readonly string PLAYER_NAME_VAR = "soldier";
-    private static readonly string TILE_NAME_VAR = "tile";
-    private static readonly string SPOTLIGHT_NAME_VAR = "spotlight";
-    private static readonly string DUEL_SOLDIER_NAME_VAR = "duel_soldier_player";
+    private Vector3 onScreenDuelSoldierVector;
+    private Vector3 offScreenDuelSoldierVector;
+    private Vector3 nextPosition, startDragPos, endDragPos, relativePos;
 
-    void Awake() {
-        soldierAnimator = GetComponent<Animator>();
-    }
+    private Animator soldierAnimator;
+    private MovementDirections soldierMovementDirection;
 
-    void OnEnable() {
-        SC_Soldier.OnStartDragging += OnStartDraggingSoldier;
-        SC_Soldier.OnFinishDragging += OnFinishDraggingSoldier;
-    }
+    private static readonly string GAME_MODEL_NAME_VAR = "SC_GameModel";
 
-    void OnDisable() {
-        SC_Soldier.OnStartDragging -= OnStartDraggingSoldier;
-        SC_Soldier.OnFinishDragging -= OnFinishDraggingSoldier;
-    }
-
-    private void OnStartDraggingSoldier(Vector3 pos, Vector3 objTranslatePosition) {
-        Debug.Log("drag started at " + pos);
-        ShowDuelSoldier();
-        ShowPathIndicators(objTranslatePosition);
-    }
-
-    private void ShowPathIndicators(Vector3 pos) {
-        pathIndicators.transform.position = pos;
-    }
-
-    private void HidePathIndicators() {
-        pathIndicators.transform.position = offScreenDuelSoldierVector;
-    }
-
-    private void OnFinishDraggingSoldier(Vector3 pos, Vector3 objTranslatePosition) {
-        Debug.Log("drag finished at " + pos);
-        HideDuelSoldier();
-        DisplayMovementAnimation();
-        HidePathIndicators();
-    }
-
-    private void DisplayMovementAnimation() {
-        Debug.Log("DisplayMovementAnimation called.");
-        soldierAnimator.SetBool("IsMoving", true);
-    }
-
-    private void FixPositionAfterAnimation() {
-        Debug.Log("FixPositionAfterAnimation called.");
-        soldierAnimator.SetBool("IsMoving", false);
-
-
-    }
-
-
-
-
-
-    // Use this for initialization
-    void Start () {
-        model = GameObject.Find("SC_GameModel").GetComponent<GameModel>();
-        pathIndicators = model.GetObjects()["path_indicators"];
-        soldierSpotlight = model.GetObjects()[SPOTLIGHT_NAME_VAR].GetComponent<SC_Spotlight>();
-        duelSoldierPlayer = model.GetObjects()[DUEL_SOLDIER_NAME_VAR];
+    void Start() {
         
-        //CreateTapGesture();
+        //get reference to our model class
+        model = GameObject.Find(GAME_MODEL_NAME_VAR).GetComponent<GameModel>();
+
+        
+        pathIndicators = model.GetObjects()[GameModel.PATH_INDICATORS_NAME_VAR];
+        soldierSpotlight = model.GetObjects()[GameModel.SPOTLIGHT_NAME_VAR].GetComponent<SC_Spotlight>();
+        duelSoldierPlayer = model.GetObjects()[GameModel.DUEL_SOLDIER_NAME_VAR];
+
+        //todo: fix this to always hold the animator of the current soldier..
+        //soldierAnimator = model.GetObjects()["soldier_player"].GetComponent<Animator>();
+
+
 
         onScreenDuelSoldierVector = new Vector3(duelSoldierPlayer.transform.position.x, duelSoldierPlayer.transform.position.y, duelSoldierPlayer.transform.position.z);
         offScreenDuelSoldierVector = new Vector3(duelSoldierPlayer.transform.position.x, duelSoldierPlayer.transform.position.y - 10.0f, duelSoldierPlayer.transform.position.z);
@@ -98,73 +48,91 @@ public class SC_GameController : MonoBehaviour {
 
     }
 
+    void OnEnable() {
+        SC_Soldier.OnStartDragging += OnStartDraggingSoldier;
+        SC_Soldier.OnFinishDragging += OnFinishDraggingSoldier;
+        SC_Soldier.OnSoldierMovementAnimationEnd += OnSoldierMovementAnimationEnd;
+    }
+
+    void OnDisable() {
+        SC_Soldier.OnStartDragging -= OnStartDraggingSoldier;
+        SC_Soldier.OnFinishDragging -= OnFinishDraggingSoldier;
+        SC_Soldier.OnSoldierMovementAnimationEnd -= OnSoldierMovementAnimationEnd;
+    }
+
+    private void OnSoldierMovementAnimationEnd() {
+        FixPositionAfterAnimation();
+    }
+
+    private void OnStartDraggingSoldier(GameObject obj, Vector3 pos, Vector3 objTranslatePosition) {
+        focusedSoldierParent = obj;
+        startDragPos = pos;
+        ShowDuelSoldier();
+        ShowPathIndicators(objTranslatePosition);
+    }
+
+    private void OnFinishDraggingSoldier(GameObject obj, Vector3 pos, Vector3 objTranslatePosition) {
+        endDragPos = pos;
+        relativePos = endDragPos - startDragPos;
+        HideDuelSoldier();
+        HidePathIndicators();
+
+        soldierMovementDirection = model.GetSoldierMovementDirection(relativePos);
+        if(soldierMovementDirection != MovementDirections.NONE) { 
+            //currrently a static movement, will turn into animation later.
+            DisplayMovementAnimation();
+
+            Debug.Log("focusedSoldier.transform.GetChild(0).position= " + focusedSoldierParent.transform.GetChild(0).position);
+
+            Debug.Log("tile landed on is = " + 
+                model.PointToTile(focusedSoldierParent.transform.GetChild(0).position).transform.position.x + "," +
+                Mathf.Abs(model.PointToTile(focusedSoldierParent.transform.GetChild(0).position).transform.position.z));
+
+            //Debug.Log("curr position is = " + objTranslatePosition);
+            //nextPosition = new Vector3(objTranslatePosition.x, objTranslatePosition.y, objTranslatePosition.z + 1);
+            //Debug.Log("new position will be = " + nextPosition);
+        }
+
+    }
+
+    private void MoveSoldier(GameObject focusedSodlier, MovementDirections soldierMovementDirection) {
+        model.MoveSoldier(focusedSoldierParent, soldierMovementDirection);
+    }
+
+    private void DisplayMovementAnimation() {
+        //Debug.Log("DisplayMovementAnimation called.");
+        //soldierAnimator.SetBool("IsMoving", true);
+        //soldierAnimator.Play("soldier_solo_movement_forward");
+        MoveSoldier(focusedSoldierParent, soldierMovementDirection);
+
+    }
+
+    public void FixPositionAfterAnimation() {
+        //Debug.Log("FixPositionAfterAnimation called.");
+        //Debug.Log("nextPosition= " + nextPosition);
+
+
+        //soldierAnimator.Play("soldier_solo_movement_idle");
+        //gameObject.transform.position = nextPosition;
+        //soldierAnimator.SetBool("IsMoving", false);
+    }
+
+    
     private void HideDuelSoldier() {
          duelSoldierPlayer.transform.position = offScreenDuelSoldierVector;
     }
-
-    // Update is called once per frame
-    void FixedUpdate () {
-
-            
-
-
-    }
-
-    private void HandleClickEvent() {
-        ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        GameObject clickedObject = null;
-
-        //Raycast on the clicked object and get its name
-        if (Physics.Raycast(ray, out hit)) {
-            string clickedObjectName = hit.transform.name;
-
-            try {
-                //get a reference to the clicked object by name
-                clickedObject = model.GetObjects()[clickedObjectName];
-
-                if (clickedObjectName.Contains(PLAYER_NAME_VAR)) {
-                    Debug.Log("clicked on a player");
-                    soldierSpotlight.HighlightSoldier(clickedObject);
-                    ShowDuelSoldier();
-                }
-
-                if (hit.transform.name.Contains(TILE_NAME_VAR)) {
-                    Debug.Log("clicked on a tile");
-                    HideDuelSoldier();
-                }
-
-            }
-            catch(KeyNotFoundException ex) {
-                //do nothing
-            }
-
-
-        }
-        
-        return;
-}
 
     private void ShowDuelSoldier() {
         duelSoldierPlayer.transform.position = onScreenDuelSoldierVector;
     }
 
-    private void TapGestureCallback(GestureRecognizer gesture) {
-        if (gesture.State == GestureRecognizerState.Ended) {
-            DebugText("tap ended at {0}, {1}", gesture.FocusX, gesture.FocusY);
-            HandleClickEvent();
-        }
 
+    private void ShowPathIndicators(Vector3 pos) {
+        pathIndicators.transform.position = pos;
     }
 
-    private void CreateTapGesture() {
-        tapGesture = new TapGestureRecognizer();
-        tapGesture.StateUpdated += TapGestureCallback;
-        tapGesture.RequireGestureRecognizerToFail = doubleTapGesture;
-        FingersScript.Instance.AddGesture(tapGesture);
-    }
-
-    private void DebugText(string text, params object[] format) {
-        Debug.Log(string.Format(text, format));
+    private void HidePathIndicators() {
+        pathIndicators.transform.position = offScreenDuelSoldierVector;
     }
 
 }

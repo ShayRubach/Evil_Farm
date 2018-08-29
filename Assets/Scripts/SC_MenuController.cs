@@ -62,7 +62,7 @@ public class SC_MenuController : MonoBehaviour {
     }
 
     public void OnClickedSinglePlayer() {
-        MoveToScene(Scenes.Gameplay.ToString());
+        MoveToScene(Scenes.SinglePlayer.ToString());
     }
 
     public void OnClickedMultiplayer() {
