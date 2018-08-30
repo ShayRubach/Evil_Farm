@@ -17,8 +17,8 @@ public class SC_GameController : MonoBehaviour {
     private SC_Spotlight soldierSpotlight;
     private SC_EventManager eventManager = SC_EventManager.GetInstance;
 
-    private Vector3 onScreenDuelSoldierVector;
-    private Vector3 offScreenDuelSoldierVector;
+    private Vector3 onScreenPreviewSoldierVector;
+    private Vector3 offScreenPreviewSoldierVector;
     private Vector3 nextPosition, startDragPos, endDragPos, relativePos;
 
     private Animator soldierAnimator;
@@ -42,8 +42,8 @@ public class SC_GameController : MonoBehaviour {
 
 
 
-        onScreenDuelSoldierVector = new Vector3(duelSoldierPlayer.transform.position.x, duelSoldierPlayer.transform.position.y, duelSoldierPlayer.transform.position.z);
-        offScreenDuelSoldierVector = new Vector3(duelSoldierPlayer.transform.position.x, duelSoldierPlayer.transform.position.y - 10.0f, duelSoldierPlayer.transform.position.z);
+        onScreenPreviewSoldierVector = new Vector3(duelSoldierPlayer.transform.position.x, duelSoldierPlayer.transform.position.y, duelSoldierPlayer.transform.position.z);
+        offScreenPreviewSoldierVector = new Vector3(duelSoldierPlayer.transform.position.x, duelSoldierPlayer.transform.position.y - 10.0f, duelSoldierPlayer.transform.position.z);
 
         HideDuelSoldier();
 
@@ -135,11 +135,11 @@ public class SC_GameController : MonoBehaviour {
 
     
     private void HideDuelSoldier() {
-         duelSoldierPlayer.transform.position = offScreenDuelSoldierVector;
+         duelSoldierPlayer.transform.position = offScreenPreviewSoldierVector;
     }
 
     private void ShowDuelSoldier() {
-        duelSoldierPlayer.transform.position = onScreenDuelSoldierVector;
+        duelSoldierPlayer.transform.position = onScreenPreviewSoldierVector;
     }
 
 

@@ -30,3 +30,12 @@ public enum Clickables {
     NON_TRV_TILE,       //a non-traversable tile to move to
     TRV_TILE            //a traversable tile to move to
 }
+
+public enum SoldierType {
+    PITCHFORK,  // pitchfork > axe
+    CLUB,       // club > pitchfork
+    AXE,        // axe > club
+    GUARDIAN,   //kamikazee . kill himself and his rival
+    SCARECROW,  //dummy player - only revelas his rival
+    FARMER      //king
+}
