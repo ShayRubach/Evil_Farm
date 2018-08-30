@@ -16,11 +16,18 @@ public class GameModel : MonoBehaviour {
 
     private static readonly string UNITY_OBJECTS_TAG = "UnityObject";
 
+    private static readonly int LEFT_BOARD_EDGE_IDX = 0;
+    private static readonly int RIGHT_BOARD_EDGE_IDX = COLS - 1;
+    private static readonly int TOP_BOARD_EDGE_IDX = 0;
+    private static readonly int BTM_BOARD_EDGE_IDX = ROWS - 1;
+
     public static readonly string PLAYER_NAME_VAR = "soldier";
     public static readonly string TILE_NAME_VAR = "tile_";
     public static readonly string SPOTLIGHT_NAME_VAR = "spotlight";
     public static readonly string DUEL_SOLDIER_NAME_VAR = "duel_soldier_player";
     public static readonly string PATH_INDICATORS_NAME_VAR = "path_indicators";
+
+    private GameObject pathIndicators;
 
     private Dictionary<string, GameObject> objects = new Dictionary<string, GameObject>();
 
@@ -30,6 +37,8 @@ public class GameModel : MonoBehaviour {
         foreach (GameObject obj in objectsArray) {
             objects.Add(obj.name, obj);
         }
+
+        pathIndicators = objects[GameModel.PATH_INDICATORS_NAME_VAR];
     }
     
     public GameObject PointToTile(Vector3 pos) {
@@ -59,7 +68,6 @@ public class GameModel : MonoBehaviour {
     private MovementDirections CalculateMovementDirectionByAngle(float angle) {
         MovementDirections movement = MovementDirections.NONE;
 
-        //Debug.Log("direction angle is = " + angle);
         if (angle >= -45.0f && angle <= 45.0f) {
             movement = MovementDirections.LEFT;
         }
@@ -79,7 +87,7 @@ public class GameModel : MonoBehaviour {
     }
 
     public void MoveSoldier(GameObject focusedSoldier, MovementDirections soldierMovementDirection) {
-        float x = 0, y = 0;
+
         switch (soldierMovementDirection) {
             case MovementDirections.UP:
                 focusedSoldier.transform.position = new Vector3(focusedSoldier.transform.position.x, focusedSoldier.transform.position.y, focusedSoldier.transform.position.z + 1);
@@ -95,5 +103,59 @@ public class GameModel : MonoBehaviour {
                 break;
         }
 
+    }
+
+    public void ShowPathIndicators(Vector3 objectPos) {
+        Debug.Log("ShowPathIndicators: pos = {" + objectPos.x + " , " + Mathf.Abs(objectPos.z) + "}");
+
+        ResetIndicators();                                      //enable and show all indicators.
+        pathIndicators.transform.position = objectPos;          //move all indicators so they surround the object.
+        FilterIndicators(objectPos);                            //hide non travesal indicators.
+        
+    }
+
+    private void ResetIndicators() {
+
+        pathIndicators.SetActive(true);
+
+        for (int i = 0; i < pathIndicators.transform.childCount; ++i) {
+            pathIndicators.transform.GetChild(i).gameObject.SetActive(true);
+        }
+    }
+
+    /*
+     * used to decide which indicators (right,left,up,down) indicators are eligible to be displayed
+     * according to the position of the soldier
+    */
+    private void FilterIndicators(Vector3 pos) {
+
+        //soldier is located in most left side of the border
+        if (pos.x == LEFT_BOARD_EDGE_IDX) {
+            HideObjectUnderBoard(pathIndicators.transform.GetChild((int)Indicators.LEFT).gameObject);
+        }
+        //soldier is located in most right side of the border
+        if (pos.x == RIGHT_BOARD_EDGE_IDX) {
+            HideObjectUnderBoard(pathIndicators.transform.GetChild((int)Indicators.RIGHT).gameObject);
+        }
+        //soldier is located in the top side of the border
+        if (Mathf.Abs(pos.z) == TOP_BOARD_EDGE_IDX) {
+            HideObjectUnderBoard(pathIndicators.transform.GetChild((int)Indicators.UP).gameObject);
+        }
+        //soldier is located in the bottom side of the border
+        if (Mathf.Abs(pos.z) == BTM_BOARD_EDGE_IDX) {
+            HideObjectUnderBoard(pathIndicators.transform.GetChild((int)Indicators.DOWN).gameObject);
+        }
+
+        
+    }
+
+    private void HideObjectUnderBoard(GameObject obj) {
+        //obj.transform.position = new Vector3(obj.transform.position.x, obj.transform.position.y - 1, obj.transform.position.z);
+        obj.SetActive(false);
+    }
+
+    public void HidePathIndicators() {
+        Debug.Log("HidePathIndicators called");
+        HideObjectUnderBoard(pathIndicators);
     }
 }

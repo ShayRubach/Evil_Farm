@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using DigitalRubyShared;
 using UnityEngine;
 
@@ -12,8 +13,7 @@ public class SC_GameController : MonoBehaviour {
     private GameObject focusedSoldierParent;                //parent GameObject that holds the soldier and its weapon
     private GameModel model;
     private GameObject duelSoldierPlayer;
-    private GameObject pathIndicators;
-
+    
     private SC_Spotlight soldierSpotlight;
     private SC_EventManager eventManager = SC_EventManager.GetInstance;
 
@@ -28,11 +28,12 @@ public class SC_GameController : MonoBehaviour {
 
     void Start() {
         
+       
         //get reference to our model class
         model = GameObject.Find(GAME_MODEL_NAME_VAR).GetComponent<GameModel>();
 
         
-        pathIndicators = model.GetObjects()[GameModel.PATH_INDICATORS_NAME_VAR];
+        
         soldierSpotlight = model.GetObjects()[GameModel.SPOTLIGHT_NAME_VAR].GetComponent<SC_Spotlight>();
         duelSoldierPlayer = model.GetObjects()[GameModel.DUEL_SOLDIER_NAME_VAR];
 
@@ -46,6 +47,19 @@ public class SC_GameController : MonoBehaviour {
 
         HideDuelSoldier();
 
+    }
+
+
+    IEnumerator Fade() {
+        GameObject leaf = GameObject.Find("leaf_test");
+        Renderer sr = leaf.GetComponent<Renderer>();
+
+        for (float f = 1f; f >= 0; f -= 0.1f) {
+            Color c = sr.material.color;
+            c.a = f;
+            sr.material.color = c;
+            yield return new WaitForSeconds(0.05f);
+        }
     }
 
     void OnEnable() {
@@ -69,6 +83,8 @@ public class SC_GameController : MonoBehaviour {
         startDragPos = pos;
         ShowDuelSoldier();
         ShowPathIndicators(objTranslatePosition);
+        //StartCoroutine("Fade");
+
     }
 
     private void OnFinishDraggingSoldier(GameObject obj, Vector3 pos, Vector3 objTranslatePosition) {
@@ -128,11 +144,11 @@ public class SC_GameController : MonoBehaviour {
 
 
     private void ShowPathIndicators(Vector3 pos) {
-        pathIndicators.transform.position = pos;
+        model.ShowPathIndicators(pos);
     }
 
     private void HidePathIndicators() {
-        pathIndicators.transform.position = offScreenDuelSoldierVector;
+        model.HidePathIndicators();
     }
 
 }

@@ -2,6 +2,27 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
+public enum MovementDirections {
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
+    NONE
+}
+
+public enum Indicators {
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
+}
+
+public enum SoldierTeam {
+    ENEMY,
+    PLAYER
+}
+
 public enum Clickables {
     PLAYER_SOLDIER,     //soldier of our own team 
     ENEMY_SOLDIER,      //soldier of the rival team
