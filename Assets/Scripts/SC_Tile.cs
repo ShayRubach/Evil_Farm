@@ -4,22 +4,28 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class SC_Tile : MonoBehaviour {
+    
+    public GameObject soldier;
+    public bool ShowSoldier { get; set; }
 
+    private bool IsOcuupied { get; set; }
+    private bool IsTraversal { get; set; }
 
-    public GameObject soldier = null;
-    public bool showSoldier = true;
+    void Start() {
+        if(soldier.name == GameModel.NO_SOLDIER_NAME_VAR) {
+            soldier = null;
+            IsOcuupied = false;
+            IsTraversal = true;
+        }
+        else {
+            IsOcuupied = true;
+            IsTraversal = false;
+        }
+    }
 
-    private bool isOcuupied = false;
-    private bool isTraversal = true;
-
-
-    // Use this for initialization
-    void Start () {	}
-	
-	// Update is called once per frame
-	void FixedUpdate () { }
-
-
+    public SC_Soldier GetCurrSoldier() {
+        return IsOcuupied ? soldier.GetComponent<SC_Soldier>() : null ;   
+    }
 
 
 

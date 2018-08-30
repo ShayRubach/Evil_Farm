@@ -23,7 +23,7 @@ public enum SoldierTeam {
     PLAYER
 }
 
-public enum Clickables {
+public enum TileStatus {
     PLAYER_SOLDIER,     //soldier of our own team 
     ENEMY_SOLDIER,      //soldier of the rival team
     VALID_OPPONENT,     //soldier of the rival team which is valid to start a fight with (close to our current soldier within a distance of 1 tile)

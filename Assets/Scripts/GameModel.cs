@@ -3,6 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public struct Point {
+    public int x { get; set; }
+    public int y { get; set; }
+}
+
 /* 
  * the Board. it will hold all needed data and calculations
  * for our gameplay and be responsible for the pre-instantiations
@@ -21,6 +26,7 @@ public class GameModel : MonoBehaviour {
     private static readonly int TOP_BOARD_EDGE_IDX = 0;
     private static readonly int BTM_BOARD_EDGE_IDX = ROWS - 1;
 
+    public static readonly string NO_SOLDIER_NAME_VAR = "no_soldier";
     public static readonly string PLAYER_NAME_VAR = "soldier";
     public static readonly string TILE_NAME_VAR = "tile_";
     public static readonly string SPOTLIGHT_NAME_VAR = "spotlight";
@@ -28,10 +34,12 @@ public class GameModel : MonoBehaviour {
     public static readonly string PATH_INDICATORS_NAME_VAR = "path_indicators";
 
     private GameObject pathIndicators;
+    private Point nextMoveCoord;
 
     private Dictionary<string, GameObject> objects = new Dictionary<string, GameObject>();
 
     private void Awake() {
+
         GameObject[] objectsArray = GameObject.FindGameObjectsWithTag(UNITY_OBJECTS_TAG);
 
         foreach (GameObject obj in objectsArray) {
@@ -39,6 +47,10 @@ public class GameModel : MonoBehaviour {
         }
 
         pathIndicators = objects[GameModel.PATH_INDICATORS_NAME_VAR];
+
+        nextMoveCoord.x = 0;
+        nextMoveCoord.y = 0;
+
     }
     
     public GameObject PointToTile(Vector3 pos) {
@@ -123,6 +135,25 @@ public class GameModel : MonoBehaviour {
         }
     }
 
+    public TileStatus GetNextTileStatus() {
+        GameObject tile = objects[TILE_NAME_VAR + nextMoveCoord.x + nextMoveCoord.y];
+        SC_Soldier soldier = tile.GetComponent<SC_Tile>().GetCurrSoldier();
+
+        if (soldier != null) {
+            //next tile is occupied with a soldier
+            if(soldier.Team == SoldierTeam.ENEMY) {
+                //soldier from the rivals's team
+                return TileStatus.VALID_OPPONENT;
+            }
+            else {
+                //soldier from the player's team
+                return TileStatus.PLAYER_SOLDIER;
+            }
+        }
+        
+        return TileStatus.TRV_TILE;
+    }
+
     /*
      * used to decide which indicators (right,left,up,down) indicators are eligible to be displayed
      * according to the position of the soldier
@@ -146,7 +177,6 @@ public class GameModel : MonoBehaviour {
             HideObjectUnderBoard(pathIndicators.transform.GetChild((int)Indicators.DOWN).gameObject);
         }
 
-        
     }
 
     private void HideObjectUnderBoard(GameObject obj) {
@@ -157,5 +187,48 @@ public class GameModel : MonoBehaviour {
     public void HidePathIndicators() {
         Debug.Log("HidePathIndicators called");
         HideObjectUnderBoard(pathIndicators);
+    }
+
+    public bool IsValidMove(Vector3 soldierPos, MovementDirections move) {
+        bool isValid = false;
+        nextMoveCoord.x = (int)Mathf.Abs(soldierPos.x);
+        nextMoveCoord.y = (int)Mathf.Abs(soldierPos.z);
+
+
+        //the 'z' axis is treated as 'y' on our board, due to camera placement.
+        switch (move) {
+            case MovementDirections.UP:
+                if (Mathf.Abs(soldierPos.z) - 1 >= TOP_BOARD_EDGE_IDX) {
+                    nextMoveCoord.y -= 1;
+                    isValid = true;
+                }
+                break;
+            case MovementDirections.DOWN:
+                if (Mathf.Abs(soldierPos.z) + 1 <= BTM_BOARD_EDGE_IDX) {
+                    nextMoveCoord.y += 1;
+                    isValid = true;
+                }
+                break;
+            case MovementDirections.LEFT:
+                if (soldierPos.x - 1 >= LEFT_BOARD_EDGE_IDX) {
+                    nextMoveCoord.x -= 1;
+                    isValid = true;
+                }
+                break;
+            case MovementDirections.RIGHT:
+                if (soldierPos.x + 1 <= RIGHT_BOARD_EDGE_IDX) {
+                    nextMoveCoord.x += 1;
+                    isValid = true;
+                }
+                break;
+        }
+
+        Debug.Log("IsValidMove: " + isValid);
+        Debug.Log("nextMoveCoord: " + nextMoveCoord.x + "," + nextMoveCoord.y);
+        return isValid;
+    }
+
+    public Point GetNextMoveCoord() {
+        return nextMoveCoord;
     }
 }

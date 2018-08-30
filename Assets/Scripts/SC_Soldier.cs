@@ -18,12 +18,9 @@ public class SC_Soldier : MonoBehaviour {
     private Vector3 startDragPos = new Vector3();
     private Vector3 endDragPos = new Vector3();
 
-    public SoldierTeam team;
-    public GameObject tile;
+    public SoldierTeam Team { get; set; }
+    public GameObject Tile { get; set; }
     
-
-    void FixedUpdate() {
-    }
 
     void OnMouseDown() {
         Debug.Log("clicked on " + gameObject);
@@ -58,4 +55,5 @@ public class SC_Soldier : MonoBehaviour {
         pos.z = Input.mousePosition.z;
         
     }
+
 }

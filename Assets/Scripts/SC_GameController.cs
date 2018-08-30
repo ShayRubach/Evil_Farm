@@ -94,10 +94,21 @@ public class SC_GameController : MonoBehaviour {
         HidePathIndicators();
 
         soldierMovementDirection = model.GetSoldierMovementDirection(relativePos);
-        if(soldierMovementDirection != MovementDirections.NONE) { 
-            //currrently a static movement, will turn into animation later.
-            DisplayMovementAnimation();
+        if(soldierMovementDirection != MovementDirections.NONE) {
 
+            //fetch the exact soldier position of the parent obj:
+            Vector3 exactSoldierPosition = focusedSoldierParent.transform.GetChild(0).transform.position;
+
+            //only move if its within board borders:
+            if (IsValidMove(exactSoldierPosition, soldierMovementDirection)){
+
+                //check if next movement will initiate a fight (landing on a rival tile): 
+                IsPossibleMatch(GetRequestedMoveCoord());
+
+                //currrently a static movement, will turn into animation later.
+                MoveSoldier(focusedSoldierParent, soldierMovementDirection);
+            }
+                
             Debug.Log("focusedSoldier.transform.GetChild(0).position= " + focusedSoldierParent.transform.GetChild(0).position);
 
             Debug.Log("tile landed on is = " + 
@@ -111,15 +122,33 @@ public class SC_GameController : MonoBehaviour {
 
     }
 
+    private void IsPossibleMatch(Point point) {
+        TileStatus status = GetNextTileStatus();
+        Debug.Log("IsPossibleMatch: status = " + status);
+    }
+
+    private TileStatus GetNextTileStatus() {
+        return model.GetNextTileStatus();
+    }
+
+    private Point GetRequestedMoveCoord() {
+        return model.GetNextMoveCoord();
+    }
+
+    private bool IsValidMove(Vector3 exactSoldierPosition, MovementDirections soldierMovementDirection) {
+        return model.IsValidMove(exactSoldierPosition, soldierMovementDirection);
+    }
+
     private void MoveSoldier(GameObject focusedSodlier, MovementDirections soldierMovementDirection) {
         model.MoveSoldier(focusedSoldierParent, soldierMovementDirection);
     }
 
     private void DisplayMovementAnimation() {
+
         //Debug.Log("DisplayMovementAnimation called.");
         //soldierAnimator.SetBool("IsMoving", true);
         //soldierAnimator.Play("soldier_solo_movement_forward");
-        MoveSoldier(focusedSoldierParent, soldierMovementDirection);
+
 
     }
 
