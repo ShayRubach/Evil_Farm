@@ -32,6 +32,8 @@ public class GameModel : MonoBehaviour {
     public static readonly string SPOTLIGHT_NAME_VAR = "spotlight";
     public static readonly string DUEL_SOLDIER_NAME_VAR = "preview_soldier_player";
     public static readonly string PATH_INDICATORS_NAME_VAR = "path_indicators";
+    public static readonly string LEAF_INDICATOR_NAME_VAR = "leaf";
+
 
     private GameObject pathIndicators;
     private Point nextMoveCoord;

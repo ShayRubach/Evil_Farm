@@ -26,9 +26,5 @@ public class SC_Tile : MonoBehaviour {
     public SC_Soldier GetCurrSoldier() {
         return IsOcuupied ? soldier.GetComponent<SC_Soldier>() : null ;   
     }
-
-
-
-
-
+    
 }
