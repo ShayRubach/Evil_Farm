@@ -6,7 +6,7 @@ using UnityEngine;
 public class SC_Tile : MonoBehaviour {
     
     public GameObject soldier;
-    public bool ShowSoldier    { get; set; }
+	public bool ShowSoldier    { get; set; }
     public bool IsOcuupied     { get; set; }
     public bool IsTraversal    { get; set; }
 
@@ -26,7 +26,7 @@ public class SC_Tile : MonoBehaviour {
     }
 
     public SC_Soldier GetCurrSoldier() {
-        return IsOcuupied ? soldier.GetComponent<SC_Soldier>() : null ;   
+        return soldier.GetComponent<SC_Soldier>();
     }
     
 }

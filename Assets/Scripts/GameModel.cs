@@ -57,14 +57,14 @@ public class GameModel : MonoBehaviour {
 
     }
     
+    /*
+     * returns a reference to a tile by vector pos
+     */ 
     public GameObject PointToTile(Vector3 pos) {
-        Debug.Log("PointToTile: " + pos);
         float x=0, y=0;
-        x = pos.x;
+        x = Mathf.Abs(pos.x);
         y = Mathf.Abs(pos.z);
-
-        Debug.Log("x,y = " + x + "," + y);
-
+        
         return objects[TILE_NAME_VAR + x + y];
     }
 
@@ -79,7 +79,7 @@ public class GameModel : MonoBehaviour {
     public MovementDirections GetSoldierMovementDirection(Vector3 startPos, Vector3 endPos) {
         relativePos = endPos - startPos;
 
-        Debug.Log("distance: " + Vector3.Distance(startPos, endPos));
+        //Debug.Log("distance: " + Vector3.Distance(startPos, endPos));
         if (Vector3.Distance(startPos, endPos) < MINIMUM_DRAG_DISTANCE) {
             return MovementDirections.NONE;
         }
@@ -105,39 +105,62 @@ public class GameModel : MonoBehaviour {
         }
 
 
-        Debug.Log("movement direction = " + movement);
+        //Debug.Log("movement direction = " + movement);
         return movement;
     }
 
-    public void MoveSoldier(GameObject focusedSoldier, MovementDirections soldierMovementDirection) {
+    /*
+     * this function moves the player to a new desired position and updates
+     * both tile and soldier with their new references.
+     * pay attention there's the 'focusedSoldierP' which is the actual soldier parent (wrapper in scene)
+     * and there's the 'exactSoldierObj' which is the actual soldier GameObject and the 1st child of 'focusedSoldierP'.
+     * the parent is used to move all soldier and it's children relatively on board
+     */ 
+    public void MoveSoldier(GameObject focusedSoldierP, MovementDirections soldierMovementDirection) {
+        
+        //start as default position just for initialization:
+        Vector3 newPosition = focusedSoldierP.transform.position;
+        GameObject exactSoldierObj = focusedSoldierP.transform.GetChild(0).gameObject;
 
-        Vector3 newPosition;
         //save reference of curr tile:
-        SC_Tile currTile = focusedSoldier.GetComponent<SC_Tile>();
+        SC_Tile currTile = exactSoldierObj.GetComponent<SC_Soldier>().Tile.GetComponent<SC_Tile>();
 
         switch (soldierMovementDirection) {
             case MovementDirections.UP:
-
-                focusedSoldier.transform.position = new Vector3(focusedSoldier.transform.position.x, focusedSoldier.transform.position.y, focusedSoldier.transform.position.z + 1);
+                newPosition = new Vector3(exactSoldierObj.transform.position.x, exactSoldierObj.transform.position.y, exactSoldierObj.transform.position.z + 1);
                 break;
             case MovementDirections.DOWN:
-                focusedSoldier.transform.position = new Vector3(focusedSoldier.transform.position.x, focusedSoldier.transform.position.y, focusedSoldier.transform.position.z - 1);
+                newPosition = new Vector3(exactSoldierObj.transform.position.x, exactSoldierObj.transform.position.y, exactSoldierObj.transform.position.z - 1);
                 break;
             case MovementDirections.LEFT:
-                focusedSoldier.transform.position = new Vector3(focusedSoldier.transform.position.x - 1, focusedSoldier.transform.position.y, focusedSoldier.transform.position.z);
+                newPosition = new Vector3(exactSoldierObj.transform.position.x - 1, exactSoldierObj.transform.position.y, exactSoldierObj.transform.position.z);
                 break;
             case MovementDirections.RIGHT:
-                focusedSoldier.transform.position = new Vector3(focusedSoldier.transform.position.x + 1, focusedSoldier.transform.position.y, focusedSoldier.transform.position.z);
+                newPosition = new Vector3(exactSoldierObj.transform.position.x + 1, exactSoldierObj.transform.position.y, exactSoldierObj.transform.position.z);
                 break;
         }
 
-        //remove reference from old tile:
+        //get the new tile by new position
+        GameObject newTile = PointToTile(newPosition);
 
+        //remove reference from old tile:
+        currTile.soldier = null;
+        currTile.GetComponent<SC_Tile>().IsOcuupied = false;
+        currTile.GetComponent<SC_Tile>().IsTraversal = true;
+
+        //update new tile to hold the soldier
+        newTile.GetComponent<SC_Tile>().soldier = exactSoldierObj;
+        newTile.GetComponent<SC_Tile>().IsOcuupied = true;
+        newTile.GetComponent<SC_Tile>().IsTraversal= false;
+
+        //update soldier to hold the new tile
+        exactSoldierObj.GetComponent<SC_Soldier>().Tile = newTile;
+
+        //physically move the soldier
+        exactSoldierObj.transform.position = newPosition;
     }
 
     public void ShowPathIndicators(Vector3 objectPos) {
-        Debug.Log("ShowPathIndicators: pos = {" + objectPos.x + " , " + Mathf.Abs(objectPos.z) + "}");
-
         ResetIndicators();                                      //enable and show all indicators.
         pathIndicators.transform.position = objectPos;          //move all indicators so they surround the object.
         FilterIndicators(objectPos);                            //hide non travesal indicators.
@@ -155,11 +178,11 @@ public class GameModel : MonoBehaviour {
 
     public TileStatus GetNextTileStatus() {
         GameObject tile = objects[TILE_NAME_VAR + nextMoveCoord.x + nextMoveCoord.y];
-        SC_Soldier soldier = tile.GetComponent<SC_Tile>().GetCurrSoldier();
+        GameObject soldier = tile.GetComponent<SC_Tile>().soldier;
 
         if (soldier != null) {
             //next tile is occupied with a soldier
-            if(soldier.Team == SoldierTeam.ENEMY) {
+            if(soldier.GetComponent<SC_Soldier>().Team == SoldierTeam.ENEMY) {
                 //soldier from the rivals's team
                 return TileStatus.VALID_OPPONENT;
             }
@@ -181,29 +204,31 @@ public class GameModel : MonoBehaviour {
 
         //soldier is located in most left side of the border
         requestedTilePos = new Vector3(pos.x-1, pos.y, pos.z);
-        if (pos.x == LEFT_BOARD_EDGE_IDX || RequestTileIsOccupied(PointToTile(requestedTilePos))) {
+        if (Mathf.Abs(pos.x) == LEFT_BOARD_EDGE_IDX || RequestTileIsOccupied(PointToTile(requestedTilePos))) {
             HideObjectUnderBoard(pathIndicators.transform.GetChild((int)Indicators.LEFT).gameObject);
         }
+
         //soldier is located in most right side of the border
         requestedTilePos = new Vector3(pos.x + 1, pos.y, pos.z);
-        if (pos.x == RIGHT_BOARD_EDGE_IDX || RequestTileIsOccupied(PointToTile(requestedTilePos))) {
+        if (Mathf.Abs(pos.x) == RIGHT_BOARD_EDGE_IDX || RequestTileIsOccupied(PointToTile(requestedTilePos))) {
             HideObjectUnderBoard(pathIndicators.transform.GetChild((int)Indicators.RIGHT).gameObject);
         }
+
         //soldier is located in the top side of the border
         requestedTilePos = new Vector3(pos.x, pos.y, pos.z + 1);
         if (Mathf.Abs(pos.z) == TOP_BOARD_EDGE_IDX || RequestTileIsOccupied(PointToTile(requestedTilePos))) {
             HideObjectUnderBoard(pathIndicators.transform.GetChild((int)Indicators.UP).gameObject);
         }
+
         //soldier is located in the bottom side of the border
         requestedTilePos = new Vector3(pos.x, pos.y, pos.z - 1);
         if (Mathf.Abs(pos.z) == BTM_BOARD_EDGE_IDX || RequestTileIsOccupied(PointToTile(requestedTilePos))) {
             HideObjectUnderBoard(pathIndicators.transform.GetChild((int)Indicators.DOWN).gameObject);
         }
-
     }
 
     private bool RequestTileIsOccupied(GameObject tile) {
-        return !(tile.GetComponent<SC_Tile>().IsTraversal);
+        return tile.GetComponent<SC_Tile>().IsOcuupied;
     }
 
     private void HideObjectUnderBoard(GameObject obj) {
@@ -212,7 +237,6 @@ public class GameModel : MonoBehaviour {
     }
 
     public void HidePathIndicators() {
-        Debug.Log("HidePathIndicators called");
         HideObjectUnderBoard(pathIndicators);
     }
 
@@ -250,8 +274,6 @@ public class GameModel : MonoBehaviour {
                 break;
         }
 
-        Debug.Log("IsValidMove: " + isValid);
-        Debug.Log("nextMoveCoord: " + nextMoveCoord.x + "," + nextMoveCoord.y);
         return isValid;
     }
 

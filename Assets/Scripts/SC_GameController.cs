@@ -49,7 +49,19 @@ public class SC_GameController : MonoBehaviour {
 
     }
 
+    //void FixedUpdate() {
 
+    //    if (Input.GetKeyDown(KeyCode.Space)) {
+    //        foreach(System.Collections.Generic.KeyValuePair<string, GameObject> obj in model.GetObjects()) {
+    //            if (obj.Value.name.Contains("tile")) {
+    //                if(obj.Value.GetComponent<SC_Tile>().soldier != null)
+    //                    Debug.Log(obj.Value.name + " has " + obj.Value.GetComponent<SC_Tile>().soldier);
+    //            }
+                
+    //        }
+    //    }
+    //}
+    
     IEnumerator Fade() {
         GameObject leaf = GameObject.Find("leaf_test");
         Renderer sr = leaf.GetComponent<Renderer>();
@@ -122,11 +134,11 @@ public class SC_GameController : MonoBehaviour {
                 MoveSoldier(focusedSoldierParent, soldierMovementDirection);
             }
                 
-            Debug.Log("focusedSoldier.transform.GetChild(0).position= " + focusedSoldierParent.transform.GetChild(0).position);
+            //Debug.Log("focusedSoldier.transform.GetChild(0).position= " + focusedSoldierParent.transform.GetChild(0).position);
 
-            Debug.Log("tile landed on is = " + 
-                model.PointToTile(focusedSoldierParent.transform.GetChild(0).position).transform.position.x + "," +
-                Mathf.Abs(model.PointToTile(focusedSoldierParent.transform.GetChild(0).position).transform.position.z));
+            //Debug.Log("tile landed on is = " + 
+            //    model.PointToTile(focusedSoldierParent.transform.GetChild(0).position).transform.position.x + "," +
+            //    Mathf.Abs(model.PointToTile(focusedSoldierParent.transform.GetChild(0).position).transform.position.z));
 
             //Debug.Log("curr position is = " + objTranslatePosition);
             //nextPosition = new Vector3(objTranslatePosition.x, objTranslatePosition.y, objTranslatePosition.z + 1);
