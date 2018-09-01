@@ -91,7 +91,6 @@ public class SC_Soldier : MonoBehaviour {
 
     private bool IsObjectActive(GameObject obj) {
         return obj.activeSelf;
-        //Debug.Log(gameObject.name + " has = " + weapons.transform.GetChild(i) + "and its " + (weapons.transform.GetChild(i).gameObject.activeSelf ? "Active" : "Not Active"));
     }
 
     private bool HasChildren(GameObject obj ) {
@@ -126,14 +125,12 @@ public class SC_Soldier : MonoBehaviour {
             if (UnmarkSoldier != null) {
                 UnmarkSoldier(currEnemy);
             }
-            Debug.Log("removing mark from " + currEnemy.name);
             currEnemy = null;
         }
     }
 
     private void MarkEnemy(GameObject enemy) {
         if (enemy) {
-            Debug.Log("marking " + enemy.name);
             if (MarkSoldier != null) {
                 MarkSoldier(enemy);
             }

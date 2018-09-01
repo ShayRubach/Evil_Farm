@@ -10,15 +10,12 @@ using UnityEngine;
 
 public class SC_GameController : MonoBehaviour {
 
-    private GameObject focusedSoldierParent;                //parent GameObject that holds the soldier and its weapon
-    private GameModel model;
-    private GameObject duelSoldierPlayer;
+    private GameObject focusedPlayerParent;                //parent GameObject that holds the soldier and its weapon
+    private GameObject previewSoldierPlayer;                //the enlarged previewed soldier user sees on a soldier focus (click)
+    private GameModel model;                                //our game logic model
     
-    private SC_Spotlight soldierSpotlight;
-    private SC_EventManager eventManager = SC_EventManager.GetInstance;
+    private SC_Spotlight soldierSpotlight;                  //highlights the rival on drag
 
-    private Vector3 onScreenPreviewSoldierVector;
-    private Vector3 offScreenPreviewSoldierVector;
     private Vector3 nextPosition, startDragPos, endDragPos;
 
     private Animator soldierAnimator;
@@ -28,25 +25,16 @@ public class SC_GameController : MonoBehaviour {
 
     void Start() {
         
-       
         //get reference to our model class
         model = GameObject.Find(GAME_MODEL_NAME_VAR).GetComponent<GameModel>();
 
-        
-        
         soldierSpotlight = model.GetObjects()[GameModel.SPOTLIGHT_NAME_VAR].GetComponent<SC_Spotlight>();
-        duelSoldierPlayer = model.GetObjects()[GameModel.DUEL_SOLDIER_NAME_VAR];
+        previewSoldierPlayer = model.GetObjects()[GameModel.DUEL_SOLDIER_NAME_VAR];
 
         //todo: fix this to always hold the animator of the current soldier..
         //soldierAnimator = model.GetObjects()["soldier_player"].GetComponent<Animator>();
 
-
-
-        onScreenPreviewSoldierVector = new Vector3(duelSoldierPlayer.transform.position.x, duelSoldierPlayer.transform.position.y, duelSoldierPlayer.transform.position.z);
-        offScreenPreviewSoldierVector = new Vector3(duelSoldierPlayer.transform.position.x, duelSoldierPlayer.transform.position.y - 10.0f, duelSoldierPlayer.transform.position.z);
-
-        HideDuelSoldier();
-
+        HidePreviewSoldier();
     }
 
     //void FixedUpdate() {
@@ -104,7 +92,9 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void OnStartDraggingSoldier(GameObject obj, Vector3 pos, Vector3 objTranslatePosition) {
-        focusedSoldierParent = obj;
+        focusedPlayerParent = obj;
+        model.FocusedPlayer = obj.transform.GetChild(0).gameObject;
+
         startDragPos = pos;
         ShowDuelSoldier();
         ShowPathIndicators(objTranslatePosition);
@@ -115,30 +105,36 @@ public class SC_GameController : MonoBehaviour {
 
     private void OnFinishDraggingSoldier(GameObject obj, Vector3 pos, Vector3 objTranslatePosition) {
         endDragPos = pos;
-        HideDuelSoldier();
+        HidePreviewSoldier();
         HidePathIndicators();
 
         soldierMovementDirection = model.GetSoldierMovementDirection(startDragPos, endDragPos);
         if(soldierMovementDirection != MovementDirections.NONE) {
 
-            //fetch the exact soldier position of the parent obj:
-            Vector3 exactSoldierPosition = focusedSoldierParent.transform.GetChild(0).transform.position;
+            //use the exact soldier position (not parent):
+            Vector3 exactSoldierPosition = model.FocusedPlayer.transform.position;
 
             //only move if its within board borders:
             if (IsValidMove(exactSoldierPosition, soldierMovementDirection)){
 
-                //check if next movement will initiate a fight (landing on a rival tile): 
-                IsPossibleMatch(GetRequestedMoveCoord());
+                //check if next movement will initiate a fight (as landing on a rival tile): 
+                if (IsPossibleMatch(GetRequestedMoveCoord())) {
+                    Debug.Log("parent from controller = " + focusedPlayerParent);
+                    Debug.Log("player from model = " + model.FocusedPlayer);
+                    Debug.Log("enemy  from model = " + model.FocusedEnemy);
+
+                    //StartMatch();
+                }
 
                 //currrently a static movement, will turn into animation later.
-                MoveSoldier(focusedSoldierParent, soldierMovementDirection);
+                MoveSoldier(focusedPlayerParent, soldierMovementDirection);
             }
                 
-            //Debug.Log("focusedSoldier.transform.GetChild(0).position= " + focusedSoldierParent.transform.GetChild(0).position);
+            //Debug.Log("focusedSoldier.transform.GetChild(0).position= " + focusedPlayerParent.transform.GetChild(0).position);
 
             //Debug.Log("tile landed on is = " + 
-            //    model.PointToTile(focusedSoldierParent.transform.GetChild(0).position).transform.position.x + "," +
-            //    Mathf.Abs(model.PointToTile(focusedSoldierParent.transform.GetChild(0).position).transform.position.z));
+            //    model.PointToTile(focusedPlayerParent.transform.GetChild(0).position).transform.position.x + "," +
+            //    Mathf.Abs(model.PointToTile(focusedPlayerParent.transform.GetChild(0).position).transform.position.z));
 
             //Debug.Log("curr position is = " + objTranslatePosition);
             //nextPosition = new Vector3(objTranslatePosition.x, objTranslatePosition.y, objTranslatePosition.z + 1);
@@ -147,9 +143,8 @@ public class SC_GameController : MonoBehaviour {
 
     }
 
-    private void IsPossibleMatch(Point point) {
-        TileStatus status = GetNextTileStatus();
-        Debug.Log("IsPossibleMatch: status = " + status);
+    private bool IsPossibleMatch(Point point) {
+        return GetNextTileStatus() == TileStatus.VALID_OPPONENT;
     }
 
     private TileStatus GetNextTileStatus() {
@@ -165,7 +160,7 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void MoveSoldier(GameObject focusedSodlier, MovementDirections soldierMovementDirection) {
-        model.MoveSoldier(focusedSoldierParent, soldierMovementDirection);
+        model.MoveSoldier(focusedPlayerParent, soldierMovementDirection);
     }
 
     private void DisplayMovementAnimation() {
@@ -188,12 +183,12 @@ public class SC_GameController : MonoBehaviour {
     }
 
     
-    private void HideDuelSoldier() {
-         duelSoldierPlayer.transform.position = offScreenPreviewSoldierVector;
+    private void HidePreviewSoldier() {
+        previewSoldierPlayer.SetActive(false); 
     }
 
     private void ShowDuelSoldier() {
-        duelSoldierPlayer.transform.position = onScreenPreviewSoldierVector;
+        previewSoldierPlayer.SetActive(true);
     }
 
 

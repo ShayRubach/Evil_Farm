@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+ * currently not used
+ */ 
 public class SC_EventManager {
 
 

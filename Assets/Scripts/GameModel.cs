@@ -36,8 +36,11 @@ public class GameModel : MonoBehaviour {
     public static readonly string PATH_INDICATORS_NAME_VAR = "path_indicators";
     public static readonly string LEAF_INDICATOR_NAME_VAR = "leaf";
 
-    private Vector3 relativePos;
+    public GameObject FocusedEnemy { get; set; }
+    public GameObject FocusedPlayer { get; set; }
+
     private GameObject pathIndicators;
+    private Vector3 relativePos;
     private Point nextMoveCoord;
 
     private Dictionary<string, GameObject> objects = new Dictionary<string, GameObject>();
@@ -177,17 +180,20 @@ public class GameModel : MonoBehaviour {
     }
 
     public TileStatus GetNextTileStatus() {
+        //calculate new tile requested
         GameObject tile = objects[TILE_NAME_VAR + nextMoveCoord.x + nextMoveCoord.y];
-        GameObject soldier = tile.GetComponent<SC_Tile>().soldier;
 
-        if (soldier != null) {
+        //save reference to the opponent for easier access later from the controller:
+        FocusedEnemy = tile.GetComponent<SC_Tile>().soldier;
+
+        if (FocusedEnemy != null) {
             //next tile is occupied with a soldier
-            if(soldier.GetComponent<SC_Soldier>().Team == SoldierTeam.ENEMY) {
-                //soldier from the rivals's team
+            if(FocusedEnemy.GetComponent<SC_Soldier>().Team == SoldierTeam.ENEMY) {
+                
                 return TileStatus.VALID_OPPONENT;
             }
             else {
-                //soldier from the player's team
+                //soldier from the player's team, non traversal
                 return TileStatus.PLAYER_SOLDIER;
             }
         }
