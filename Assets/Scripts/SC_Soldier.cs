@@ -21,6 +21,7 @@ public class SC_Soldier : MonoBehaviour {
     public static event OnAnimationEnd OnSoldierMovementAnimationEnd;
     
     public SoldierTeam Team { get; set; }
+    public SoldierType Type { get; set; }
     public GameObject Tile { get; set; }
      
     private Vector3 startDragPos = new Vector3();
@@ -32,6 +33,69 @@ public class SC_Soldier : MonoBehaviour {
 
     void Start() {
         Team = gameObject.name.Contains(GameModel.PLAYER_NAME_VAR) ? SoldierTeam.PLAYER : SoldierTeam.ENEMY;
+        FigureInitialWeaponType();
+        ConcealWeapon();
+    }
+
+
+    private void ConcealWeapon() {
+        //todo: get weapon and conceal it
+    }
+
+    /*
+     * we can figure out what type of soldier this is by examining his children status (active/not)
+     * due to the fact each player is initially holding a weapon
+     */
+    private void FigureInitialWeaponType() {
+        if (HasChildren(gameObject)) {
+            //get first child (weapon container):
+
+            GameObject weapons = gameObject.transform.GetChild(0).gameObject;
+            if (HasChildren(weapons)) {
+                
+                //iterate over grandchildren (weapons):
+                for (int i = 0; weapons != null && i < weapons.transform.childCount; i++) {
+                    GameObject child = weapons.transform.GetChild(i).gameObject;
+                    if (IsObjectActive(child))
+                        Type = ObjectToSoldierType(child);
+                }
+            }
+        }
+
+    }
+
+    private SoldierType ObjectToSoldierType(GameObject child) {
+        if (child.name.Contains(SoldierType.PITCHFORK.ToString().ToLower())) {
+            return SoldierType.PITCHFORK;
+        }
+        if (child.name.Contains(SoldierType.SHIELD.ToString().ToLower())) {
+            return SoldierType.SHIELD;
+        }
+        if (child.name.Contains(SoldierType.AXE.ToString().ToLower())) {
+            return SoldierType.AXE;
+        }
+        if (child.name.Contains(SoldierType.SCYTHE.ToString().ToLower())) {
+            return SoldierType.SCYTHE;
+        }
+        if (child.name.Contains(SoldierType.SCARECROW.ToString().ToLower())) {
+            return SoldierType.SCARECROW;
+        }
+        if (child.name.Contains(SoldierType.FARMER.ToString().ToLower())) {
+            return SoldierType.FARMER;
+        }
+        if (child.name.Contains(SoldierType.CLUB.ToString().ToLower())) {
+            return SoldierType.CLUB;
+        }
+        return SoldierType.NO_TYPE;
+    }
+
+    private bool IsObjectActive(GameObject obj) {
+        return obj.activeSelf;
+        //Debug.Log(gameObject.name + " has = " + weapons.transform.GetChild(i) + "and its " + (weapons.transform.GetChild(i).gameObject.activeSelf ? "Active" : "Not Active"));
+    }
+
+    private bool HasChildren(GameObject obj ) {
+        return (obj.transform.childCount > 0 );
     }
 
     void OnMouseDown() {

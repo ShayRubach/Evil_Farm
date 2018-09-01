@@ -111,8 +111,13 @@ public class GameModel : MonoBehaviour {
 
     public void MoveSoldier(GameObject focusedSoldier, MovementDirections soldierMovementDirection) {
 
+        Vector3 newPosition;
+        //save reference of curr tile:
+        SC_Tile currTile = focusedSoldier.GetComponent<SC_Tile>();
+
         switch (soldierMovementDirection) {
             case MovementDirections.UP:
+
                 focusedSoldier.transform.position = new Vector3(focusedSoldier.transform.position.x, focusedSoldier.transform.position.y, focusedSoldier.transform.position.z + 1);
                 break;
             case MovementDirections.DOWN:
@@ -125,6 +130,8 @@ public class GameModel : MonoBehaviour {
                 focusedSoldier.transform.position = new Vector3(focusedSoldier.transform.position.x + 1, focusedSoldier.transform.position.y, focusedSoldier.transform.position.z);
                 break;
         }
+
+        //remove reference from old tile:
 
     }
 
@@ -170,24 +177,33 @@ public class GameModel : MonoBehaviour {
      * according to the position of the soldier
     */
     private void FilterIndicators(Vector3 pos) {
+        Vector3 requestedTilePos;
 
         //soldier is located in most left side of the border
-        if (pos.x == LEFT_BOARD_EDGE_IDX) {
+        requestedTilePos = new Vector3(pos.x-1, pos.y, pos.z);
+        if (pos.x == LEFT_BOARD_EDGE_IDX || RequestTileIsOccupied(PointToTile(requestedTilePos))) {
             HideObjectUnderBoard(pathIndicators.transform.GetChild((int)Indicators.LEFT).gameObject);
         }
         //soldier is located in most right side of the border
-        if (pos.x == RIGHT_BOARD_EDGE_IDX) {
+        requestedTilePos = new Vector3(pos.x + 1, pos.y, pos.z);
+        if (pos.x == RIGHT_BOARD_EDGE_IDX || RequestTileIsOccupied(PointToTile(requestedTilePos))) {
             HideObjectUnderBoard(pathIndicators.transform.GetChild((int)Indicators.RIGHT).gameObject);
         }
         //soldier is located in the top side of the border
-        if (Mathf.Abs(pos.z) == TOP_BOARD_EDGE_IDX) {
+        requestedTilePos = new Vector3(pos.x, pos.y, pos.z + 1);
+        if (Mathf.Abs(pos.z) == TOP_BOARD_EDGE_IDX || RequestTileIsOccupied(PointToTile(requestedTilePos))) {
             HideObjectUnderBoard(pathIndicators.transform.GetChild((int)Indicators.UP).gameObject);
         }
         //soldier is located in the bottom side of the border
-        if (Mathf.Abs(pos.z) == BTM_BOARD_EDGE_IDX) {
+        requestedTilePos = new Vector3(pos.x, pos.y, pos.z - 1);
+        if (Mathf.Abs(pos.z) == BTM_BOARD_EDGE_IDX || RequestTileIsOccupied(PointToTile(requestedTilePos))) {
             HideObjectUnderBoard(pathIndicators.transform.GetChild((int)Indicators.DOWN).gameObject);
         }
 
+    }
+
+    private bool RequestTileIsOccupied(GameObject tile) {
+        return !(tile.GetComponent<SC_Tile>().IsTraversal);
     }
 
     private void HideObjectUnderBoard(GameObject obj) {

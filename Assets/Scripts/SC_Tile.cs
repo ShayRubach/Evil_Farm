@@ -6,10 +6,9 @@ using UnityEngine;
 public class SC_Tile : MonoBehaviour {
     
     public GameObject soldier;
-    public bool ShowSoldier { get; set; }
-
-    private bool IsOcuupied { get; set; }
-    private bool IsTraversal { get; set; }
+    public bool ShowSoldier    { get; set; }
+    public bool IsOcuupied     { get; set; }
+    public bool IsTraversal    { get; set; }
 
     void Start() {
         if(soldier.name == GameModel.NO_SOLDIER_NAME_VAR) {
