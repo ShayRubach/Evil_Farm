@@ -25,6 +25,7 @@ public class GameModel : MonoBehaviour {
     private static readonly int RIGHT_BOARD_EDGE_IDX = COLS - 1;
     private static readonly int TOP_BOARD_EDGE_IDX = 0;
     private static readonly int BTM_BOARD_EDGE_IDX = ROWS - 1;
+    private static readonly float MINIMUM_DRAG_DISTANCE = 40.0f;
 
     public static readonly string NO_SOLDIER_NAME_VAR = "no_soldier";
     public static readonly string PLAYER_NAME_VAR = "soldier";
@@ -34,7 +35,7 @@ public class GameModel : MonoBehaviour {
     public static readonly string PATH_INDICATORS_NAME_VAR = "path_indicators";
     public static readonly string LEAF_INDICATOR_NAME_VAR = "leaf";
 
-
+    private Vector3 relativePos;
     private GameObject pathIndicators;
     private Point nextMoveCoord;
 
@@ -74,8 +75,15 @@ public class GameModel : MonoBehaviour {
         return objects[name];
     }
 
-    public MovementDirections GetSoldierMovementDirection(Vector3 pos) {
-        float angle = Mathf.Atan2(-pos.y, -pos.x) * Mathf.Rad2Deg;
+    public MovementDirections GetSoldierMovementDirection(Vector3 startPos, Vector3 endPos) {
+        relativePos = endPos - startPos;
+
+        Debug.Log("distance: " + Vector3.Distance(startPos, endPos));
+        if (Vector3.Distance(startPos, endPos) < MINIMUM_DRAG_DISTANCE) {
+            return MovementDirections.NONE;
+        }
+
+        float angle = Mathf.Atan2(-relativePos.y, -relativePos.x) * Mathf.Rad2Deg;
         return CalculateMovementDirectionByAngle(angle);
     }
 

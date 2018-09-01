@@ -19,7 +19,7 @@ public class SC_GameController : MonoBehaviour {
 
     private Vector3 onScreenPreviewSoldierVector;
     private Vector3 offScreenPreviewSoldierVector;
-    private Vector3 nextPosition, startDragPos, endDragPos, relativePos;
+    private Vector3 nextPosition, startDragPos, endDragPos;
 
     private Animator soldierAnimator;
     private MovementDirections soldierMovementDirection;
@@ -83,17 +83,17 @@ public class SC_GameController : MonoBehaviour {
         startDragPos = pos;
         ShowDuelSoldier();
         ShowPathIndicators(objTranslatePosition);
+        
         //StartCoroutine("Fade");
 
     }
 
     private void OnFinishDraggingSoldier(GameObject obj, Vector3 pos, Vector3 objTranslatePosition) {
         endDragPos = pos;
-        relativePos = endDragPos - startDragPos;
         HideDuelSoldier();
         HidePathIndicators();
 
-        soldierMovementDirection = model.GetSoldierMovementDirection(relativePos);
+        soldierMovementDirection = model.GetSoldierMovementDirection(startDragPos, endDragPos);
         if(soldierMovementDirection != MovementDirections.NONE) {
 
             //fetch the exact soldier position of the parent obj:
