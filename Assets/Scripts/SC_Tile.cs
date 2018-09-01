@@ -20,6 +20,9 @@ public class SC_Tile : MonoBehaviour {
         else {
             IsOcuupied = true;
             IsTraversal = false;
+
+            //assign this tile to its sodlier
+            soldier.GetComponent<SC_Soldier>().Tile = gameObject;
         }
     }
 

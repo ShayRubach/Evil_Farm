@@ -66,12 +66,25 @@ public class SC_GameController : MonoBehaviour {
         SC_Soldier.OnStartDragging += OnStartDraggingSoldier;
         SC_Soldier.OnFinishDragging += OnFinishDraggingSoldier;
         SC_Soldier.OnSoldierMovementAnimationEnd += OnSoldierMovementAnimationEnd;
+        SC_Soldier.MarkSoldier += MarkSoldier;
+        SC_Soldier.UnmarkSoldier += UnmarkSoldier;
     }
 
     void OnDisable() {
         SC_Soldier.OnStartDragging -= OnStartDraggingSoldier;
         SC_Soldier.OnFinishDragging -= OnFinishDraggingSoldier;
         SC_Soldier.OnSoldierMovementAnimationEnd -= OnSoldierMovementAnimationEnd;
+        SC_Soldier.MarkSoldier -= MarkSoldier;
+        SC_Soldier.UnmarkSoldier -= UnmarkSoldier;
+
+    }
+
+    private void MarkSoldier(GameObject soldier) {
+        soldierSpotlight.HighlightSoldier(soldier);
+    }
+
+    private void UnmarkSoldier(GameObject soldier) {
+        soldierSpotlight.RemoveHighlight(soldier);
     }
 
     private void OnSoldierMovementAnimationEnd() {

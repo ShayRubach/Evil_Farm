@@ -28,7 +28,8 @@ public class GameModel : MonoBehaviour {
     private static readonly float MINIMUM_DRAG_DISTANCE = 40.0f;
 
     public static readonly string NO_SOLDIER_NAME_VAR = "no_soldier";
-    public static readonly string PLAYER_NAME_VAR = "soldier";
+    public static readonly string PLAYER_NAME_VAR = "soldier_player";
+    public static readonly string ENEMY_NAME_VAR = "soldier_enemy";
     public static readonly string TILE_NAME_VAR = "tile_";
     public static readonly string SPOTLIGHT_NAME_VAR = "spotlight";
     public static readonly string DUEL_SOLDIER_NAME_VAR = "preview_soldier_player";
