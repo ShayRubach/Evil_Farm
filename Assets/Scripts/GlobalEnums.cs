@@ -41,3 +41,13 @@ public enum SoldierType {
     FARMER,     //king
     NO_TYPE
 }
+
+public enum MatchStatus {
+    PLAYER_WON_THE_MATCH,   //player won this match
+    PLAYER_WON_THE_GAME,    //player found the farmer (king)
+    PLAYER_REVEALED,        //player has faced the scarecrow (dummy)
+    ENEMY_WON_THE_MATCH,    //enemy won this match
+    ENEMY_WON_THE_GAME,     //enemy found the farmer (king)
+    ENEMY_REVEALED,         //enemy has faced the scarecrow (dummy)
+    TIE                     //both soldiers had the same weapon - forces rematch
+}

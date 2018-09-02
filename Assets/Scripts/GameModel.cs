@@ -163,6 +163,18 @@ public class GameModel : MonoBehaviour {
         exactSoldierObj.transform.position = newPosition;
     }
 
+    public void Match() {
+        Debug.Log("Starting Match...");
+        Debug.Log("player from model = " + FocusedPlayer.GetComponent<SC_Soldier>());
+        Debug.Log("enemy  from model = " + FocusedEnemy.GetComponent<SC_Soldier>());
+        //MatchStatus status = MatchHandler.EvaluateMatchResult();
+    }
+
+    private MatchStatus EvaluateMatchResult() {
+
+        return MatchStatus.TIE;
+    }
+
     public void ShowPathIndicators(Vector3 objectPos) {
         ResetIndicators();                                      //enable and show all indicators.
         pathIndicators.transform.position = objectPos;          //move all indicators so they surround the object.

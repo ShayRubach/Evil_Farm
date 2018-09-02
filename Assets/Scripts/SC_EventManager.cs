@@ -28,14 +28,5 @@ public class SC_EventManager {
         }
     }
 
-    public void FireOnClickedSoldier(GameObject obj) {
-        if (OnClickedSoldier != null)
-            OnClickedSoldier(obj);
-    }
-
-    public void FireOnClickedTile(GameObject obj) {
-        if (OnClickedTile != null)
-            OnClickedTile(obj);
-    }
 
 }

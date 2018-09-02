@@ -162,4 +162,11 @@ public class SC_Soldier : MonoBehaviour {
         
     }
 
+    public override string ToString() {
+        return "Team = " + Team + " | "
+            + "Type = " + Type + " | "
+            + "Tile  = {" + Tile.GetComponent<SC_Tile>().transform.position.x
+            + "," + Tile.GetComponent<SC_Tile>().transform.position.y + "}";
+    }
+
 }

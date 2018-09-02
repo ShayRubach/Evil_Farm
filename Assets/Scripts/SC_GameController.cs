@@ -119,15 +119,13 @@ public class SC_GameController : MonoBehaviour {
 
                 //check if next movement will initiate a fight (as landing on a rival tile): 
                 if (IsPossibleMatch(GetRequestedMoveCoord())) {
-                    Debug.Log("parent from controller = " + focusedPlayerParent);
-                    Debug.Log("player from model = " + model.FocusedPlayer);
-                    Debug.Log("enemy  from model = " + model.FocusedEnemy);
-
-                    //StartMatch();
+                    Match();
+                }
+                else {
+                    //currrently a static movement, will turn into animation later.
+                    MoveSoldier(focusedPlayerParent, soldierMovementDirection);
                 }
 
-                //currrently a static movement, will turn into animation later.
-                MoveSoldier(focusedPlayerParent, soldierMovementDirection);
             }
                 
             //Debug.Log("focusedSoldier.transform.GetChild(0).position= " + focusedPlayerParent.transform.GetChild(0).position);
@@ -141,6 +139,14 @@ public class SC_GameController : MonoBehaviour {
             //Debug.Log("new position will be = " + nextPosition);
         }
 
+    }
+
+    private void Match() {
+        model.Match();
+    }
+
+    private void StartMatch() {
+        throw new NotImplementedException();
     }
 
     private bool IsPossibleMatch(Point point) {

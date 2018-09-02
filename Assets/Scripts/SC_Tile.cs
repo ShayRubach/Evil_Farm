@@ -28,5 +28,11 @@ public class SC_Tile : MonoBehaviour {
     public SC_Soldier GetCurrSoldier() {
         return soldier.GetComponent<SC_Soldier>();
     }
-    
+
+    public override string ToString() {
+        return "ShowSoldier = " + ShowSoldier + " | "
+            + "IsOccupied = " + IsOcuupied + " | "
+            + "IsTraversal = " + IsTraversal + " | "
+            + "soldier = " + soldier.name;
+    }
 }
