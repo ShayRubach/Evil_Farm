@@ -23,6 +23,8 @@ public class SC_Soldier : MonoBehaviour {
     public SoldierTeam Team { get; set; }
     public SoldierType Type { get; set; }
     public GameObject Tile { get; set; }
+    public bool Revealed { get; set; }
+
      
     private Vector3 startDragPos = new Vector3();
     private Vector3 endDragPos = new Vector3();
@@ -33,13 +35,21 @@ public class SC_Soldier : MonoBehaviour {
 
     void Start() {
         Team = gameObject.name.Contains(GameModel.PLAYER_NAME_VAR) ? SoldierTeam.PLAYER : SoldierTeam.ENEMY;
+        Revealed = false;
         FigureInitialWeaponType();
-        ConcealWeapon();
+        ConcealWeapon(GetActiveWeapon());
+
     }
 
+    private void ConcealWeapon(GameObject weaponParentObj) {
+        if (Team == SoldierTeam.ENEMY) {
+            //get actualWeapon object
+            weaponParentObj.transform.GetChild(0).GetComponent<MeshRenderer>().enabled = false;
+        }
+    }
 
-    private void ConcealWeapon() {
-        //todo: get weapon and conceal it
+    public void RevealWeapon() {
+        GetActiveWeapon().transform.GetChild(0).GetComponent<MeshRenderer>().enabled = true;
     }
 
     /*
@@ -47,24 +57,37 @@ public class SC_Soldier : MonoBehaviour {
      * due to the fact each player is initially holding a weapon
      */
     private void FigureInitialWeaponType() {
+        SoldierType fetchedType = ObjectToSoldierType(GetActiveWeapon());
+        if(fetchedType != SoldierType.NO_TYPE)
+            Type = fetchedType;
+    }
+
+    private GameObject GetActiveWeapon() {
         if (HasChildren(gameObject)) {
             //get first child (weapon container):
 
             GameObject weapons = gameObject.transform.GetChild(0).gameObject;
             if (HasChildren(weapons)) {
-                
-                //iterate over grandchildren (weapons):
+
+                //iterate over grandchildren (weapons) and find the active weapon:
                 for (int i = 0; weapons != null && i < weapons.transform.childCount; i++) {
                     GameObject child = weapons.transform.GetChild(i).gameObject;
-                    if (IsObjectActive(child))
-                        Type = ObjectToSoldierType(child);
+                    if (IsObjectActive(child)) {
+                        Debug.Log("im " + gameObject + " and I have " + child);
+                        return child;
+                    }
                 }
             }
         }
 
+        return null;
     }
 
     private SoldierType ObjectToSoldierType(GameObject child) {
+
+        if (child == null)
+            return SoldierType.NO_TYPE;
+
         if (child.name.Contains(SoldierType.PITCHFORK.ToString().ToLower())) {
             return SoldierType.PITCHFORK;
         }

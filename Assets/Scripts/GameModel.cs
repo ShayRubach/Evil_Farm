@@ -236,6 +236,7 @@ public class GameModel : MonoBehaviour {
 
     private void RevealSoldier(GameObject soldier) {
         Debug.Log("revealing " + soldier);
+        soldier.GetComponent<SC_Soldier>().RevealWeapon();
     }
 
     private void RemoveSoldier(GameObject soldier) {
