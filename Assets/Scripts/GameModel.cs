@@ -32,7 +32,7 @@ public class GameModel : MonoBehaviour {
     public static readonly string ENEMY_NAME_VAR = "soldier_enemy";
     public static readonly string TILE_NAME_VAR = "tile_";
     public static readonly string SPOTLIGHT_NAME_VAR = "spotlight";
-    public static readonly string DUEL_SOLDIER_NAME_VAR = "preview_soldier_player";
+    public static readonly string PREVIEW_SOLDIER_NAME_VAR = "preview_soldier_player";
     public static readonly string PATH_INDICATORS_NAME_VAR = "path_indicators";
     public static readonly string LEAF_INDICATOR_NAME_VAR = "leaf";
 
@@ -165,9 +165,10 @@ public class GameModel : MonoBehaviour {
 
     public void Match() {
         Debug.Log("Starting Match...");
-        Debug.Log("player from model = " + FocusedPlayer.GetComponent<SC_Soldier>());
-        Debug.Log("enemy  from model = " + FocusedEnemy.GetComponent<SC_Soldier>());
-        //MatchStatus status = MatchHandler.EvaluateMatchResult();
+
+        //call our MatchHandler to evaluate the match result:
+        MatchStatus status = MatchHandler.GetInstance.EvaluateMatchResult(FocusedPlayer, FocusedEnemy);
+        Debug.Log("match status = " + status);
     }
 
     private MatchStatus EvaluateMatchResult() {

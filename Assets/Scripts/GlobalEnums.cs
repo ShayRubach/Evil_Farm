@@ -33,9 +33,9 @@ public enum TileStatus {
 
 public enum SoldierType {
     PITCHFORK,  // pitchfork > axe
-    SCYTHE,     // scythe == throwing weapon??
     CLUB,       // club > pitchfork
     AXE,        // axe > club
+    SCYTHE,     // scythe == throwing weapon??
     SHIELD,     //kamikazee . kill himself and his rival
     SCARECROW,  //dummy player - only revelas his rival
     FARMER,     //king
@@ -49,5 +49,6 @@ public enum MatchStatus {
     ENEMY_WON_THE_MATCH,    //enemy won this match
     ENEMY_WON_THE_GAME,     //enemy found the farmer (king)
     ENEMY_REVEALED,         //enemy has faced the scarecrow (dummy)
-    TIE                     //both soldiers had the same weapon - forces rematch
+    TIE,                    //both soldiers had the same weapon - forces rematch
+    UNDEFINED
 }

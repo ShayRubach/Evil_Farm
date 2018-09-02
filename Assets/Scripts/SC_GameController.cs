@@ -29,7 +29,7 @@ public class SC_GameController : MonoBehaviour {
         model = GameObject.Find(GAME_MODEL_NAME_VAR).GetComponent<GameModel>();
 
         soldierSpotlight = model.GetObjects()[GameModel.SPOTLIGHT_NAME_VAR].GetComponent<SC_Spotlight>();
-        previewSoldierPlayer = model.GetObjects()[GameModel.DUEL_SOLDIER_NAME_VAR];
+        previewSoldierPlayer = model.GetObjects()[GameModel.PREVIEW_SOLDIER_NAME_VAR];
 
         //todo: fix this to always hold the animator of the current soldier..
         //soldierAnimator = model.GetObjects()["soldier_player"].GetComponent<Animator>();
