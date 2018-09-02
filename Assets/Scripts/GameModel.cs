@@ -15,7 +15,10 @@ public struct Point {
 */
 
 public class GameModel : MonoBehaviour {
-    
+
+    public delegate void Announcement (SoldierTeam winner);
+    public static event Announcement FinishGame;
+
     private static readonly int COLS = 7;
     private static readonly int ROWS = 6;
 
@@ -126,7 +129,7 @@ public class GameModel : MonoBehaviour {
         GameObject exactSoldierObj = focusedSoldierP.transform.GetChild(0).gameObject;
 
         //save reference of curr tile:
-        SC_Tile currTile = exactSoldierObj.GetComponent<SC_Soldier>().Tile.GetComponent<SC_Tile>();
+        GameObject currTile = exactSoldierObj.GetComponent<SC_Soldier>().Tile;
 
         switch (soldierMovementDirection) {
             case MovementDirections.UP:
@@ -147,28 +150,102 @@ public class GameModel : MonoBehaviour {
         GameObject newTile = PointToTile(newPosition);
 
         //remove reference from old tile:
-        currTile.soldier = null;
-        currTile.GetComponent<SC_Tile>().IsOcuupied = false;
-        currTile.GetComponent<SC_Tile>().IsTraversal = true;
+        //currTile.GetComponent<SC_Tile>().soldier = null;
+        //currTile.GetComponent<SC_Tile>().IsOcuupied = false;
+        //currTile.GetComponent<SC_Tile>().IsTraversal = true;
 
-        //update new tile to hold the soldier
-        newTile.GetComponent<SC_Tile>().soldier = exactSoldierObj;
-        newTile.GetComponent<SC_Tile>().IsOcuupied = true;
-        newTile.GetComponent<SC_Tile>().IsTraversal= false;
+        ResetTileReference(currTile);
 
-        //update soldier to hold the new tile
-        exactSoldierObj.GetComponent<SC_Soldier>().Tile = newTile;
+        ////update new tile to hold the soldier
+        //newTile.GetComponent<SC_Tile>().soldier = exactSoldierObj;
+        //newTile.GetComponent<SC_Tile>().IsOcuupied = true;
+        //newTile.GetComponent<SC_Tile>().IsTraversal= false;
+        ////update soldier to hold the new tile
+        //exactSoldierObj.GetComponent<SC_Soldier>().Tile = newTile;
+
+        UpdateTileAndSoldierRefs(newTile, exactSoldierObj, true, false);
 
         //physically move the soldier
         exactSoldierObj.transform.position = newPosition;
+    }
+
+    private bool ResetTileReference(GameObject tile) {
+        return UpdateTileAndSoldierRefs(tile, null, false, true);
+    }
+
+    private bool UpdateTileAndSoldierRefs(GameObject tile, GameObject soldier, bool occupied, bool traversal) {
+        if(tile == null)
+            return false;
+
+        tile.GetComponent<SC_Tile>().soldier = soldier;
+        tile.GetComponent<SC_Tile>().IsOcuupied = occupied;
+        tile.GetComponent<SC_Tile>().IsTraversal = traversal;
+
+        //if soldier is null, it means we only want to lose reference to a soldier and NOT update new soldier with this current tile.
+        //else, we wish to update both tile and soldier with their references.
+        if(soldier != null) {
+            soldier.GetComponent<SC_Soldier>().Tile = tile;
+        }
+
+        return true;
     }
 
     public void Match() {
         Debug.Log("Starting Match...");
 
         //call our MatchHandler to evaluate the match result:
-        MatchStatus status = MatchHandler.GetInstance.EvaluateMatchResult(FocusedPlayer, FocusedEnemy);
-        Debug.Log("match status = " + status);
+        MatchStatus result = MatchHandler.GetInstance.EvaluateMatchResult(FocusedPlayer, FocusedEnemy);
+        Debug.Log("match status = " + result);
+
+        //HandleMatchResult(result);
+    }
+
+    /*
+     * take the necessary actions by the result: remove losing soldier, call MoveSoldier() ,update new references etc..
+     */ 
+    private void HandleMatchResult(MatchStatus result) {
+        MovementDirections direction = MovementDirections.NONE;
+
+        switch (result) {
+            case MatchStatus.PLAYER_WON_THE_MATCH:
+                MoveSoldier(FocusedPlayer, direction);
+                goto case MatchStatus.PLAYER_REVEALED;      //c# restrictions: can't fallthrough without the special 'goto case' keyword
+            case MatchStatus.PLAYER_REVEALED:
+                RemoveSoldier(FocusedEnemy);
+                RevealSoldier(FocusedPlayer);
+                break;
+            case MatchStatus.ENEMY_WON_THE_MATCH:
+                MoveSoldier(FocusedEnemy, direction);
+                goto case MatchStatus.ENEMY_REVEALED;       //c# restrictions: can't fallthrough without the special 'goto case' keyword
+            case MatchStatus.ENEMY_REVEALED:
+                RemoveSoldier(FocusedPlayer);
+                RevealSoldier(FocusedEnemy);
+                break;
+            case MatchStatus.TIE:
+                RemoveSoldier(FocusedPlayer);
+                RemoveSoldier(FocusedEnemy);
+                break;
+            case MatchStatus.PLAYER_WON_THE_GAME:
+                CallFinishGame(SoldierTeam.PLAYER);
+                break;
+            case MatchStatus.ENEMY_WON_THE_GAME:
+                CallFinishGame(SoldierTeam.ENEMY);
+                break;
+        }
+
+    }
+
+    private void RevealSoldier(GameObject soldier) {
+        Debug.Log("revealing " + soldier);
+    }
+
+    private void RemoveSoldier(GameObject soldier) {
+        Debug.Log("removing " + soldier);
+    }
+
+    void CallFinishGame(SoldierTeam winner) {
+        if (FinishGame != null)
+            FinishGame(winner);
     }
 
     private MatchStatus EvaluateMatchResult() {

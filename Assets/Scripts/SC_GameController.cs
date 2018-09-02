@@ -37,19 +37,19 @@ public class SC_GameController : MonoBehaviour {
         HidePreviewSoldier();
     }
 
-    //void FixedUpdate() {
+    void FixedUpdate() {
 
-    //    if (Input.GetKeyDown(KeyCode.Space)) {
-    //        foreach(System.Collections.Generic.KeyValuePair<string, GameObject> obj in model.GetObjects()) {
-    //            if (obj.Value.name.Contains("tile")) {
-    //                if(obj.Value.GetComponent<SC_Tile>().soldier != null)
-    //                    Debug.Log(obj.Value.name + " has " + obj.Value.GetComponent<SC_Tile>().soldier);
-    //            }
-                
-    //        }
-    //    }
-    //}
-    
+        if (Input.GetKeyDown(KeyCode.Space)) {
+            foreach (System.Collections.Generic.KeyValuePair<string, GameObject> obj in model.GetObjects()) {
+                if (obj.Value.name.Contains("tile")) {
+                    if (obj.Value.GetComponent<SC_Tile>().soldier != null)
+                        Debug.Log(obj.Value.name + " has " + obj.Value.GetComponent<SC_Tile>().soldier);
+                }
+
+            }
+        }
+    }
+
     IEnumerator Fade() {
         GameObject leaf = GameObject.Find("leaf_test");
         Renderer sr = leaf.GetComponent<Renderer>();
@@ -68,6 +68,7 @@ public class SC_GameController : MonoBehaviour {
         SC_Soldier.OnSoldierMovementAnimationEnd += OnSoldierMovementAnimationEnd;
         SC_Soldier.MarkSoldier += MarkSoldier;
         SC_Soldier.UnmarkSoldier += UnmarkSoldier;
+        GameModel.FinishGame += FinishGame;
     }
 
     void OnDisable() {
@@ -76,7 +77,12 @@ public class SC_GameController : MonoBehaviour {
         SC_Soldier.OnSoldierMovementAnimationEnd -= OnSoldierMovementAnimationEnd;
         SC_Soldier.MarkSoldier -= MarkSoldier;
         SC_Soldier.UnmarkSoldier -= UnmarkSoldier;
+        GameModel.FinishGame -= FinishGame;
+    }
 
+    private void FinishGame(SoldierTeam winner) {
+        //todo: announce winner
+        Debug.Log("team " + winner + " won!");
     }
 
     private void MarkSoldier(GameObject soldier) {
