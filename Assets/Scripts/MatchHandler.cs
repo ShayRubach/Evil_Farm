@@ -35,6 +35,7 @@ public class MatchHandler {
         Debug.Log(enemy.name + ": " + enemy.GetComponent<SC_Soldier>());
 
         //todo: add all weapons in the future:
+
         switch (player.GetComponent<SC_Soldier>().Type) {
             case SoldierType.PITCHFORK:
                 return PitchforkVs(enemy.GetComponent<SC_Soldier>().Type);
@@ -43,7 +44,8 @@ public class MatchHandler {
             case SoldierType.CLUB:
                 return ClubVs(enemy.GetComponent<SC_Soldier>().Type);
             case SoldierType.FARMER:
-                return FarmerVs(enemy.GetComponent<SC_Soldier>().Type);
+            case SoldierType.CRYSTAL:
+                return CrystalVs(enemy.GetComponent<SC_Soldier>().Type);
         }
 
         return MatchStatus.UNDEFINED;
@@ -54,7 +56,7 @@ public class MatchHandler {
             case SoldierType.PITCHFORK: return MatchStatus.TIE;
             case SoldierType.AXE: return MatchStatus.PLAYER_WON_THE_MATCH;
             case SoldierType.CLUB: return MatchStatus.ENEMY_WON_THE_MATCH;
-            case SoldierType.FARMER: return MatchStatus.PLAYER_WON_THE_GAME;
+            case SoldierType.CRYSTAL: return MatchStatus.PLAYER_WON_THE_GAME;
         }
         return MatchStatus.UNDEFINED;
     }
@@ -64,7 +66,7 @@ public class MatchHandler {
             case SoldierType.PITCHFORK: return MatchStatus.ENEMY_WON_THE_MATCH;
             case SoldierType.AXE: return MatchStatus.TIE;
             case SoldierType.CLUB: return MatchStatus.PLAYER_WON_THE_MATCH;
-            case SoldierType.FARMER: return MatchStatus.PLAYER_WON_THE_GAME;
+            case SoldierType.CRYSTAL: return MatchStatus.PLAYER_WON_THE_GAME;
         }
         return MatchStatus.UNDEFINED;
     }
@@ -74,16 +76,17 @@ public class MatchHandler {
             case SoldierType.PITCHFORK: return MatchStatus.PLAYER_WON_THE_MATCH;
             case SoldierType.CLUB: return MatchStatus.TIE;
             case SoldierType.AXE: return MatchStatus.ENEMY_WON_THE_MATCH;
-            case SoldierType.FARMER: return MatchStatus.PLAYER_WON_THE_GAME;
+            case SoldierType.CRYSTAL: return MatchStatus.PLAYER_WON_THE_GAME;
         }
         return MatchStatus.UNDEFINED;
     }
 
-    private MatchStatus FarmerVs(SoldierType enemyType) {
+    private MatchStatus CrystalVs(SoldierType enemyType) {
         switch (enemyType) {
-            case SoldierType.FARMER: return MatchStatus.UNDEFINED;
-            default: return MatchStatus.PLAYER_WON_THE_GAME;
+            case SoldierType.CRYSTAL:
+            case SoldierType.FARMER:
+                return MatchStatus.UNDEFINED;
+            default: return MatchStatus.ENEMY_WON_THE_GAME;
         }
-        return MatchStatus.UNDEFINED;
     }
 }

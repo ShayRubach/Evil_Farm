@@ -171,8 +171,8 @@ public class SC_GameController : MonoBehaviour {
         return model.IsValidMove(exactSoldierPosition, soldierMovementDirection);
     }
 
-    private void MoveSoldier(GameObject focusedSodlier, MovementDirections soldierMovementDirection) {
-        model.MoveSoldier(focusedPlayerParent, soldierMovementDirection);
+    private void MoveSoldier(GameObject soldierParent, MovementDirections soldierMovementDirection) {
+        model.MoveSoldier(soldierParent, soldierMovementDirection);
     }
 
     private void DisplayMovementAnimation() {

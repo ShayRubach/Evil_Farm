@@ -83,6 +83,9 @@ public class SC_Soldier : MonoBehaviour {
         if (child.name.Contains(SoldierType.FARMER.ToString().ToLower())) {
             return SoldierType.FARMER;
         }
+        if (child.name.Contains(SoldierType.CRYSTAL.ToString().ToLower())) {
+            return SoldierType.CRYSTAL;
+        }
         if (child.name.Contains(SoldierType.CLUB.ToString().ToLower())) {
             return SoldierType.CLUB;
         }

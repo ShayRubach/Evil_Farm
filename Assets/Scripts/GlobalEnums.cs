@@ -39,6 +39,7 @@ public enum SoldierType {
     SHIELD,     //kamikazee . kill himself and his rival
     SCARECROW,  //dummy player - only revelas his rival
     FARMER,     //king
+    CRYSTAL,     //king
     NO_TYPE
 }
 

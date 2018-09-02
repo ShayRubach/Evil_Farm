@@ -89,7 +89,7 @@ public class GameModel : MonoBehaviour {
         if (Vector3.Distance(startPos, endPos) < MINIMUM_DRAG_DISTANCE) {
             return MovementDirections.NONE;
         }
-
+        
         float angle = Mathf.Atan2(-relativePos.y, -relativePos.x) * Mathf.Rad2Deg;
         return CalculateMovementDirectionByAngle(angle);
     }
@@ -149,20 +149,7 @@ public class GameModel : MonoBehaviour {
         //get the new tile by new position
         GameObject newTile = PointToTile(newPosition);
 
-        //remove reference from old tile:
-        //currTile.GetComponent<SC_Tile>().soldier = null;
-        //currTile.GetComponent<SC_Tile>().IsOcuupied = false;
-        //currTile.GetComponent<SC_Tile>().IsTraversal = true;
-
         ResetTileReference(currTile);
-
-        ////update new tile to hold the soldier
-        //newTile.GetComponent<SC_Tile>().soldier = exactSoldierObj;
-        //newTile.GetComponent<SC_Tile>().IsOcuupied = true;
-        //newTile.GetComponent<SC_Tile>().IsTraversal= false;
-        ////update soldier to hold the new tile
-        //exactSoldierObj.GetComponent<SC_Soldier>().Tile = newTile;
-
         UpdateTileAndSoldierRefs(newTile, exactSoldierObj, true, false);
 
         //physically move the soldier
@@ -197,25 +184,27 @@ public class GameModel : MonoBehaviour {
         MatchStatus result = MatchHandler.GetInstance.EvaluateMatchResult(FocusedPlayer, FocusedEnemy);
         Debug.Log("match status = " + result);
 
-        //HandleMatchResult(result);
+        HandleMatchResult(result);
     }
 
     /*
      * take the necessary actions by the result: remove losing soldier, call MoveSoldier() ,update new references etc..
      */ 
     private void HandleMatchResult(MatchStatus result) {
-        MovementDirections direction = MovementDirections.NONE;
+        
+        //get the initiator's movement direction:
+        MovementDirections direction = CalculateMovementDirectionByAngle(Mathf.Atan2(-relativePos.y, -relativePos.x) * Mathf.Rad2Deg);
 
         switch (result) {
             case MatchStatus.PLAYER_WON_THE_MATCH:
-                MoveSoldier(FocusedPlayer, direction);
+                MoveSoldier(FocusedPlayer.transform.parent.gameObject, direction);
                 goto case MatchStatus.PLAYER_REVEALED;      //c# restrictions: can't fallthrough without the special 'goto case' keyword
             case MatchStatus.PLAYER_REVEALED:
                 RemoveSoldier(FocusedEnemy);
                 RevealSoldier(FocusedPlayer);
                 break;
             case MatchStatus.ENEMY_WON_THE_MATCH:
-                MoveSoldier(FocusedEnemy, direction);
+                MoveSoldier(FocusedEnemy.transform.parent.gameObject, ReverseDirection(direction));
                 goto case MatchStatus.ENEMY_REVEALED;       //c# restrictions: can't fallthrough without the special 'goto case' keyword
             case MatchStatus.ENEMY_REVEALED:
                 RemoveSoldier(FocusedPlayer);
@@ -233,6 +222,16 @@ public class GameModel : MonoBehaviour {
                 break;
         }
 
+    }
+
+    private MovementDirections ReverseDirection(MovementDirections direction) {
+        switch (direction) {
+            case MovementDirections.UP: return MovementDirections.DOWN;
+            case MovementDirections.DOWN: return MovementDirections.UP;
+            case MovementDirections.RIGHT: return MovementDirections.LEFT;
+            case MovementDirections.LEFT: return MovementDirections.RIGHT;
+        }
+        return MovementDirections.NONE;
     }
 
     private void RevealSoldier(GameObject soldier) {
