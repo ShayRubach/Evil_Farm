@@ -41,15 +41,20 @@ public class SC_Soldier : MonoBehaviour {
 
     }
 
-    private void ConcealWeapon(GameObject weaponParentObj) {
+    public void ConcealWeapon(GameObject weaponParentObj) {
         if (Team == SoldierTeam.ENEMY) {
-            //get actualWeapon object
+            //hide weapon
             weaponParentObj.transform.GetChild(0).GetComponent<MeshRenderer>().enabled = false;
+            //show flower
+            weaponParentObj.transform.parent.transform.parent.GetChild(1).gameObject.SetActive(true);
         }
     }
 
     public void RevealWeapon() {
+        //show weapon
         GetActiveWeapon().transform.GetChild(0).GetComponent<MeshRenderer>().enabled = true;
+        //hide flower
+        GetActiveWeapon().transform.parent.transform.parent.GetChild(1).gameObject.SetActive(false);
     }
 
     /*

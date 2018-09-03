@@ -69,6 +69,7 @@ public class SC_GameController : MonoBehaviour {
         SC_Soldier.MarkSoldier += MarkSoldier;
         SC_Soldier.UnmarkSoldier += UnmarkSoldier;
         GameModel.FinishGame += FinishGame;
+        SC_Cart.GodMode += GodMode;
     }
 
     void OnDisable() {
@@ -78,6 +79,7 @@ public class SC_GameController : MonoBehaviour {
         SC_Soldier.MarkSoldier -= MarkSoldier;
         SC_Soldier.UnmarkSoldier -= UnmarkSoldier;
         GameModel.FinishGame -= FinishGame;
+        SC_Cart.GodMode -= GodMode;
     }
 
     private void FinishGame(SoldierTeam winner) {
@@ -212,4 +214,7 @@ public class SC_GameController : MonoBehaviour {
         model.HidePathIndicators();
     }
 
+    private void GodMode(bool state) {
+        model.GodMode(state);
+    }
 }

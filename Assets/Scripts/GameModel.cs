@@ -53,7 +53,13 @@ public class GameModel : MonoBehaviour {
         GameObject[] objectsArray = GameObject.FindGameObjectsWithTag(UNITY_OBJECTS_TAG);
 
         foreach (GameObject obj in objectsArray) {
-            objects.Add(obj.name, obj);
+            try {
+                objects.Add(obj.name, obj);
+            }
+            catch(ArgumentException e) {
+                Debug.Log("there's already " + obj.name + " in the dictionary!");
+            }
+            
         }
 
         pathIndicators = objects[GameModel.PATH_INDICATORS_NAME_VAR];
@@ -239,6 +245,12 @@ public class GameModel : MonoBehaviour {
         soldier.GetComponent<SC_Soldier>().RevealWeapon();
     }
 
+    private void HideSoldier(GameObject soldier) {
+        return;
+        Debug.Log("hiding " + soldier);
+        soldier.GetComponent<SC_Soldier>().ConcealWeapon(soldier.transform.GetChild(0).gameObject.transform.GetChild(0).gameObject);
+    }
+
     private void RemoveSoldier(GameObject soldier) {
         Debug.Log("removing " + soldier);
     }
@@ -375,5 +387,17 @@ public class GameModel : MonoBehaviour {
 
     public Point GetNextMoveCoord() {
         return nextMoveCoord;
+    }
+
+    public void GodMode(bool state) {
+        foreach(KeyValuePair<string,GameObject> soldier in objects) {
+            if (soldier.Value.name.Contains(ENEMY_NAME_VAR)) {
+                if (!state)
+                    RevealSoldier(soldier.Value);
+                else
+                    HideSoldier(soldier.Value);
+            }
+        }
+        
     }
 }
