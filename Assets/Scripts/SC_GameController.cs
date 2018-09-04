@@ -15,10 +15,9 @@ public class SC_GameController : MonoBehaviour {
     private GameModel model;                                //our game logic model
     
     private SC_Spotlight soldierSpotlight;                  //highlights the rival on drag
-
     private Vector3 nextPosition, startDragPos, endDragPos;
-
     private Animator soldierAnimator;
+    private bool isMyTurn = true;
     private MovementDirections soldierMovementDirection;
 
     private static readonly string GAME_MODEL_NAME_VAR = "SC_GameModel";
@@ -48,6 +47,15 @@ public class SC_GameController : MonoBehaviour {
 
             }
         }
+
+        if(isMyTurn == false) {
+            PlayAsAI();
+        }
+    }
+
+    private void PlayAsAI() {
+        model.PlayAsAI();
+        isMyTurn = true;
     }
 
     IEnumerator Fade() {
@@ -69,6 +77,7 @@ public class SC_GameController : MonoBehaviour {
         SC_Soldier.MarkSoldier += MarkSoldier;
         SC_Soldier.UnmarkSoldier += UnmarkSoldier;
         GameModel.FinishGame += FinishGame;
+        GameModel.AIMoveFinished += AIMoveFinished;
         SC_Cart.GodMode += GodMode;
     }
 
@@ -79,7 +88,13 @@ public class SC_GameController : MonoBehaviour {
         SC_Soldier.MarkSoldier -= MarkSoldier;
         SC_Soldier.UnmarkSoldier -= UnmarkSoldier;
         GameModel.FinishGame -= FinishGame;
+        GameModel.AIMoveFinished -= AIMoveFinished;
         SC_Cart.GodMode -= GodMode;
+    }
+
+    //called when AI is finished with his move (inc. animations):
+    private void AIMoveFinished() {
+        isMyTurn = true;
     }
 
     private void FinishGame(SoldierTeam winner) {
@@ -100,52 +115,61 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void OnStartDraggingSoldier(GameObject obj, Vector3 pos, Vector3 objTranslatePosition) {
-        focusedPlayerParent = obj;
-        model.FocusedPlayer = obj.transform.GetChild(0).gameObject;
+        if (isMyTurn) {
+            focusedPlayerParent = obj;
+            model.FocusedPlayer = obj.transform.GetChild(0).gameObject;
 
-        startDragPos = pos;
-        ShowDuelSoldier();
-        ShowPathIndicators(objTranslatePosition);
-        
-        //StartCoroutine("Fade");
+            startDragPos = pos;
+            ShowDuelSoldier();
+            ShowPathIndicators(objTranslatePosition);
+        }
 
     }
 
     private void OnFinishDraggingSoldier(GameObject obj, Vector3 pos, Vector3 objTranslatePosition) {
-        endDragPos = pos;
-        HidePreviewSoldier();
-        HidePathIndicators();
+        if (isMyTurn) {
+            endDragPos = pos;
+            HidePreviewSoldier();
+            HidePathIndicators();
 
-        soldierMovementDirection = model.GetSoldierMovementDirection(startDragPos, endDragPos);
-        if(soldierMovementDirection != MovementDirections.NONE) {
+            soldierMovementDirection = model.GetSoldierMovementDirection(startDragPos, endDragPos);
+            if (soldierMovementDirection != MovementDirections.NONE) {
 
-            //use the exact soldier position (not parent):
-            Vector3 exactSoldierPosition = model.FocusedPlayer.transform.position;
+                //use the exact soldier position (not parent):
+                Vector3 exactSoldierPosition = model.FocusedPlayer.transform.position;
 
-            //only move if its within board borders:
-            if (IsValidMove(exactSoldierPosition, soldierMovementDirection)){
+                //only move if its within board borders:
+                if (IsValidMove(exactSoldierPosition, soldierMovementDirection)) {
 
-                //check if next movement will initiate a fight (as landing on a rival tile): 
-                if (IsPossibleMatch(GetRequestedMoveCoord())) {
-                    Match();
+                    //check if next movement will initiate a fight (as landing on a rival tile): 
+                    if (IsPossibleMatch(GetRequestedMoveCoord())) {
+                        Match();
+                    }
+                    else {
+                        //currrently a static movement, will turn into animation later.
+                        MoveSoldier(focusedPlayerParent, soldierMovementDirection);
+                    }
+                    isMyTurn = false;
+
                 }
-                else {
-                    //currrently a static movement, will turn into animation later.
-                    MoveSoldier(focusedPlayerParent, soldierMovementDirection);
-                }
 
+
+                //Debug.Log("focusedSoldier.transform.GetChild(0).position= " + focusedPlayerParent.transform.GetChild(0).position);
+
+                //Debug.Log("tile landed on is = " + 
+                //    model.PointToTile(focusedPlayerParent.transform.GetChild(0).position).transform.position.x + "," +
+                //    Mathf.Abs(model.PointToTile(focusedPlayerParent.transform.GetChild(0).position).transform.position.z));
+
+                //Debug.Log("curr position is = " + objTranslatePosition);
+                //nextPosition = new Vector3(objTranslatePosition.x, objTranslatePosition.y, objTranslatePosition.z + 1);
+                //Debug.Log("new position will be = " + nextPosition);
             }
-                
-            //Debug.Log("focusedSoldier.transform.GetChild(0).position= " + focusedPlayerParent.transform.GetChild(0).position);
-
-            //Debug.Log("tile landed on is = " + 
-            //    model.PointToTile(focusedPlayerParent.transform.GetChild(0).position).transform.position.x + "," +
-            //    Mathf.Abs(model.PointToTile(focusedPlayerParent.transform.GetChild(0).position).transform.position.z));
-
-            //Debug.Log("curr position is = " + objTranslatePosition);
-            //nextPosition = new Vector3(objTranslatePosition.x, objTranslatePosition.y, objTranslatePosition.z + 1);
-            //Debug.Log("new position will be = " + nextPosition);
         }
+        else
+            return;
+
+
+
 
     }
 

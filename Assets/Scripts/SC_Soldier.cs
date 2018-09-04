@@ -78,7 +78,7 @@ public class SC_Soldier : MonoBehaviour {
                 for (int i = 0; weapons != null && i < weapons.transform.childCount; i++) {
                     GameObject child = weapons.transform.GetChild(i).gameObject;
                     if (IsObjectActive(child)) {
-                        Debug.Log("im " + gameObject + " and I have " + child);
+                        //Debug.Log("im " + gameObject + " and I have " + child);
                         return child;
                     }
                 }
