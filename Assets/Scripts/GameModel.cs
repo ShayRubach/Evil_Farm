@@ -28,7 +28,9 @@ public class GameModel : MonoBehaviour {
     private static readonly int RIGHT_BOARD_EDGE_IDX = COLS - 1;
     private static readonly int TOP_BOARD_EDGE_IDX = 0;
     private static readonly int BTM_BOARD_EDGE_IDX = ROWS - 1;
+    private static readonly int LEGAL_MOVES_COUNT = 4;
     private static readonly float MINIMUM_DRAG_DISTANCE = 40.0f;
+
 
     public static readonly string NO_SOLDIER_NAME_VAR = "no_soldier";
     public static readonly string PLAYER_NAME_VAR = "soldier_player";
@@ -46,6 +48,9 @@ public class GameModel : MonoBehaviour {
     private Vector3 relativePos;
     private Point nextMoveCoord;
 
+    List<GameObject> players = new List<GameObject>();
+    List<GameObject> enemies = new List<GameObject>();
+
     private Dictionary<string, GameObject> objects = new Dictionary<string, GameObject>();
 
     private void Awake() {
@@ -55,23 +60,82 @@ public class GameModel : MonoBehaviour {
         foreach (GameObject obj in objectsArray) {
             try {
                 objects.Add(obj.name, obj);
+
+                //save all enemies and players for later use:
+                if (obj.name.Contains(PLAYER_NAME_VAR)) {
+                    players.Add(obj);
+                }
+                if (obj.name.Contains(ENEMY_NAME_VAR)) {
+                    enemies.Add(obj);
+                }
             }
             catch(ArgumentException e) {
                 Debug.Log("there's already " + obj.name + " in the dictionary!");
             }
             
         }
-
+        
         pathIndicators = objects[GameModel.PATH_INDICATORS_NAME_VAR];
 
         nextMoveCoord.x = 0;
         nextMoveCoord.y = 0;
 
     }
-    
+
+    internal void PlayAsAI() {
+        Debug.Log("Playing as AI");
+        FocusedPlayer = ChooseValidRandomSoldier();
+        
+    }
+
+    private GameObject ChooseValidRandomSoldier() {
+
+        System.Random rand = new System.Random();
+        bool keepLooking = true;
+        int randomSoldier = 0;
+        FocusedPlayer = null;
+        MovementDirections movement = MovementDirections.NONE;
+
+        while (keepLooking) {
+            randomSoldier = rand.Next(0, enemies.Count);
+            FocusedPlayer = enemies[randomSoldier];
+            movement = GetAvailableMove();
+            Debug.Log("randomed " + randomSoldier + " , focusedSoldier = " + FocusedPlayer + " , move = " + movement);
+            
+            if (movement!= MovementDirections.NONE) {
+                keepLooking = false;
+            }
+        }
+
+        if(FocusedPlayer != null)
+            Debug.Log("playing as AI with " + FocusedPlayer + " and he's moving " + movement);
+
+        return FocusedPlayer;
+    }
+
+    private MovementDirections GetAvailableMove() {
+        MovementDirections[] moves = { MovementDirections.UP, MovementDirections.DOWN, MovementDirections.LEFT, MovementDirections.RIGHT };
+        System.Random rand = new System.Random();
+        int MAX_ATTEMPTS = 4;
+        bool keepLooking = true;
+        int randomMove = 0, attempts = 0;
+
+        while (keepLooking) {
+            randomMove = rand.Next(0, LEGAL_MOVES_COUNT);
+            if(IsValidMove(FocusedPlayer.transform.position, moves[randomMove])) {
+                keepLooking = false;
+            }
+            if (++attempts == MAX_ATTEMPTS) {
+                moves[randomMove] = MovementDirections.NONE;
+            }
+        }
+
+        return moves[randomMove];
+    }
+
     /*
      * returns a reference to a tile by vector pos
-     */ 
+     */
     public GameObject PointToTile(Vector3 pos) {
         float x=0, y=0;
         x = Mathf.Abs(pos.x);
@@ -241,13 +305,11 @@ public class GameModel : MonoBehaviour {
     }
 
     private void RevealSoldier(GameObject soldier) {
-        Debug.Log("revealing " + soldier);
         soldier.GetComponent<SC_Soldier>().RevealWeapon();
     }
 
     private void HideSoldier(GameObject soldier) {
         return;
-        Debug.Log("hiding " + soldier);
         soldier.GetComponent<SC_Soldier>().ConcealWeapon(soldier.transform.GetChild(0).gameObject.transform.GetChild(0).gameObject);
     }
 
@@ -349,6 +411,7 @@ public class GameModel : MonoBehaviour {
     }
 
     public bool IsValidMove(Vector3 soldierPos, MovementDirections move) {
+
         bool isValid = false;
         nextMoveCoord.x = (int)Mathf.Abs(soldierPos.x);
         nextMoveCoord.y = (int)Mathf.Abs(soldierPos.z);
@@ -359,30 +422,56 @@ public class GameModel : MonoBehaviour {
             case MovementDirections.UP:
                 if (Mathf.Abs(soldierPos.z) - 1 >= TOP_BOARD_EDGE_IDX) {
                     nextMoveCoord.y -= 1;
-                    isValid = true;
+                    if(!OverlayingTeamMember(nextMoveCoord))
+                        isValid = true;
                 }
                 break;
             case MovementDirections.DOWN:
-                if (Mathf.Abs(soldierPos.z) + 1 <= BTM_BOARD_EDGE_IDX) {
+                if (Mathf.Abs(soldierPos.z) + 1 <= BTM_BOARD_EDGE_IDX) { // && !OverlayingTeamMember(nextMoveCoord)) {
                     nextMoveCoord.y += 1;
-                    isValid = true;
+                    if (!OverlayingTeamMember(nextMoveCoord))
+                        isValid = true;
                 }
                 break;
             case MovementDirections.LEFT:
-                if (soldierPos.x - 1 >= LEFT_BOARD_EDGE_IDX) {
+                if (soldierPos.x - 1 >= LEFT_BOARD_EDGE_IDX) { // && !OverlayingTeamMember(nextMoveCoord)) {
                     nextMoveCoord.x -= 1;
-                    isValid = true;
+                    if (!OverlayingTeamMember(nextMoveCoord))
+                        isValid = true;
                 }
                 break;
             case MovementDirections.RIGHT:
-                if (soldierPos.x + 1 <= RIGHT_BOARD_EDGE_IDX) {
+                if (soldierPos.x + 1 <= RIGHT_BOARD_EDGE_IDX) { // && !OverlayingTeamMember(nextMoveCoord)) {
                     nextMoveCoord.x += 1;
-                    isValid = true;
+                    if (!OverlayingTeamMember(nextMoveCoord))
+                        isValid = true;
                 }
                 break;
         }
 
+        if (isValid)
+            Debug.Log("nextMoveCoord = " + nextMoveCoord.x + "," + nextMoveCoord.y);
+
         return isValid;
+    }
+
+    private bool OverlayingTeamMember(Point moveCoord) {
+        SC_Tile nextTile = objects[TILE_NAME_VAR + moveCoord.x + moveCoord.y].GetComponent<SC_Tile>();
+
+        Debug.Log(FocusedPlayer + " wants to move to " + nextTile.name);
+
+        if (nextTile.IsOcuupied) {
+            //if the next tile has one of our team members, restirct movement:
+            Debug.Log("nextTile.soldier.GetComponent<SC_Soldier>().Team = " + nextTile.soldier.GetComponent<SC_Soldier>().Team);
+            Debug.Log("FocusedPlayer.GetComponent<SC_Soldier>().Team = " + FocusedPlayer.GetComponent<SC_Soldier>().Team);
+
+            if(nextTile.soldier.GetComponent<SC_Soldier>().Team == FocusedPlayer.GetComponent<SC_Soldier>().Team) {
+                Debug.Log(FocusedPlayer + " can NOT move there");
+                return true;
+            }
+        }
+        Debug.Log(FocusedPlayer + " can move there");
+        return false;
     }
 
     public Point GetNextMoveCoord() {

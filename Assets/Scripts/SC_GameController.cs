@@ -15,10 +15,9 @@ public class SC_GameController : MonoBehaviour {
     private GameModel model;                                //our game logic model
     
     private SC_Spotlight soldierSpotlight;                  //highlights the rival on drag
-
     private Vector3 nextPosition, startDragPos, endDragPos;
-
     private Animator soldierAnimator;
+    private bool isMyTurn = true;
     private MovementDirections soldierMovementDirection;
 
     private static readonly string GAME_MODEL_NAME_VAR = "SC_GameModel";
@@ -48,6 +47,15 @@ public class SC_GameController : MonoBehaviour {
 
             }
         }
+
+        if(isMyTurn == false) {
+            PlayAsAI();
+        }
+    }
+
+    private void PlayAsAI() {
+        model.PlayAsAI();
+        isMyTurn = true;
     }
 
     IEnumerator Fade() {
@@ -100,15 +108,14 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void OnStartDraggingSoldier(GameObject obj, Vector3 pos, Vector3 objTranslatePosition) {
-        focusedPlayerParent = obj;
-        model.FocusedPlayer = obj.transform.GetChild(0).gameObject;
+        if (isMyTurn) {
+            focusedPlayerParent = obj;
+            model.FocusedPlayer = obj.transform.GetChild(0).gameObject;
 
-        startDragPos = pos;
-        ShowDuelSoldier();
-        ShowPathIndicators(objTranslatePosition);
-        
-        //StartCoroutine("Fade");
-
+            startDragPos = pos;
+            ShowDuelSoldier();
+            ShowPathIndicators(objTranslatePosition);
+        }
     }
 
     private void OnFinishDraggingSoldier(GameObject obj, Vector3 pos, Vector3 objTranslatePosition) {
@@ -135,6 +142,7 @@ public class SC_GameController : MonoBehaviour {
                 }
 
             }
+            isMyTurn = false;
                 
             //Debug.Log("focusedSoldier.transform.GetChild(0).position= " + focusedPlayerParent.transform.GetChild(0).position);
 
