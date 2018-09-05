@@ -36,6 +36,7 @@ public class GameModel : MonoBehaviour {
     private static readonly float MINIMUM_DRAG_DISTANCE = 40.0f;
     private static readonly float THINKING_TIME_IN_SECONDS = 1.0f;
 
+
     public static readonly string NO_SOLDIER_NAME_VAR = "no_soldier";
     public static readonly string PLAYER_NAME_VAR = "soldier_player";
     public static readonly string ENEMY_NAME_VAR = "soldier_enemy";
@@ -467,21 +468,21 @@ public class GameModel : MonoBehaviour {
                 }
                 break;
             case MovementDirections.DOWN:
-                if (Mathf.Abs(soldierPos.z) + 1 <= BTM_BOARD_EDGE_IDX) {
+                if (Mathf.Abs(soldierPos.z) + 1 <= BTM_BOARD_EDGE_IDX) { // && !OverlayingTeamMember(nextMoveCoord)) {
                     nextMoveCoord.y += 1;
                     if (!OverlayingTeamMember(nextMoveCoord))
                         isValid = true;
                 }
                 break;
             case MovementDirections.LEFT:
-                if (soldierPos.x - 1 >= LEFT_BOARD_EDGE_IDX) {
+                if (soldierPos.x - 1 >= LEFT_BOARD_EDGE_IDX) { // && !OverlayingTeamMember(nextMoveCoord)) {
                     nextMoveCoord.x -= 1;
                     if (!OverlayingTeamMember(nextMoveCoord))
                         isValid = true;
                 }
                 break;
             case MovementDirections.RIGHT:
-                if (soldierPos.x + 1 <= RIGHT_BOARD_EDGE_IDX) {
+                if (soldierPos.x + 1 <= RIGHT_BOARD_EDGE_IDX) { // && !OverlayingTeamMember(nextMoveCoord)) {
                     nextMoveCoord.x += 1;
                     if (!OverlayingTeamMember(nextMoveCoord))
                         isValid = true;

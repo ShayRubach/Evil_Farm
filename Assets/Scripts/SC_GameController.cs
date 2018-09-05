@@ -161,7 +161,6 @@ public class SC_GameController : MonoBehaviour {
 
             }
 
-
             //Debug.Log("focusedSoldier.transform.GetChild(0).position= " + focusedPlayerParent.transform.GetChild(0).position);
 
             //Debug.Log("tile landed on is = " + 
