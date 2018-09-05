@@ -22,6 +22,7 @@ public class GameModel : MonoBehaviour {
     public delegate void MoveNotify();
     public static event MoveNotify AIMoveFinished;
 
+    private bool AIPlaying = false;
     private static readonly int COLS = 7;
     private static readonly int ROWS = 6;
 
@@ -33,7 +34,7 @@ public class GameModel : MonoBehaviour {
     private static readonly int BTM_BOARD_EDGE_IDX = ROWS - 1;
     private static readonly int LEGAL_MOVES_COUNT = 4;
     private static readonly float MINIMUM_DRAG_DISTANCE = 40.0f;
-    private static readonly float THINKING_TIME_IN_SECONDS = 2.0f;
+    private static readonly float THINKING_TIME_IN_SECONDS = 1.0f;
 
     public static readonly string NO_SOLDIER_NAME_VAR = "no_soldier";
     public static readonly string PLAYER_NAME_VAR = "soldier_player";
@@ -89,7 +90,7 @@ public class GameModel : MonoBehaviour {
     }
 
     internal void PlayAsAI() {
-        
+        AIPlaying = true;
         Debug.Log("Playing as AI");
         
         FocusedPlayer = ChooseValidRandomSoldier();
@@ -98,9 +99,20 @@ public class GameModel : MonoBehaviour {
 
     private IEnumerator SimulateThinkingTime(float waitTime) {
         yield return new WaitForSeconds(waitTime);
-        MoveSoldier(FocusedPlayer.transform.parent.gameObject, nextMovement);
+        if (IsPossibleMatch(nextMoveCoord)) {
+            Match();
+        }
+        else {
+            MoveSoldier(FocusedPlayer.transform.parent.gameObject, nextMovement);
+        }
         if(AIMoveFinished != null)
             AIMoveFinished();
+
+        AIPlaying = false;
+    }
+
+    public bool IsPossibleMatch(Point move) {
+        return GetNextTileStatus() == TileStatus.VALID_OPPONENT;
     }
 
     private GameObject ChooseValidRandomSoldier() {
@@ -385,13 +397,8 @@ public class GameModel : MonoBehaviour {
 
         if (FocusedEnemy != null) {
             //next tile is occupied with a soldier
-            if(FocusedEnemy.GetComponent<SC_Soldier>().Team == SoldierTeam.ENEMY) {
-                
+            if(FocusedEnemy.GetComponent<SC_Soldier>().Team != FocusedPlayer.GetComponent<SC_Soldier>().Team) {   
                 return TileStatus.VALID_OPPONENT;
-            }
-            else {
-                //soldier from the player's team, non traversal
-                return TileStatus.PLAYER_SOLDIER;
             }
         }
         
@@ -460,21 +467,21 @@ public class GameModel : MonoBehaviour {
                 }
                 break;
             case MovementDirections.DOWN:
-                if (Mathf.Abs(soldierPos.z) + 1 <= BTM_BOARD_EDGE_IDX) { // && !OverlayingTeamMember(nextMoveCoord)) {
+                if (Mathf.Abs(soldierPos.z) + 1 <= BTM_BOARD_EDGE_IDX) {
                     nextMoveCoord.y += 1;
                     if (!OverlayingTeamMember(nextMoveCoord))
                         isValid = true;
                 }
                 break;
             case MovementDirections.LEFT:
-                if (soldierPos.x - 1 >= LEFT_BOARD_EDGE_IDX) { // && !OverlayingTeamMember(nextMoveCoord)) {
+                if (soldierPos.x - 1 >= LEFT_BOARD_EDGE_IDX) {
                     nextMoveCoord.x -= 1;
                     if (!OverlayingTeamMember(nextMoveCoord))
                         isValid = true;
                 }
                 break;
             case MovementDirections.RIGHT:
-                if (soldierPos.x + 1 <= RIGHT_BOARD_EDGE_IDX) { // && !OverlayingTeamMember(nextMoveCoord)) {
+                if (soldierPos.x + 1 <= RIGHT_BOARD_EDGE_IDX) {
                     nextMoveCoord.x += 1;
                     if (!OverlayingTeamMember(nextMoveCoord))
                         isValid = true;

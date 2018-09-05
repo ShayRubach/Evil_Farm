@@ -184,11 +184,7 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private bool IsPossibleMatch(Point point) {
-        return GetNextTileStatus() == TileStatus.VALID_OPPONENT;
-    }
-
-    private TileStatus GetNextTileStatus() {
-        return model.GetNextTileStatus();
+        return model.IsPossibleMatch(point);
     }
 
     private Point GetRequestedMoveCoord() {
