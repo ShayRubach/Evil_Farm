@@ -268,8 +268,12 @@ public class GameModel : MonoBehaviour {
     }
 
     private bool UpdateTileAndSoldierRefs(GameObject tile, GameObject soldier, bool occupied, bool traversal) {
-        if(tile == null)
+        if(tile == null) {
+            Debug.Log("tile is null");
             return false;
+        }
+
+        
 
         tile.GetComponent<SC_Tile>().soldier = soldier;
         tile.GetComponent<SC_Tile>().IsOcuupied = occupied;
@@ -279,8 +283,13 @@ public class GameModel : MonoBehaviour {
         //else, we wish to update both tile and soldier with their references.
         if(soldier != null) {
             soldier.GetComponent<SC_Soldier>().Tile = tile;
+            Debug.Log("UpdateTileAndSoldierRefs: called with soldier=" + soldier + " and tile=" + tile);
+        }
+        else {
+            Debug.Log("UpdateTileAndSoldierRefs: clearing tile=" + tile);
         }
 
+        
         return true;
     }
 
@@ -304,15 +313,19 @@ public class GameModel : MonoBehaviour {
 
         switch (result) {
             case MatchStatus.PLAYER_WON_THE_MATCH:
+                RemoveSoldier(FocusedEnemy);
+                RevealSoldier(FocusedPlayer);
                 MoveSoldier(FocusedPlayer.transform.parent.gameObject, direction);
-                goto case MatchStatus.PLAYER_REVEALED;      //c# restrictions: can't fallthrough without the special 'goto case' keyword
+                break;
             case MatchStatus.PLAYER_REVEALED:
                 RemoveSoldier(FocusedEnemy);
                 RevealSoldier(FocusedPlayer);
                 break;
             case MatchStatus.ENEMY_WON_THE_MATCH:
+                RemoveSoldier(FocusedPlayer);
+                RevealSoldier(FocusedEnemy);
                 MoveSoldier(FocusedEnemy.transform.parent.gameObject, ReverseDirection(direction));
-                goto case MatchStatus.ENEMY_REVEALED;       //c# restrictions: can't fallthrough without the special 'goto case' keyword
+                break;
             case MatchStatus.ENEMY_REVEALED:
                 RemoveSoldier(FocusedPlayer);
                 RevealSoldier(FocusedEnemy);
