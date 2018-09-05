@@ -14,7 +14,7 @@ public class SC_Spotlight : MonoBehaviour {
         transform.position = new Vector3(soldier.transform.position.x, transform.position.y, soldier.transform.position.z);
     }
 
-    public void RemoveHighlight(GameObject soldier) {
+    public void RemoveHighlight() {
         transform.position = basePosition;
     }
 

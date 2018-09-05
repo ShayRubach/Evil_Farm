@@ -35,8 +35,6 @@ public class GameModel : MonoBehaviour {
     private static readonly float MINIMUM_DRAG_DISTANCE = 40.0f;
     private static readonly float THINKING_TIME_IN_SECONDS = 2.0f;
 
-
-
     public static readonly string NO_SOLDIER_NAME_VAR = "no_soldier";
     public static readonly string PLAYER_NAME_VAR = "soldier_player";
     public static readonly string ENEMY_NAME_VAR = "soldier_enemy";
@@ -45,6 +43,8 @@ public class GameModel : MonoBehaviour {
     public static readonly string PREVIEW_SOLDIER_NAME_VAR = "preview_soldier_player";
     public static readonly string PATH_INDICATORS_NAME_VAR = "path_indicators";
     public static readonly string LEAF_INDICATOR_NAME_VAR = "leaf";
+
+    public static readonly int REVEAL_SPOTLIGHT_CHILD_IDX = 1;
 
     public GameObject FocusedEnemy { get; set; }
     public GameObject FocusedPlayer { get; set; }
@@ -329,7 +329,14 @@ public class GameModel : MonoBehaviour {
     }
 
     private void RevealSoldier(GameObject soldier) {
-        soldier.GetComponent<SC_Soldier>().RevealWeapon();
+        if (soldier.GetComponent<SC_Soldier>().Team == SoldierTeam.PLAYER)
+            TurnOnRevealSpotlight(soldier);
+        else
+            soldier.GetComponent<SC_Soldier>().RevealWeapon();
+    }
+
+    private void TurnOnRevealSpotlight(GameObject soldier) {
+        soldier.transform.GetChild(REVEAL_SPOTLIGHT_CHILD_IDX).gameObject.SetActive(true);
     }
 
     private void HideSoldier(GameObject soldier) {
@@ -339,6 +346,8 @@ public class GameModel : MonoBehaviour {
 
     private void RemoveSoldier(GameObject soldier) {
         Debug.Log("removing " + soldier);
+        ResetTileReference(soldier.GetComponent<SC_Soldier>().Tile);
+        soldier.SetActive(false);
     }
 
     void CallFinishGame(SoldierTeam winner) {
