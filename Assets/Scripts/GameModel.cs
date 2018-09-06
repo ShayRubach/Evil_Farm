@@ -343,21 +343,19 @@ public class GameModel : MonoBehaviour {
                 break;
             case MatchStatus.TIE:
                 //todo: implement a rematch
-                Rematch();
-                RemoveSoldier(FocusedPlayer);
-                RemoveSoldier(FocusedEnemy);
+                TieBreaker();
                 break;
             case MatchStatus.INITIATOR_WON_THE_GAME:
                 CallFinishGame(FocusedPlayer);
                 break;
             case MatchStatus.VICTIM_WON_THE_GAME:
-                CallFinishGame(FocusedEnemy);
+                CallFinishGame(FocusedEnemy);   
                 break;
         }
 
     }
 
-    private void Rematch() {
+    private void TieBreaker() {
         if(CallTieBreaker != null)
             CallTieBreaker();
     }
