@@ -36,20 +36,21 @@ public enum SoldierType {
     CLUB,       // club > pitchfork
     AXE,        // axe > club
     SCYTHE,     // scythe == throwing weapon??
-    SHIELD,     //kamikazee . kill himself and his rival
-    SCARECROW,  //dummy player - only revelas his rival
-    FARMER,     //king
-    CRYSTAL,     //king
+    SHIELD,     // kamikazee . kill himself and his rival
+    SCARECROW,  // dummy player - only revelas his rival
+    FARMER,     // king
+    CRYSTAL,    // king
     NO_TYPE
 }
 
 public enum MatchStatus {
-    PLAYER_WON_THE_MATCH,   //player won this match
-    PLAYER_WON_THE_GAME,    //player found the farmer (king)
-    PLAYER_REVEALED,        //player has faced the scarecrow (dummy)
-    ENEMY_WON_THE_MATCH,    //enemy won this match
-    ENEMY_WON_THE_GAME,     //enemy found the farmer (king)
-    ENEMY_REVEALED,         //enemy has faced the scarecrow (dummy)
-    TIE,                    //both soldiers had the same weapon - forces rematch
-    UNDEFINED
+    INITIATOR_WON_THE_MATCH,    // initiator won this match
+    INITIATOR_WON_THE_GAME,     // initiator found the farmer (king)
+    INITIATOR_REVEALED,         // initiator has faced the scarecrow (dummy)
+    VICTIM_WON_THE_MATCH,       // victim won this match
+    VICTIM_WON_THE_GAME,        // victim found the farmer (king)
+    VICTIM_REVEALED,            // victim has faced the scarecrow (dummy)
+    BOTH_LOST_MATCH,            // facing a shield soldier, both are eliminated
+    TIE,                        // both soldiers had the same weapon - forces rematch
+    UNDEFINED                   // still not set
 }

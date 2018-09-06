@@ -126,20 +126,20 @@ public class GameModel : MonoBehaviour {
 
 
         for (int i = 0; i < MAX_ATTEMPTS; i++) {
-            Debug.Log("ChooseValidRandomSoldier: attempts = " + i);
+            //Debug.Log("ChooseValidRandomSoldier: attempts = " + i);
             randomSoldier = rand.Next(0, enemies.Count);
             FocusedPlayer = enemies[randomSoldier];
             movement = GetAvailableMove();
             
             if (movement != MovementDirections.NONE) {
-                Debug.Log("randomed " + randomSoldier + " , focusedSoldier = " + FocusedPlayer + " , move = " + movement);
+                //Debug.Log("randomed " + randomSoldier + " , focusedSoldier = " + FocusedPlayer + " , move = " + movement);
                 break;
             }
         }
     
 
         if (FocusedPlayer != null) {
-            Debug.Log("playing as AI with " + FocusedPlayer + " and he's moving " + movement);
+            //Debug.Log("playing as AI with " + FocusedPlayer + " and he's moving " + movement);
             //save next movement for later use:
             nextMovement = movement;
         }
@@ -155,7 +155,7 @@ public class GameModel : MonoBehaviour {
 
         //while (keepLooking) {
         for(int i=0; i < MAX_ATTEMPTS; i++) { 
-            Debug.Log("GetAvailableMove: attempts = " + i);
+            //Debug.Log("GetAvailableMove: attempts = " + i);
             randomMove = rand.Next(0, LEGAL_MOVES_COUNT);
             if(IsValidMove(FocusedPlayer.transform.position, moves[randomMove])) {
                 return moves[randomMove];
@@ -172,7 +172,8 @@ public class GameModel : MonoBehaviour {
         float x=0, y=0;
         x = Mathf.Abs(pos.x);
         y = Mathf.Abs(pos.z);
-        
+        Debug.Log("PointToTile: pos = " + pos);
+        Debug.Log("PointToTile: new tile returns " + objects[TILE_NAME_VAR + x + y].name);
         return objects[TILE_NAME_VAR + x + y];
     }
 
@@ -225,7 +226,7 @@ public class GameModel : MonoBehaviour {
      * the parent is used to move all soldier and it's children relatively on board
      */ 
     public void MoveSoldier(GameObject focusedSoldierP, MovementDirections soldierMovementDirection) {
-        
+        Debug.Log("MoveSoldier: focusedSoldierParent = " + focusedSoldierP + " , direcion = " + soldierMovementDirection);
         //start as default position just for initialization:
         Vector3 newPosition = focusedSoldierP.transform.position;
         GameObject exactSoldierObj = focusedSoldierP.transform.GetChild(0).gameObject;
@@ -237,6 +238,7 @@ public class GameModel : MonoBehaviour {
             Debug.Log("MoveSoldier: focusedSoldierP is null.");
             return;
         }
+        Debug.Log("exactSoldierObj.transform.position: " + exactSoldierObj.transform.position);
 
         switch (soldierMovementDirection) {
             case MovementDirections.UP:
@@ -255,6 +257,7 @@ public class GameModel : MonoBehaviour {
 
         //get the new tile by new position
         GameObject newTile = PointToTile(newPosition);
+        Debug.Log("newTile to move to is " + newTile.name);
 
         ResetTileReference(currTile);
         UpdateTileAndSoldierRefs(newTile, exactSoldierObj, true, false);
@@ -311,34 +314,40 @@ public class GameModel : MonoBehaviour {
         //get the initiator's movement direction:
         MovementDirections direction = CalculateMovementDirectionByAngle(Mathf.Atan2(-relativePos.y, -relativePos.x) * Mathf.Rad2Deg);
 
+        Debug.Log("FocusedPlayer = " + FocusedPlayer.name);
+        Debug.Log("FocusedEnemy  = " + FocusedEnemy.name);
+
         switch (result) {
-            case MatchStatus.PLAYER_WON_THE_MATCH:
-                RemoveSoldier(FocusedEnemy);
-                RevealSoldier(FocusedPlayer);
-                MoveSoldier(FocusedPlayer.transform.parent.gameObject, direction);
-                break;
-            case MatchStatus.PLAYER_REVEALED:
+            case MatchStatus.INITIATOR_WON_THE_MATCH:
                 RemoveSoldier(FocusedEnemy);
                 RevealSoldier(FocusedPlayer);
                 break;
-            case MatchStatus.ENEMY_WON_THE_MATCH:
-                RemoveSoldier(FocusedPlayer);
-                RevealSoldier(FocusedEnemy);
-                MoveSoldier(FocusedEnemy.transform.parent.gameObject, ReverseDirection(direction));
+            case MatchStatus.INITIATOR_REVEALED:
+                RemoveSoldier(FocusedEnemy);
+                RevealSoldier(FocusedPlayer);
                 break;
-            case MatchStatus.ENEMY_REVEALED:
+            case MatchStatus.VICTIM_WON_THE_MATCH:
                 RemoveSoldier(FocusedPlayer);
                 RevealSoldier(FocusedEnemy);
+                break;
+            case MatchStatus.VICTIM_REVEALED:
+                RemoveSoldier(FocusedPlayer);
+                RevealSoldier(FocusedEnemy);
+                break;
+            case MatchStatus.BOTH_LOST_MATCH:
+                RemoveSoldier(FocusedPlayer);
+                RemoveSoldier(FocusedEnemy);
                 break;
             case MatchStatus.TIE:
+                //todo: implement a rematch
                 RemoveSoldier(FocusedPlayer);
                 RemoveSoldier(FocusedEnemy);
                 break;
-            case MatchStatus.PLAYER_WON_THE_GAME:
-                CallFinishGame(SoldierTeam.PLAYER);
+            case MatchStatus.INITIATOR_WON_THE_GAME:
+                CallFinishGame(FocusedPlayer);
                 break;
-            case MatchStatus.ENEMY_WON_THE_GAME:
-                CallFinishGame(SoldierTeam.ENEMY);
+            case MatchStatus.VICTIM_WON_THE_GAME:
+                CallFinishGame(FocusedEnemy);
                 break;
         }
 
@@ -376,9 +385,11 @@ public class GameModel : MonoBehaviour {
         soldier.SetActive(false);
     }
 
-    void CallFinishGame(SoldierTeam winner) {
+    void CallFinishGame(GameObject winner) {
+        SoldierTeam winningTeam = winner.GetComponent<SC_Soldier>().Team;
+
         if (FinishGame != null)
-            FinishGame(winner);
+            FinishGame(winningTeam);
     }
 
     private MatchStatus EvaluateMatchResult() {
@@ -504,7 +515,7 @@ public class GameModel : MonoBehaviour {
         }
 
         if (isValid)
-            Debug.Log("nextMoveCoord = " + nextMoveCoord.x + "," + nextMoveCoord.y);
+            ;// Debug.Log("nextMoveCoord = " + nextMoveCoord.x + "," + nextMoveCoord.y);
 
         return isValid;
     }
@@ -516,8 +527,8 @@ public class GameModel : MonoBehaviour {
 
         if (nextTile.IsOcuupied) {
             //if the next tile has one of our team members, restirct movement:
-            Debug.Log("nextTile.soldier.GetComponent<SC_Soldier>().Team = " + nextTile.soldier.GetComponent<SC_Soldier>().Team);
-            Debug.Log("FocusedPlayer.GetComponent<SC_Soldier>().Team = " + FocusedPlayer.GetComponent<SC_Soldier>().Team);
+            //Debug.Log("nextTile.soldier.GetComponent<SC_Soldier>().Team = " + nextTile.soldier.GetComponent<SC_Soldier>().Team);
+            //Debug.Log("FocusedPlayer.GetComponent<SC_Soldier>().Team = " + FocusedPlayer.GetComponent<SC_Soldier>().Team);
 
             if(nextTile.soldier.GetComponent<SC_Soldier>().Team == FocusedPlayer.GetComponent<SC_Soldier>().Team) {
                 Debug.Log(FocusedPlayer + " can NOT move there");
