@@ -19,8 +19,9 @@ public class GameModel : MonoBehaviour {
     public delegate void Announcement (SoldierTeam winner);
     public static event Announcement FinishGame;
 
-    public delegate void MoveNotify();
-    public static event MoveNotify AIMoveFinished;
+    public delegate void NotifyToController();
+    public static event NotifyToController AIMoveFinished;
+    public static event NotifyToController CallTieBreaker;
 
     private bool AIPlaying = false;
     private static readonly int COLS = 7;
@@ -45,6 +46,7 @@ public class GameModel : MonoBehaviour {
     public static readonly string PREVIEW_SOLDIER_NAME_VAR = "preview_soldier_player";
     public static readonly string PATH_INDICATORS_NAME_VAR = "path_indicators";
     public static readonly string LEAF_INDICATOR_NAME_VAR = "leaf";
+    public static readonly string TIE_WEAPONS_P_VAR_NAME = "tie_weapon_options";
 
     public static readonly int REVEAL_SPOTLIGHT_CHILD_IDX = 1;
 
@@ -77,13 +79,14 @@ public class GameModel : MonoBehaviour {
                     enemies.Add(obj);
                 }
             }
-            catch(ArgumentException e) {
+            catch (ArgumentException e) {
                 Debug.Log("there's already " + obj.name + " in the dictionary!");
             }
             
         }
-        
-        pathIndicators = objects[GameModel.PATH_INDICATORS_NAME_VAR];
+
+        objects[TIE_WEAPONS_P_VAR_NAME].SetActive(false);
+        pathIndicators = objects[PATH_INDICATORS_NAME_VAR];
 
         nextMoveCoord.x = 0;
         nextMoveCoord.y = 0;
@@ -340,6 +343,7 @@ public class GameModel : MonoBehaviour {
                 break;
             case MatchStatus.TIE:
                 //todo: implement a rematch
+                Rematch();
                 RemoveSoldier(FocusedPlayer);
                 RemoveSoldier(FocusedEnemy);
                 break;
@@ -351,6 +355,11 @@ public class GameModel : MonoBehaviour {
                 break;
         }
 
+    }
+
+    private void Rematch() {
+        if(CallTieBreaker != null)
+            CallTieBreaker();
     }
 
     private MovementDirections ReverseDirection(MovementDirections direction) {

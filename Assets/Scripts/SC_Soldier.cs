@@ -25,7 +25,6 @@ public class SC_Soldier : MonoBehaviour {
     public GameObject Tile { get; set; }
     public bool Revealed { get; set; }
 
-     
     private Vector3 startDragPos = new Vector3();
     private Vector3 endDragPos = new Vector3();
     private Ray ray;
@@ -38,7 +37,6 @@ public class SC_Soldier : MonoBehaviour {
         Revealed = false;
         FigureInitialWeaponType();
         ConcealWeapon(GetActiveWeapon());
-
     }
 
     public void ConcealWeapon(GameObject weaponParentObj) {

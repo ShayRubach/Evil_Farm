@@ -78,6 +78,7 @@ public class SC_GameController : MonoBehaviour {
         SC_Soldier.UnmarkSoldier += UnmarkSoldier;
         GameModel.FinishGame += FinishGame;
         GameModel.AIMoveFinished += AIMoveFinished;
+        GameModel.CallTieBreaker += TieBreaker;
         SC_Cart.GodMode += GodMode;
     }
 
@@ -89,9 +90,18 @@ public class SC_GameController : MonoBehaviour {
         SC_Soldier.UnmarkSoldier -= UnmarkSoldier;
         GameModel.FinishGame -= FinishGame;
         GameModel.AIMoveFinished -= AIMoveFinished;
+        GameModel.CallTieBreaker -= TieBreaker;
         SC_Cart.GodMode -= GodMode;
     }
 
+    private void TieBreaker() {
+        ShowTieWeapons(true);
+    }
+
+    private void ShowTieWeapons(bool isVisible) {
+        model.GetObjects()[GameModel.TIE_WEAPONS_P_VAR_NAME].SetActive(isVisible);
+    }
+    
     //called when AI is finished with his move (inc. animations):
     private void AIMoveFinished() {
         isMyTurn = true;
