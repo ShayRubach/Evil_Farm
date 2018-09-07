@@ -121,7 +121,7 @@ public class GameModel : MonoBehaviour {
     private GameObject ChooseValidRandomSoldier() {
 
         System.Random rand = new System.Random();
-        int MAX_ATTEMPTS = 50;
+        int MAX_ATTEMPTS = 80;
         int randomSoldier = 0, attempts = 0;
         FocusedPlayer = null;
         MovementDirections movement = MovementDirections.NONE;
@@ -152,7 +152,7 @@ public class GameModel : MonoBehaviour {
     private MovementDirections GetAvailableMove() {
         MovementDirections[] moves = { MovementDirections.UP, MovementDirections.DOWN, MovementDirections.LEFT, MovementDirections.RIGHT };
         System.Random rand = new System.Random();
-        int MAX_ATTEMPTS = 8;
+        int MAX_ATTEMPTS = 10;
         int randomMove = 0;
 
         //while (keepLooking) {
