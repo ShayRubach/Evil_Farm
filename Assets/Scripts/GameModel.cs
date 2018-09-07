@@ -47,6 +47,7 @@ public class GameModel : MonoBehaviour {
     public static readonly string PATH_INDICATORS_NAME_VAR = "path_indicators";
     public static readonly string LEAF_INDICATOR_NAME_VAR = "leaf";
     public static readonly string TIE_WEAPONS_P_VAR_NAME = "tie_weapon_options";
+    public static readonly string PREVIEW_ANIMATION_TRIGGER_PREFIX = "Preview";
 
     public static readonly int REVEAL_SPOTLIGHT_CHILD_IDX = 1;
 
@@ -265,6 +266,13 @@ public class GameModel : MonoBehaviour {
         exactSoldierObj.transform.position = newPosition;
     }
 
+    internal string GetPreviewAnimationTriggerByWeapon(SoldierType weapon) {
+
+        //make the weapon string have first upper case letter to avoid naming conflicts with unity:
+        string fixedWeaponStr = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(weapon.ToString().ToLower());
+        return PREVIEW_ANIMATION_TRIGGER_PREFIX + fixedWeaponStr;
+    }
+
     private bool ResetTileReference(GameObject tile) {
         return UpdateTileAndSoldierRefs(tile, null, false, true);
     }
@@ -307,8 +315,8 @@ public class GameModel : MonoBehaviour {
 
     /*
      * take the necessary actions by the result: remove losing soldier, call MoveSoldier() ,update new references etc..
-     */ 
-    private void HandleMatchResult(MatchStatus result) {
+     */
+        private void HandleMatchResult(MatchStatus result) {
         
         //get the initiator's movement direction:
         MovementDirections direction = CalculateMovementDirectionByAngle(Mathf.Atan2(-relativePos.y, -relativePos.x) * Mathf.Rad2Deg);

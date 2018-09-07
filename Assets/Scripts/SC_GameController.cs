@@ -15,9 +15,10 @@ public class SC_GameController : MonoBehaviour {
     
     private SC_Spotlight soldierSpotlight;                  //highlights the rival on drag
     private Vector3 nextPosition, startDragPos, endDragPos;
-    private Animator soldierAnimator;
+    private Animator soldierAnimator, previewSoldierAnimator;
     private bool isMyTurn = true;
     private MovementDirections soldierMovementDirection;
+    private string previewAnimationTrigger = "";
 
     private static readonly string GAME_MODEL_NAME_VAR = "SC_GameModel";
 
@@ -26,8 +27,10 @@ public class SC_GameController : MonoBehaviour {
         //get reference to our model class
         model = GameObject.Find(GAME_MODEL_NAME_VAR).GetComponent<GameModel>();
 
+        //save references for some general objects we need to control
         soldierSpotlight = model.GetObjects()[GameModel.SPOTLIGHT_NAME_VAR].GetComponent<SC_Spotlight>();
         previewSoldierPlayer = model.GetObjects()[GameModel.PREVIEW_SOLDIER_NAME_VAR];
+        previewSoldierAnimator = previewSoldierPlayer.GetComponent<Animator>();
 
         //todo: fix this to always hold the animator of the current soldier..
         //soldierAnimator = model.GetObjects()["soldier_player"].GetComponent<Animator>();
@@ -132,9 +135,12 @@ public class SC_GameController : MonoBehaviour {
     private void GetNextMoveInfo(GameObject obj, Vector3 pos, Vector3 objTranslatePosition) {
         focusedPlayerParent = obj;
         model.FocusedPlayer = obj.transform.GetChild(0).gameObject;
-
         startDragPos = pos;
-        ShowDuelSoldier();
+
+        //save soldier's weapon to be displayed on the preview animation:
+        SoldierType weapon = obj.transform.GetChild(0).gameObject.GetComponent<SC_Soldier>().Type;
+
+        ShowDuelSoldier(weapon);
         ShowPathIndicators(objTranslatePosition);
     }
 
@@ -225,14 +231,17 @@ public class SC_GameController : MonoBehaviour {
         //gameObject.transform.position = nextPosition;
         //soldierAnimator.SetBool("IsMoving", false);
     }
-
     
     private void HidePreviewSoldier() {
-        previewSoldierPlayer.SetActive(false); 
+        //previewSoldierPlayer.SetActive(false);
+        
+        previewSoldierAnimator.SetBool(previewAnimationTrigger, false);
     }
 
-    private void ShowDuelSoldier() {
-        previewSoldierPlayer.SetActive(true);
+    private void ShowDuelSoldier(SoldierType weapon) {
+        previewAnimationTrigger = model.GetPreviewAnimationTriggerByWeapon(weapon);
+        previewSoldierAnimator.SetBool(previewAnimationTrigger, true);
+        //previewSoldierPlayer.SetActive(true);
     }
 
 
