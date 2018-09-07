@@ -66,23 +66,19 @@ public class SC_Soldier : MonoBehaviour {
     }
 
     private GameObject GetActiveWeapon() {
-        if (HasChildren(gameObject)) {
-            //get first child (weapon container):
+        GameObject child = null;
+        GameObject weapons;
+        weapons = GetAllWeapons();
 
-            GameObject weapons = gameObject.transform.GetChild(0).gameObject;
-            if (HasChildren(weapons)) {
-
-                //iterate over grandchildren (weapons) and find the active weapon:
-                for (int i = 0; weapons != null && i < weapons.transform.childCount; i++) {
-                    GameObject child = weapons.transform.GetChild(i).gameObject;
-                    if (IsObjectActive(child)) {
-                        //Debug.Log("im " + gameObject + " and I have " + child);
-                        return child;
-                    }
-                }
+        //iterate over grandchildren (weapons) and find the active weapon:
+        for (int i = 0; weapons != null && i < weapons.transform.childCount; i++) {
+            child = weapons.transform.GetChild(i).gameObject;
+            if (IsObjectActive(child)) {
+                return child;
             }
         }
 
+        Debug.Log("GetActiveWeapon: couldn't find active weapon. returns null");
         return null;
     }
 
@@ -198,4 +194,43 @@ public class SC_Soldier : MonoBehaviour {
             + "," + Tile.GetComponent<SC_Tile>().transform.position.y + "}";
     }
 
+    /*
+     * setting new weapon & refreshing the ui with the new weapon.
+     * disables curr weapon and enables new weapon.
+     */ 
+    internal void RefreshWeapon(SoldierType newWeapon) {
+        GameObject child = null;
+        GameObject weapons;
+        weapons = GetAllWeapons();
+
+        //set new weapon indicator
+        Type = newWeapon;
+
+        //iterate over grandchildren (weapons) and find the active weapon:
+        for (int i = 0; weapons != null && i < weapons.transform.childCount; i++) {
+            child = weapons.transform.GetChild(i).gameObject;
+            //turn off curr active weapon
+            if (IsObjectActive(child)) {
+                child.SetActive(false);
+            }
+            //turn on new weapon
+            if (child.name.Contains(newWeapon.ToString().ToLower())) {
+                child.SetActive(true);
+                ConcealWeapon(child);
+            }
+        }
+    }
+
+    private GameObject GetAllWeapons() {
+        if (HasChildren(gameObject)) {
+            //get the weapon container game object:
+            GameObject weapons = gameObject.transform.GetChild(0).gameObject;
+            if (HasChildren(weapons)) {
+                return weapons;
+            }
+        }
+
+        Debug.Log("GetAllWeapons: from " + gameObject.name + " :couldn't find all weapons. returns null");
+        return null;
+    }
 }

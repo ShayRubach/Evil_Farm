@@ -23,7 +23,7 @@ public class GameModel : MonoBehaviour {
     public static event NotifyToController AIMoveFinished;
     public static event NotifyToController CallTieBreaker;
 
-    private bool AIPlaying = false;
+    private bool playingVsAI = true;
     private static readonly int COLS = 7;
     private static readonly int ROWS = 6;
 
@@ -94,7 +94,6 @@ public class GameModel : MonoBehaviour {
     }
 
     internal void PlayAsAI() {
-        AIPlaying = true;
         Debug.Log("Playing as AI");
         
         FocusedPlayer = ChooseValidRandomSoldier();
@@ -112,7 +111,6 @@ public class GameModel : MonoBehaviour {
         if(AIMoveFinished != null)
             AIMoveFinished();
 
-        AIPlaying = false;
     }
 
     public bool IsPossibleMatch(Point move) {
@@ -175,8 +173,6 @@ public class GameModel : MonoBehaviour {
         float x=0, y=0;
         x = Mathf.Abs(pos.x);
         y = Mathf.Abs(pos.z);
-        Debug.Log("PointToTile: pos = " + pos);
-        Debug.Log("PointToTile: new tile returns " + objects[TILE_NAME_VAR + x + y].name);
         return objects[TILE_NAME_VAR + x + y];
     }
 
@@ -356,8 +352,27 @@ public class GameModel : MonoBehaviour {
     }
 
     private void TieBreaker() {
-        if(CallTieBreaker != null)
+        if (playingVsAI) {
+            SoldierType newWeapon = GetRandomWeapon();
+            GetAISoldier().GetComponent<SC_Soldier>().RefreshWeapon(newWeapon);
+
+        }
+
+        if (CallTieBreaker != null)
             CallTieBreaker();
+    }
+
+    private GameObject GetAISoldier() {
+        return FocusedEnemy.GetComponent<SC_Soldier>().Team == SoldierTeam.ENEMY ? FocusedEnemy : FocusedPlayer;
+    }
+
+    private SoldierType GetRandomWeapon() {
+        SoldierType[] weapons = { SoldierType.AXE, SoldierType.CLUB, SoldierType.PITCHFORK };
+        int rand = new System.Random().Next(0, weapons.Length);
+
+        Debug.Log("randomed " + weapons[rand]);
+
+        return weapons[rand];
     }
 
     private MovementDirections ReverseDirection(MovementDirections direction) {

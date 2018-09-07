@@ -12,7 +12,6 @@ public class SC_PathIndicator : MonoBehaviour {
     private Quaternion originalRotation;
 
     void Start() {
-        Debug.Log("called from " + gameObject);
         originalRotation = transform.rotation;
     }
 
