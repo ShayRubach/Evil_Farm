@@ -374,6 +374,10 @@ public class GameModel : MonoBehaviour {
         return FocusedEnemy.GetComponent<SC_Soldier>().Team == SoldierTeam.ENEMY ? FocusedEnemy : FocusedPlayer;
     }
 
+    public GameObject GetPlayerSoldier() {
+        return FocusedPlayer.GetComponent<SC_Soldier>().Team == SoldierTeam.PLAYER? FocusedPlayer : FocusedEnemy;
+    }
+
     private SoldierType GetRandomWeapon() {
         SoldierType[] weapons = { SoldierType.AXE, SoldierType.CLUB, SoldierType.PITCHFORK };
         int rand = new System.Random().Next(0, weapons.Length);

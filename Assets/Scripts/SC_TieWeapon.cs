@@ -1,8 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class SC_TieWeapon : MonoBehaviour {
+
+    public delegate void NotifyToController(SoldierType newWeapon);
+    public static event NotifyToController OnNewWeaponChoice;
 
     private Animator animator;
     public static readonly string TRIGGER_NAME = "Hovered";
@@ -27,6 +31,21 @@ public class SC_TieWeapon : MonoBehaviour {
     }
 
     void OnMouseDown() {
-        Debug.Log("PICKED TIE WEAPON = " + gameObject);
+        if (OnNewWeaponChoice != null)
+            OnNewWeaponChoice(GetClickedWeapon());
+    }
+
+    private SoldierType GetClickedWeapon() {
+        if(gameObject.name.Contains(SoldierType.AXE.ToString().ToLower())) {
+            return SoldierType.AXE;
+        }
+        if (gameObject.name.Contains(SoldierType.CLUB.ToString().ToLower())) {
+            return SoldierType.CLUB;
+        }
+        if (gameObject.name.Contains(SoldierType.PITCHFORK.ToString().ToLower())) {
+            return SoldierType.PITCHFORK;
+        }
+
+        return SoldierType.NO_TYPE;
     }
 }

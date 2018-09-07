@@ -17,6 +17,8 @@ public class SC_GameController : MonoBehaviour {
     private Vector3 nextPosition, startDragPos, endDragPos;
     private Animator soldierAnimator, previewSoldierAnimator;
     private bool isMyTurn = true;
+    private bool duringTie = false;
+
     private MovementDirections soldierMovementDirection;
     private string previewAnimationTrigger = "";
 
@@ -50,7 +52,7 @@ public class SC_GameController : MonoBehaviour {
             }
         }
 
-        if(isMyTurn == false) {
+        if(isMyTurn == false && !duringTie) {
             PlayAsAI();
         }
     }
@@ -81,6 +83,7 @@ public class SC_GameController : MonoBehaviour {
         GameModel.FinishGame += FinishGame;
         GameModel.AIMoveFinished += AIMoveFinished;
         GameModel.CallTieBreaker += TieBreaker;
+        SC_TieWeapon.OnNewWeaponChoice += OnNewWeaponChoice;
         SC_Cart.GodMode += GodMode;
     }
 
@@ -93,10 +96,22 @@ public class SC_GameController : MonoBehaviour {
         GameModel.FinishGame -= FinishGame;
         GameModel.AIMoveFinished -= AIMoveFinished;
         GameModel.CallTieBreaker -= TieBreaker;
+        SC_TieWeapon.OnNewWeaponChoice -= OnNewWeaponChoice;
         SC_Cart.GodMode -= GodMode;
     }
 
+    private void OnNewWeaponChoice(SoldierType newWeapon) {
+        model.GetPlayerSoldier().GetComponent<SC_Soldier>().RefreshWeapon(newWeapon);
+        ShowTieWeapons(false);
+        
+        //rematch:
+        duringTie = false;
+        Match();
+
+    }
+
     private void TieBreaker() {
+        duringTie = true;
         ShowTieWeapons(true);
     }
 
@@ -127,7 +142,7 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void OnStartDraggingSoldier(GameObject obj, Vector3 pos, Vector3 objTranslatePosition) {
-        if (isMyTurn) {
+        if (isMyTurn && !duringTie) {
             GetNextMoveInfo(obj, pos, objTranslatePosition);
         }
     }
@@ -145,7 +160,7 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void OnFinishDraggingSoldier(GameObject obj, Vector3 pos, Vector3 objTranslatePosition) {
-        if (isMyTurn) {
+        if (isMyTurn && !duringTie) {
             PerformNextMove(obj, pos, objTranslatePosition);
         }
     }
