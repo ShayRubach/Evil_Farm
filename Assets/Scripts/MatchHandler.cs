@@ -66,6 +66,7 @@ public class MatchHandler {
             case SoldierType.PITCHFORK: return MatchStatus.TIE;
             case SoldierType.AXE: return MatchStatus.INITIATOR_WON_THE_MATCH;
             case SoldierType.CLUB: return MatchStatus.VICTIM_WON_THE_MATCH;
+            case SoldierType.SHIELD: return MatchStatus.BOTH_LOST_MATCH;
             case SoldierType.CRYSTAL: return MatchStatus.INITIATOR_WON_THE_GAME;
         }
         return MatchStatus.UNDEFINED;
@@ -76,6 +77,7 @@ public class MatchHandler {
             case SoldierType.PITCHFORK: return MatchStatus.VICTIM_WON_THE_MATCH;
             case SoldierType.AXE: return MatchStatus.TIE;
             case SoldierType.CLUB: return MatchStatus.INITIATOR_WON_THE_MATCH;
+            case SoldierType.SHIELD: return MatchStatus.BOTH_LOST_MATCH;
             case SoldierType.CRYSTAL: return MatchStatus.INITIATOR_WON_THE_GAME;
         }
         return MatchStatus.UNDEFINED;
@@ -86,6 +88,7 @@ public class MatchHandler {
             case SoldierType.PITCHFORK: return MatchStatus.INITIATOR_WON_THE_MATCH;
             case SoldierType.CLUB: return MatchStatus.TIE;
             case SoldierType.AXE: return MatchStatus.VICTIM_WON_THE_MATCH;
+            case SoldierType.SHIELD: return MatchStatus.BOTH_LOST_MATCH;
             case SoldierType.CRYSTAL: return MatchStatus.INITIATOR_WON_THE_GAME;
         }
         return MatchStatus.UNDEFINED;
