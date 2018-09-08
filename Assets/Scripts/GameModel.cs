@@ -270,6 +270,7 @@ public class GameModel : MonoBehaviour {
         UpdateTileAndSoldierRefs(newTile, exactSoldierObj, true, false);
 
         //physically move the soldier
+        Debug.Log("now moving " + exactSoldierObj + " to " + newPosition);
         exactSoldierObj.transform.position = newPosition;
     }
 

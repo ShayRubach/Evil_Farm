@@ -146,9 +146,8 @@ public class SC_GameController : MonoBehaviour {
             announcerAnimator.SetBool(GameModel.ANNOUNCER_WIN_TRIGGER, true);
         if(matchWinningTeam == SoldierTeam.ENEMY)
             announcerAnimator.SetBool(GameModel.ANNOUNCER_LOSE_TRIGGER, true);
-        //todo: implement this 'shield' scenario
-        //if(matchWinningTeam == SoldierTeam.NO_TEAM)
-        //    announcerAnimator.SetBool(GameModel.ANNOUNCER_TIE_TRIGGER, true);
+        if(matchWinningTeam == SoldierTeam.NO_TEAM)
+            announcerAnimator.SetBool(GameModel.ANNOUNCER_LOSE_TRIGGER, true);
 
     }
 
