@@ -163,6 +163,10 @@ public class GameModel : MonoBehaviour {
         return FocusedPlayer;
     }
 
+    internal void RestartGame() {
+        //todo: implement this
+    }
+
     private MovementDirections GetAvailableMove() {
         MovementDirections[] moves = { MovementDirections.UP, MovementDirections.DOWN, MovementDirections.LEFT, MovementDirections.RIGHT };
         System.Random rand = new System.Random();

@@ -8,7 +8,6 @@ using UnityEngine.UI;
 public class SC_MenuController : MonoBehaviour {
 
     private static Dictionary<string, GameObject> dictionaryMenu;
-    private static readonly string SCENE_PREFIX = "Scene";
     private static readonly int SLIDER_STARTING_VALUE = 50;
     private static int VALUE_RATIO = 200;
 
@@ -21,13 +20,17 @@ public class SC_MenuController : MonoBehaviour {
     private static int coinsValue = SLIDER_STARTING_VALUE;
     private static int valueRatio = VALUE_RATIO;
 
+    public static readonly string SCENE_PREFIX = "Scene";
+    private static readonly string MENU_OBJECTS_STR_NAME = "MenuObjects";
+
+
     private MenuModel       menuModel;
     private SC_CoinSpawner  coinSpawner;
 
     void Start () {
         menuModel = MenuModel.GetInstance;
         dictionaryMenu = new Dictionary<string, GameObject>();
-        GameObject[] menuObjects = GameObject.FindGameObjectsWithTag("MenuObjects");
+        GameObject[] menuObjects = GameObject.FindGameObjectsWithTag(MENU_OBJECTS_STR_NAME);
 
         foreach (GameObject obj in menuObjects) {
             dictionaryMenu.Add(obj.name, obj);

@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /* 
  * the MVC's controller for our app.
@@ -93,6 +94,7 @@ public class SC_GameController : MonoBehaviour {
         SC_TieWeapon.OnNewWeaponChoice += OnNewWeaponChoice;
         SC_AnnouncerManager.FinishAnnouncementEvent += FinishAnnouncementEvent;
         SC_AnnouncerManager.StartAnnouncementEvent += StartAnnouncementEvent;
+        SC_EndOptions.OnEndGameOptionChoice += OnEndGameOptionChoice;
 
         SC_Cart.GodMode += GodMode;
     }
@@ -110,7 +112,18 @@ public class SC_GameController : MonoBehaviour {
         SC_TieWeapon.OnNewWeaponChoice -= OnNewWeaponChoice;
         SC_AnnouncerManager.FinishAnnouncementEvent -= FinishAnnouncementEvent;
         SC_AnnouncerManager.StartAnnouncementEvent -= StartAnnouncementEvent;
+        SC_EndOptions.OnEndGameOptionChoice -= OnEndGameOptionChoice;
+
         SC_Cart.GodMode -= GodMode;
+    }
+
+    private void OnEndGameOptionChoice(EndGameOption choice) {
+        if(choice == EndGameOption.RESTART) {
+            model.RestartGame();
+        }
+        else {
+            SceneManager.LoadScene(SC_MenuController.SCENE_PREFIX + Scenes.MainMenu);
+        }
     }
 
     //do not let user interact with game during animations:

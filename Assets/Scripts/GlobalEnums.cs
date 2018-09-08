@@ -55,3 +55,8 @@ public enum MatchStatus {
     TIE,                        // both soldiers had the same weapon - forces rematch
     UNDEFINED                   // still not set
 }
+
+public enum EndGameOption {
+    RESTART,
+    BACK_TO_MENU
+}
