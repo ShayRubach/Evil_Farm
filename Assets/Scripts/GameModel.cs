@@ -54,6 +54,9 @@ public class GameModel : MonoBehaviour {
     public static readonly string ANNOUNCER_WIN_TRIGGER = "Win";
     public static readonly string ANNOUNCER_LOSE_TRIGGER = "Lose";
     public static readonly string ANNOUNCER_TIE_TRIGGER = "Tie";
+    public static readonly string ANNOUNCER_VICTORY_TRIGGER = "Victory";
+    public static readonly string ANNOUNCER_DEFEAT_TRIGGER = "Defeat";
+
 
 
     public static readonly int REVEAL_SPOTLIGHT_CHILD_IDX = 1;

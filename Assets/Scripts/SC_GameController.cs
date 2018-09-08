@@ -127,6 +127,8 @@ public class SC_GameController : MonoBehaviour {
         announcerAnimator.SetBool(GameModel.ANNOUNCER_TIE_TRIGGER, false);
         announcerAnimator.SetBool(GameModel.ANNOUNCER_LOSE_TRIGGER, false);
         announcerAnimator.SetBool(GameModel.ANNOUNCER_WIN_TRIGGER, false);
+        announcerAnimator.SetBool(GameModel.ANNOUNCER_VICTORY_TRIGGER, false);
+        announcerAnimator.SetBool(GameModel.ANNOUNCER_DEFEAT_TRIGGER, false);
     }
 
     private void OnNewWeaponChoice(SoldierType newWeapon) {
@@ -170,8 +172,10 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void FinishGame(SoldierTeam winner) {
-        //todo: announce winner
-        Debug.Log("team " + winner + " won!");
+        if(winner == SoldierTeam.PLAYER)
+            announcerAnimator.SetBool(GameModel.ANNOUNCER_VICTORY_TRIGGER, true);
+        else
+            announcerAnimator.SetBool(GameModel.ANNOUNCER_DEFEAT_TRIGGER, true);
     }
 
     private void MarkSoldier(GameObject soldier) {
