@@ -119,6 +119,7 @@ public class SC_GameController : MonoBehaviour {
 
     private void OnEndGameOptionChoice(EndGameOption choice) {
         if(choice == EndGameOption.RESTART) {
+            endGameOptionsAnimator.SetBool(GameModel.END_GAME_TRIGGER, false);
             model.RestartGame();
         }
         else {

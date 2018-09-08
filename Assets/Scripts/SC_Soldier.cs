@@ -26,7 +26,8 @@ public class SC_Soldier : MonoBehaviour {
     public bool Revealed { get; set; }
     public bool Alive { get; set; }
 
-
+    private GameObject initialWeapon;
+    private Vector3 initialPos;
     private Vector3 startDragPos = new Vector3();
     private Vector3 endDragPos = new Vector3();
     private Ray ray;
@@ -35,11 +36,41 @@ public class SC_Soldier : MonoBehaviour {
     private GameObject currEnemy = null;
 
     void Start() {
+        
+        //saving some initial soldier attributes for game restart optimizations:
+        initialPos = transform.position;
+        initialWeapon = GetActiveWeapon();
+
+        Init();
+    }
+
+    public void Init() {
+        gameObject.SetActive(true);
         Team = gameObject.name.Contains(GameModel.PLAYER_NAME_VAR) ? SoldierTeam.PLAYER : SoldierTeam.ENEMY;
+        transform.position = initialPos;
         Revealed = false;
         Alive = true;
-        FigureInitialWeaponType();
-        ConcealWeapon(GetActiveWeapon());
+        Type = ObjectToSoldierType(initialWeapon);
+        //FigureInitialWeaponType();
+        DisplayWeapon();
+        ConcealWeapon(initialWeapon);
+    }
+
+    /*
+     * activate the initial weapon chosen by game scene. this is a util method to enhance the restart game usability.
+     */ 
+    private void DisplayWeapon() {
+        GameObject child = null;
+        GameObject weapons = GetAllWeapons();
+
+        //iterate over grandchildren (weapons) and force disable
+        for (int i = 0; weapons != null && i < weapons.transform.childCount; i++) {
+            child = weapons.transform.GetChild(i).gameObject;
+            child.SetActive(false);
+        }
+
+        //display correct initial weapon
+        initialWeapon.SetActive(true);
     }
 
     public void ConcealWeapon(GameObject weaponParentObj) {
@@ -70,8 +101,7 @@ public class SC_Soldier : MonoBehaviour {
 
     private GameObject GetActiveWeapon() {
         GameObject child = null;
-        GameObject weapons;
-        weapons = GetAllWeapons();
+        GameObject weapons = GetAllWeapons();
 
         //iterate over grandchildren (weapons) and find the active weapon:
         for (int i = 0; weapons != null && i < weapons.transform.childCount; i++) {

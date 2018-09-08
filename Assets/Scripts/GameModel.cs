@@ -44,7 +44,7 @@ public class GameModel : MonoBehaviour {
     public static readonly string ENEMY_NAME_VAR = "soldier_enemy";
     public static readonly string TILE_NAME_VAR = "tile_";
     public static readonly string SPOTLIGHT_NAME_VAR = "spotlight";
-    public static readonly string PREVIEW_SOLDIER_NAME_VAR = "preview_soldier_player";
+    public static readonly string PREVIEW_SOLDIER_NAME_VAR = "preview_player";
     public static readonly string PATH_INDICATORS_NAME_VAR = "path_indicators";
     public static readonly string LEAF_INDICATOR_NAME_VAR = "leaf";
     public static readonly string TIE_WEAPONS_P_VAR_NAME = "tie_weapon_options";
@@ -71,6 +71,8 @@ public class GameModel : MonoBehaviour {
 
     List<GameObject> players = new List<GameObject>();
     List<GameObject> enemies = new List<GameObject>();
+    List<GameObject> tiles = new List<GameObject>();
+
 
     private Dictionary<string, GameObject> objects = new Dictionary<string, GameObject>();
 
@@ -82,13 +84,17 @@ public class GameModel : MonoBehaviour {
             try {
                 objects.Add(obj.name, obj);
 
-                //save all enemies and players for later use:
+                //save these objects for a later use such as in restart game (optimization)
                 if (obj.name.Contains(PLAYER_NAME_VAR)) {
                     players.Add(obj);
                 }
                 if (obj.name.Contains(ENEMY_NAME_VAR)) {
                     enemies.Add(obj);
                 }
+                if (obj.name.Contains(TILE_NAME_VAR)) {
+                    tiles.Add(obj);
+                }
+
             }
             catch (ArgumentException e) {
                 Debug.Log("there's already " + obj.name + " in the dictionary!");
@@ -159,12 +165,17 @@ public class GameModel : MonoBehaviour {
             //save next movement for later use:
             nextMovement = movement;
         }
-
         return FocusedPlayer;
     }
 
     internal void RestartGame() {
-        //todo: implement this
+
+        foreach (GameObject player in players)
+            player.GetComponent<SC_Soldier>().Init();
+        foreach (GameObject enemy in enemies)
+            enemy.GetComponent<SC_Soldier>().Init();
+        foreach (GameObject tile in tiles)
+            tile.GetComponent<SC_Tile>().Init();
     }
 
     private MovementDirections GetAvailableMove() {
