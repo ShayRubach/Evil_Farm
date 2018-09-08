@@ -24,6 +24,8 @@ public class SC_Soldier : MonoBehaviour {
     public SoldierType Type { get; set; }
     public GameObject Tile { get; set; }
     public bool Revealed { get; set; }
+    public bool Alive { get; set; }
+
 
     private Vector3 startDragPos = new Vector3();
     private Vector3 endDragPos = new Vector3();
@@ -35,6 +37,7 @@ public class SC_Soldier : MonoBehaviour {
     void Start() {
         Team = gameObject.name.Contains(GameModel.PLAYER_NAME_VAR) ? SoldierTeam.PLAYER : SoldierTeam.ENEMY;
         Revealed = false;
+        Alive = true;
         FigureInitialWeaponType();
         ConcealWeapon(GetActiveWeapon());
     }

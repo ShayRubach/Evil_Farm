@@ -16,11 +16,10 @@ public class SC_CloudsMovement : MonoBehaviour {
 
     void Update() {
         clouds.transform.Translate(Vector3.left * Time.deltaTime * movementSpeed);
-
-
+        
         if(clouds.transform.position.x < leftBoarderLimit) {
             transform.position = basePosition;
-            Debug.Log(clouds.transform.position.x);
+            //Debug.Log(clouds.transform.position.x);
         }
     }
 }

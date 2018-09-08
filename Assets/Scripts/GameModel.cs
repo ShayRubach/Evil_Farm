@@ -136,13 +136,17 @@ public class GameModel : MonoBehaviour {
         FocusedPlayer = null;
         MovementDirections movement = MovementDirections.NONE;
 
-
         for (int i = 0; i < MAX_ATTEMPTS; i++) {
             //Debug.Log("ChooseValidRandomSoldier: attempts = " + i);
             randomSoldier = rand.Next(0, enemies.Count);
             FocusedPlayer = enemies[randomSoldier];
+
+            //make sure soldier is alive and in scene:
+            if (FocusedPlayer.GetComponent<SC_Soldier>().Alive == false)
+                continue;
+
             movement = GetAvailableMove();
-            
+
             if (movement != MovementDirections.NONE) {
                 //Debug.Log("randomed " + randomSoldier + " , focusedSoldier = " + FocusedPlayer + " , move = " + movement);
                 break;
@@ -236,7 +240,7 @@ public class GameModel : MonoBehaviour {
      * the parent is used to move all soldier and it's children relatively on board
      */ 
     public void MoveSoldier(GameObject focusedSoldierP, MovementDirections soldierMovementDirection) {
-        Debug.Log("MoveSoldier: focusedSoldierParent = " + focusedSoldierP + " , direcion = " + soldierMovementDirection);
+        //Debug.Log("MoveSoldier: focusedSoldierParent = " + focusedSoldierP + " , direcion = " + soldierMovementDirection);
         //start as default position just for initialization:
         Vector3 newPosition = focusedSoldierP.transform.position;
         GameObject exactSoldierObj = focusedSoldierP.transform.GetChild(0).gameObject;
@@ -248,7 +252,7 @@ public class GameModel : MonoBehaviour {
             Debug.Log("MoveSoldier: focusedSoldierP is null.");
             return;
         }
-        Debug.Log("exactSoldierObj.transform.position: " + exactSoldierObj.transform.position);
+        //Debug.Log("exactSoldierObj.transform.position: " + exactSoldierObj.transform.position);
 
         switch (soldierMovementDirection) {
             case MovementDirections.UP:
@@ -267,7 +271,7 @@ public class GameModel : MonoBehaviour {
 
         //get the new tile by new position
         GameObject newTile = PointToTile(newPosition);
-        Debug.Log("newTile to move to is " + newTile.name);
+        //Debug.Log("newTile to move to is " + newTile.name);
 
         ResetTileReference(currTile);
         UpdateTileAndSoldierRefs(newTile, exactSoldierObj, true, false);
@@ -304,10 +308,10 @@ public class GameModel : MonoBehaviour {
         //else, we wish to update both tile and soldier with their references.
         if(soldier != null) {
             soldier.GetComponent<SC_Soldier>().Tile = tile;
-            Debug.Log("UpdateTileAndSoldierRefs: called with soldier=" + soldier + " and tile=" + tile);
+            //Debug.Log("UpdateTileAndSoldierRefs: called with soldier=" + soldier + " and tile=" + tile);
         }
         else {
-            Debug.Log("UpdateTileAndSoldierRefs: clearing tile=" + tile);
+            //Debug.Log("UpdateTileAndSoldierRefs: clearing tile=" + tile);
         }
 
         
@@ -315,11 +319,11 @@ public class GameModel : MonoBehaviour {
     }
 
     public void Match() {
-        Debug.Log("Starting Match...");
+        //Debug.Log("Starting Match...");
 
         //call our MatchHandler to evaluate the match result:
         MatchStatus result = MatchHandler.GetInstance.EvaluateMatchResult(FocusedPlayer, FocusedEnemy);
-        Debug.Log("match status = " + result);
+        //Debug.Log("match status = " + result);
 
         HandleMatchResult(result);
     }
@@ -332,8 +336,8 @@ public class GameModel : MonoBehaviour {
         //get the initiator's movement direction:
         MovementDirections direction = CalculateMovementDirectionByAngle(Mathf.Atan2(-relativePos.y, -relativePos.x) * Mathf.Rad2Deg);
 
-        Debug.Log("FocusedPlayer = " + FocusedPlayer.name);
-        Debug.Log("FocusedEnemy  = " + FocusedEnemy.name);
+        //Debug.Log("FocusedPlayer = " + FocusedPlayer.name);
+        //Debug.Log("FocusedEnemy  = " + FocusedEnemy.name);
 
         switch (result) {
             case MatchStatus.INITIATOR_WON_THE_MATCH:
@@ -394,7 +398,7 @@ public class GameModel : MonoBehaviour {
         SoldierType[] weapons = { SoldierType.AXE, SoldierType.CLUB, SoldierType.PITCHFORK };
         int rand = new System.Random().Next(0, weapons.Length);
 
-        Debug.Log("randomed " + weapons[rand]);
+        //Debug.Log("randomed " + weapons[rand]);
 
         return weapons[rand];
     }
@@ -426,8 +430,9 @@ public class GameModel : MonoBehaviour {
     }
 
     private void RemoveSoldier(GameObject soldier) {
-        Debug.Log("removing " + soldier);
+        //Debug.Log("removing " + soldier);
         ResetTileReference(soldier.GetComponent<SC_Soldier>().Tile);
+        soldier.GetComponent<SC_Soldier>().Alive = false;
         soldier.SetActive(false);
     }
 
@@ -565,7 +570,7 @@ public class GameModel : MonoBehaviour {
     private bool OverlayingTeamMember(Point moveCoord) {
         SC_Tile nextTile = objects[TILE_NAME_VAR + moveCoord.x + moveCoord.y].GetComponent<SC_Tile>();
 
-        Debug.Log(FocusedPlayer + " wants to move to " + nextTile.name);
+        //Debug.Log(FocusedPlayer + " wants to move to " + nextTile.name);
 
         if (nextTile.IsOcuupied) {
             //if the next tile has one of our team members, restirct movement:
@@ -573,11 +578,11 @@ public class GameModel : MonoBehaviour {
             //Debug.Log("FocusedPlayer.GetComponent<SC_Soldier>().Team = " + FocusedPlayer.GetComponent<SC_Soldier>().Team);
 
             if(nextTile.soldier.GetComponent<SC_Soldier>().Team == FocusedPlayer.GetComponent<SC_Soldier>().Team) {
-                Debug.Log(FocusedPlayer + " can NOT move there");
+                //Debug.Log(FocusedPlayer + " can NOT move there");
                 return true;
             }
         }
-        Debug.Log(FocusedPlayer + " can move there");
+        //Debug.Log(FocusedPlayer + " can move there");
         return false;
     }
 
