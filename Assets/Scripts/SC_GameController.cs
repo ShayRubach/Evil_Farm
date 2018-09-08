@@ -175,11 +175,13 @@ public class SC_GameController : MonoBehaviour {
     private void FinishGame(SoldierTeam winner) {
         canPlay = false;
         endGameOptionsAnimator.SetBool(GameModel.END_GAME_TRIGGER, true);
+
         if (winner == SoldierTeam.PLAYER)
             announcerAnimator.SetBool(GameModel.ANNOUNCER_VICTORY_TRIGGER, true);
         else
             announcerAnimator.SetBool(GameModel.ANNOUNCER_DEFEAT_TRIGGER, true);
 
+        
     }
 
     private void MarkSoldier(GameObject soldier) {
