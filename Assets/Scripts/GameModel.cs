@@ -48,6 +48,7 @@ public class GameModel : MonoBehaviour {
     public static readonly string PATH_INDICATORS_NAME_VAR = "path_indicators";
     public static readonly string LEAF_INDICATOR_NAME_VAR = "leaf";
     public static readonly string TIE_WEAPONS_P_VAR_NAME = "tie_weapon_options";
+    public static readonly string END_GAME_OPTIONS_VAR_NAME = "end_game_options";
     public static readonly string PREVIEW_ANIMATION_TRIGGER_PREFIX = "Preview";
 
     public static readonly string ANNOUNCER_VAR_NAME = "announcer";
@@ -56,8 +57,7 @@ public class GameModel : MonoBehaviour {
     public static readonly string ANNOUNCER_TIE_TRIGGER = "Tie";
     public static readonly string ANNOUNCER_VICTORY_TRIGGER = "Victory";
     public static readonly string ANNOUNCER_DEFEAT_TRIGGER = "Defeat";
-
-
+    public static readonly string END_GAME_TRIGGER = "GameFinished";
 
     public static readonly int REVEAL_SPOTLIGHT_CHILD_IDX = 1;
 

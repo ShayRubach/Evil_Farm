@@ -16,7 +16,9 @@ public class SC_GameController : MonoBehaviour {
     
     private SC_Spotlight soldierSpotlight;                  //highlights the rival on drag
     private Vector3 nextPosition, startDragPos, endDragPos;
-    private Animator soldierAnimator, previewSoldierAnimator, announcerAnimator;
+    private Animator soldierAnimator, previewSoldierAnimator;
+    private Animator announcerAnimator, endGameOptionsAnimator;
+
     private bool isMyTurn = true;
     private bool duringTie = false;
     private bool canPlay = true;
@@ -35,9 +37,9 @@ public class SC_GameController : MonoBehaviour {
         //save references for some general objects we need to control
         soldierSpotlight = model.GetObjects()[GameModel.SPOTLIGHT_NAME_VAR].GetComponent<SC_Spotlight>();
         announcerAnimator = model.GetObjects()[GameModel.ANNOUNCER_VAR_NAME].GetComponent<Animator>();
+        endGameOptionsAnimator = model.GetObjects()[GameModel.END_GAME_OPTIONS_VAR_NAME].GetComponent<Animator>();
         previewSoldierPlayer = model.GetObjects()[GameModel.PREVIEW_SOLDIER_NAME_VAR];
         previewSoldierAnimator = previewSoldierPlayer.GetComponent<Animator>();
-
         //todo: fix this to always hold the animator of the current soldier..
         //soldierAnimator = model.GetObjects()["soldier_player"].GetComponent<Animator>();
 
@@ -171,11 +173,13 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void FinishGame(SoldierTeam winner) {
-        if(winner == SoldierTeam.PLAYER)
+        canPlay = false;
+        endGameOptionsAnimator.SetBool(GameModel.END_GAME_TRIGGER, true);
+        if (winner == SoldierTeam.PLAYER)
             announcerAnimator.SetBool(GameModel.ANNOUNCER_VICTORY_TRIGGER, true);
         else
             announcerAnimator.SetBool(GameModel.ANNOUNCER_DEFEAT_TRIGGER, true);
-        
+
     }
 
     private void MarkSoldier(GameObject soldier) {
