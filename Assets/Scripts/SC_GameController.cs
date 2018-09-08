@@ -1,4 +1,5 @@
 ﻿using System;
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -15,22 +16,25 @@ public class SC_GameController : MonoBehaviour {
     
     private SC_Spotlight soldierSpotlight;                  //highlights the rival on drag
     private Vector3 nextPosition, startDragPos, endDragPos;
-    private Animator soldierAnimator, previewSoldierAnimator;
+    private Animator soldierAnimator, previewSoldierAnimator, announcerAnimator;
     private bool isMyTurn = true;
     private bool duringTie = false;
+    private bool canPlay = true;
+
 
     private MovementDirections soldierMovementDirection;
     private string previewAnimationTrigger = "";
 
-    private static readonly string GAME_MODEL_NAME_VAR = "SC_GameModel";
+
 
     void Start() {
         
         //get reference to our model class
-        model = GameObject.Find(GAME_MODEL_NAME_VAR).GetComponent<GameModel>();
+        model = GameObject.Find(GameModel.GAME_MODEL_NAME_VAR).GetComponent<GameModel>();
 
         //save references for some general objects we need to control
         soldierSpotlight = model.GetObjects()[GameModel.SPOTLIGHT_NAME_VAR].GetComponent<SC_Spotlight>();
+        announcerAnimator = model.GetObjects()[GameModel.ANNOUNCER_VAR_NAME].GetComponent<Animator>();
         previewSoldierPlayer = model.GetObjects()[GameModel.PREVIEW_SOLDIER_NAME_VAR];
         previewSoldierAnimator = previewSoldierPlayer.GetComponent<Animator>();
 
@@ -83,7 +87,11 @@ public class SC_GameController : MonoBehaviour {
         GameModel.FinishGame += FinishGame;
         GameModel.AIMoveFinished += AIMoveFinished;
         GameModel.CallTieBreaker += TieBreaker;
+        GameModel.OnMatchFinished += OnMatchFinished;
         SC_TieWeapon.OnNewWeaponChoice += OnNewWeaponChoice;
+        SC_AnnouncerManager.FinishAnnouncementEvent += FinishAnnouncementEvent;
+        SC_AnnouncerManager.StartAnnouncementEvent += StartAnnouncementEvent;
+
         SC_Cart.GodMode += GodMode;
     }
 
@@ -96,21 +104,59 @@ public class SC_GameController : MonoBehaviour {
         GameModel.FinishGame -= FinishGame;
         GameModel.AIMoveFinished -= AIMoveFinished;
         GameModel.CallTieBreaker -= TieBreaker;
+        GameModel.OnMatchFinished -= OnMatchFinished;
         SC_TieWeapon.OnNewWeaponChoice -= OnNewWeaponChoice;
+        SC_AnnouncerManager.FinishAnnouncementEvent -= FinishAnnouncementEvent;
+        SC_AnnouncerManager.StartAnnouncementEvent -= StartAnnouncementEvent;
         SC_Cart.GodMode -= GodMode;
+    }
+
+    //do not let user interact with game during animations:
+    private void StartAnnouncementEvent() {
+        canPlay = false;
+    }
+
+    //let user interact with game when animation ends:
+    private void FinishAnnouncementEvent() {
+        ResetAllAnnouncementAnimations();
+        canPlay = true;
+    }
+
+    private void ResetAllAnnouncementAnimations() {
+        Debug.Log("ResetAllAnnouncementAnimations called");
+        announcerAnimator.SetBool(GameModel.ANNOUNCER_TIE_TRIGGER, false);
+        announcerAnimator.SetBool(GameModel.ANNOUNCER_LOSE_TRIGGER, false);
+        announcerAnimator.SetBool(GameModel.ANNOUNCER_WIN_TRIGGER, false);
     }
 
     private void OnNewWeaponChoice(SoldierType newWeapon) {
         model.GetPlayerSoldier().GetComponent<SC_Soldier>().RefreshWeapon(newWeapon);
         ShowTieWeapons(false);
-        
+
         //rematch:
         duringTie = false;
         Match();
+    }
+
+    /* 
+    * callback after a match ends (without a tie)
+    */
+    private void OnMatchFinished(SoldierTeam matchWinningTeam) {
+        if(matchWinningTeam == SoldierTeam.PLAYER)
+            announcerAnimator.SetBool(GameModel.ANNOUNCER_WIN_TRIGGER, true);
+        if(matchWinningTeam == SoldierTeam.ENEMY)
+            announcerAnimator.SetBool(GameModel.ANNOUNCER_LOSE_TRIGGER, true);
+        //todo: implement this 'shield' scenario
+        //if(matchWinningTeam == SoldierTeam.NO_TEAM)
+        //    announcerAnimator.SetBool(GameModel.ANNOUNCER_TIE_TRIGGER, true);
 
     }
 
+    /* 
+    * callback for a tied match
+    */
     private void TieBreaker() {
+        announcerAnimator.SetBool(GameModel.ANNOUNCER_TIE_TRIGGER, true);
         duringTie = true;
         ShowTieWeapons(true);
     }
@@ -142,7 +188,7 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void OnStartDraggingSoldier(GameObject obj, Vector3 pos, Vector3 objTranslatePosition) {
-        if (isMyTurn && !duringTie) {
+        if (canPlay && isMyTurn && !duringTie) {
             GetNextMoveInfo(obj, pos, objTranslatePosition);
         }
     }
@@ -160,7 +206,7 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void OnFinishDraggingSoldier(GameObject obj, Vector3 pos, Vector3 objTranslatePosition) {
-        if (isMyTurn && !duringTie) {
+        if (canPlay && isMyTurn && !duringTie) {
             PerformNextMove(obj, pos, objTranslatePosition);
         }
     }

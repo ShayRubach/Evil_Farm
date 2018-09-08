@@ -20,7 +20,8 @@ public enum Indicators {
 
 public enum SoldierTeam {
     ENEMY,
-    PLAYER
+    PLAYER,
+    NO_TEAM
 }
 
 public enum TileStatus {

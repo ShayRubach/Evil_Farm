@@ -18,6 +18,7 @@ public class GameModel : MonoBehaviour {
 
     public delegate void Announcement (SoldierTeam winner);
     public static event Announcement FinishGame;
+    public static event Announcement OnMatchFinished;
 
     public delegate void NotifyToController();
     public static event NotifyToController AIMoveFinished;
@@ -37,7 +38,7 @@ public class GameModel : MonoBehaviour {
     private static readonly float MINIMUM_DRAG_DISTANCE = 40.0f;
     private static readonly float THINKING_TIME_IN_SECONDS = 1.0f;
 
-
+    public static readonly string GAME_MODEL_NAME_VAR = "SC_GameModel";
     public static readonly string NO_SOLDIER_NAME_VAR = "no_soldier";
     public static readonly string PLAYER_NAME_VAR = "soldier_player";
     public static readonly string ENEMY_NAME_VAR = "soldier_enemy";
@@ -48,6 +49,12 @@ public class GameModel : MonoBehaviour {
     public static readonly string LEAF_INDICATOR_NAME_VAR = "leaf";
     public static readonly string TIE_WEAPONS_P_VAR_NAME = "tie_weapon_options";
     public static readonly string PREVIEW_ANIMATION_TRIGGER_PREFIX = "Preview";
+
+    public static readonly string ANNOUNCER_VAR_NAME = "announcer";
+    public static readonly string ANNOUNCER_WIN_TRIGGER = "Win";
+    public static readonly string ANNOUNCER_LOSE_TRIGGER = "Lose";
+    public static readonly string ANNOUNCER_TIE_TRIGGER = "Tie";
+
 
     public static readonly int REVEAL_SPOTLIGHT_CHILD_IDX = 1;
 
@@ -121,7 +128,7 @@ public class GameModel : MonoBehaviour {
     private GameObject ChooseValidRandomSoldier() {
 
         System.Random rand = new System.Random();
-        int MAX_ATTEMPTS = 80;
+        int MAX_ATTEMPTS = 100;
         int randomSoldier = 0, attempts = 0;
         FocusedPlayer = null;
         MovementDirections movement = MovementDirections.NONE;
@@ -152,7 +159,7 @@ public class GameModel : MonoBehaviour {
     private MovementDirections GetAvailableMove() {
         MovementDirections[] moves = { MovementDirections.UP, MovementDirections.DOWN, MovementDirections.LEFT, MovementDirections.RIGHT };
         System.Random rand = new System.Random();
-        int MAX_ATTEMPTS = 10;
+        int MAX_ATTEMPTS = 20;
         int randomMove = 0;
 
         //while (keepLooking) {
@@ -326,27 +333,23 @@ public class GameModel : MonoBehaviour {
 
         switch (result) {
             case MatchStatus.INITIATOR_WON_THE_MATCH:
-                RemoveSoldier(FocusedEnemy);
-                RevealSoldier(FocusedPlayer);
-                break;
             case MatchStatus.INITIATOR_REVEALED:
                 RemoveSoldier(FocusedEnemy);
                 RevealSoldier(FocusedPlayer);
+                AnnounceMatchWinner(FocusedPlayer.GetComponent<SC_Soldier>().Team);
                 break;
             case MatchStatus.VICTIM_WON_THE_MATCH:
-                RemoveSoldier(FocusedPlayer);
-                RevealSoldier(FocusedEnemy);
-                break;
             case MatchStatus.VICTIM_REVEALED:
                 RemoveSoldier(FocusedPlayer);
                 RevealSoldier(FocusedEnemy);
+                AnnounceMatchWinner(FocusedEnemy.GetComponent<SC_Soldier>().Team);
                 break;
             case MatchStatus.BOTH_LOST_MATCH:
                 RemoveSoldier(FocusedPlayer);
                 RemoveSoldier(FocusedEnemy);
+                AnnounceMatchWinner(SoldierTeam.NO_TEAM);
                 break;
             case MatchStatus.TIE:
-                //todo: implement a rematch
                 TieBreaker();
                 break;
             case MatchStatus.INITIATOR_WON_THE_GAME:
@@ -359,11 +362,16 @@ public class GameModel : MonoBehaviour {
 
     }
 
+    private void AnnounceMatchWinner(SoldierTeam team) {
+        if(OnMatchFinished != null) {
+            OnMatchFinished(team);
+        }
+    }
+
     private void TieBreaker() {
         if (playingVsAI) {
             SoldierType newWeapon = GetRandomWeapon();
             GetAISoldier().GetComponent<SC_Soldier>().RefreshWeapon(newWeapon);
-
         }
 
         if (CallTieBreaker != null)
@@ -426,10 +434,6 @@ public class GameModel : MonoBehaviour {
             FinishGame(winningTeam);
     }
 
-    private MatchStatus EvaluateMatchResult() {
-
-        return MatchStatus.TIE;
-    }
 
     public void ShowPathIndicators(Vector3 objectPos) {
         ResetIndicators();                                      //enable and show all indicators.
