@@ -16,12 +16,12 @@ Just mention me at the top.
 -   Every player starts with a  shuffled team (random positions) on a chess-like board.
 -   Every player sees his own team weapons and none of the enemies (they all look a like).
 -   When a player reaches his turn, he can move his soldier by press+hold it and swipe to the valid locations indicated with the leaf indicators on board. If 2 soldiers are next to each other, steping on other's tile will start a fight.
-- Every team has 4 soldiers of each kind, and 1 single <b>Crystal</b> soldier. The currently available weapons (more to be added in the future) are:
--- Pitchfork
--- Axe
--- Club
--- Shield
--- Crystal
+- Every team has 4 soldiers of each kind, and 1 single <b>Crystal</b> soldier. The currently available weapons (more to be added in the future) are:<br>
+- Pitchfork
+- Axe
+- Club
+- Shield
+- Crystal
 <br>
 -  Match rules are simple:<br>
 <b> Pitchfork</b> > <b>Axe</b><br>
