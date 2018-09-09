@@ -6,8 +6,10 @@ public sealed class MenuModel {
 
     private static MenuModel instance = null;
     private static readonly Object lockingObj = new Object();
+    
     private string username = "sh";
     private string passowrd = "sh";
+    public static readonly string INITIAL_SCENE = "Login";
 
     private MenuModel() {}	
 

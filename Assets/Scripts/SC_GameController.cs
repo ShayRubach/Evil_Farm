@@ -123,6 +123,7 @@ public class SC_GameController : MonoBehaviour {
             model.RestartGame();
         }
         else {
+            SharedDataHandler.nextScreenRequested = Scenes.MainMenu.ToString();
             SceneManager.LoadScene(SC_MenuController.SCENE_PREFIX + Scenes.Login);
         }
     }

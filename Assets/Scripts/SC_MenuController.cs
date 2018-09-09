@@ -34,7 +34,7 @@ public class SC_MenuController : MonoBehaviour {
         foreach (GameObject obj in menuObjects) {
             objects.Add(obj.name, obj);
             Debug.Log("added " + obj.name);
-            if (obj.name.StartsWith(SCENE_PREFIX) && !obj.name.Contains("Login"))
+            if (obj.name.StartsWith(SCENE_PREFIX) && !obj.name.Contains(SharedDataHandler.nextScreenRequested))
                 obj.SetActive(false);
         }
     
