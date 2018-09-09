@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 3d15bb05b3f5f7748b8a756b5b6b6e1b
+timeCreated: 1536477543
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Witching Hour
+  fontNames:
+  - Witching Hour
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

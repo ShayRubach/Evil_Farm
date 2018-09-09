@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 2fab8ac2f02e31f47b0d5eff51954b43
+timeCreated: 1536476138
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Zachary
+  fontNames:
+  - Zachary
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

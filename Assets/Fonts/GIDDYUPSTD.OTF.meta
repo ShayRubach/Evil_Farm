@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 6c9b2851b450a8d46aaa2eb149b25d3a
+timeCreated: 1536476197
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Giddyup Std
+  fontNames:
+  - Giddyup Std
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

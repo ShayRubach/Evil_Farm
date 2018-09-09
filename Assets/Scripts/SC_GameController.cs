@@ -123,7 +123,7 @@ public class SC_GameController : MonoBehaviour {
             model.RestartGame();
         }
         else {
-            SceneManager.LoadScene(SC_MenuController.SCENE_PREFIX + Scenes.MainMenu);
+            SceneManager.LoadScene(SC_MenuController.SCENE_PREFIX + Scenes.Login);
         }
     }
 

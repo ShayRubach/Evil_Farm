@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class SC_MenuController : MonoBehaviour {
 
-    private static Dictionary<string, GameObject> dictionaryMenu;
+    private static Dictionary<string, GameObject> objects;
     private static readonly int SLIDER_STARTING_VALUE = 50;
     private static int VALUE_RATIO = 200;
 
@@ -21,19 +21,21 @@ public class SC_MenuController : MonoBehaviour {
     private static int valueRatio = VALUE_RATIO;
 
     public static readonly string SCENE_PREFIX = "Scene";
-    private static readonly string MENU_OBJECTS_STR_NAME = "MenuObjects";
-
+    public static readonly string MENU_OBJECTS_STR_NAME = "MenuObjects";
 
     private MenuModel       menuModel;
     private SC_CoinSpawner  coinSpawner;
 
     void Start () {
         menuModel = MenuModel.GetInstance;
-        dictionaryMenu = new Dictionary<string, GameObject>();
+        objects = new Dictionary<string, GameObject>();
         GameObject[] menuObjects = GameObject.FindGameObjectsWithTag(MENU_OBJECTS_STR_NAME);
 
         foreach (GameObject obj in menuObjects) {
-            dictionaryMenu.Add(obj.name, obj);
+            objects.Add(obj.name, obj);
+            Debug.Log("added " + obj.name);
+            if (obj.name.StartsWith(SCENE_PREFIX) && !obj.name.Contains("Login"))
+                obj.SetActive(false);
         }
     
        InitSliderValues();
@@ -44,8 +46,8 @@ public class SC_MenuController : MonoBehaviour {
         //only invoke if Scene is "Scene_Settings":
         if(currScene.Equals(Scenes.Settings.ToString())) {
             Debug.Log("updating sliders value..");
-            dictionaryMenu["slider_sfx"].GetComponent<Slider>().value = sfxValue;
-            dictionaryMenu["slider_bg_music"].GetComponent<Slider>().value = bgMusicValue;
+            objects["slider_sfx"].GetComponent<Slider>().value = sfxValue;
+            objects["slider_bg_music"].GetComponent<Slider>().value = bgMusicValue;
         }
     }
 
@@ -89,20 +91,22 @@ public class SC_MenuController : MonoBehaviour {
     }
 
     public void Mute(string sliderName) {
-        dictionaryMenu[sliderName].GetComponent<Slider>().value = 0;
+        objects[sliderName].GetComponent<Slider>().value = 0;
     }
 
     public void OnClickedSettings() {
+        Debug.Log("OnClickedSettings");
         MoveToScene(Scenes.Settings.ToString());
     }
 
     public void OnClickedStudentInfo() {
+        Debug.Log("OnClickedStudentInfo");
         MoveToScene(Scenes.StudentInfo.ToString());
     }
 
     public void ChangeSettingsSliderValue(string sliderName, string textValueName, ref int permanentValueHolder) {
-        Slider slider = dictionaryMenu[sliderName].GetComponent<Slider>();
-        dictionaryMenu[textValueName].GetComponent<Text>().text = slider.value.ToString();
+        Slider slider = objects[sliderName].GetComponent<Slider>();
+        objects[textValueName].GetComponent<Text>().text = slider.value.ToString();
         permanentValueHolder = (int)slider.value;
     }
 
@@ -121,17 +125,20 @@ public class SC_MenuController : MonoBehaviour {
     private void MoveToScene(string nextScene) {
         lastScene = currScene;
         currScene = nextScene;
-        SceneManager.LoadScene(SCENE_PREFIX + currScene);
+
+        //only actually move screen for single/multi player:
+        if (nextScene.Contains(Scenes.SinglePlayer.ToString()))
+            SceneManager.LoadScene(SCENE_PREFIX + currScene);
+        else {
+            objects[SCENE_PREFIX + lastScene].SetActive(false);
+            objects[SCENE_PREFIX + nextScene].SetActive(true);
+        }
+            
     }
 
     private void ExtractUsernameAndPassword() {
-        usernameStr = dictionaryMenu["inf_username"].GetComponent<InputField>().text;
-        passwordStr = dictionaryMenu["inf_pass"].GetComponent<InputField>().text;
+        usernameStr = objects["inf_username"].GetComponent<InputField>().text;
+        passwordStr = objects["inf_pass"].GetComponent<InputField>().text;
     }
 
-
-
-    void FixedUpdate() {
-
-    }
 }
