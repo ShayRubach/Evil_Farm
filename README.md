@@ -24,11 +24,12 @@ Just mention me at the top.
 -- Crystal
 <br>
 -  Match rules are simple:<br>
--- <b> Pitchfork</b> > <b>Axe</b>
--- <b> Club</b> > <b>Pitchfork</b>
--- <b> Axe</b> > <b>Club</b>
--- <b> Shield</b> > <b> All Weapons</b> , but dies with them. <br>
--   The goal is to find and kill the <b>Crystal Holder</b> (aka the king) .
+<b> Pitchfork</b> > <b>Axe</b><br>
+<b> Club</b> > <b>Pitchfork</b><br>
+<b> Axe</b> > <b>Club</b><br>
+<b> Shield</b> > <b> All Weapons</b> , but dies with them. <br>
+
+- The goal is to find and kill the <b>Crystal Holder</b> (aka the king) .
 - If 2 soldiers are having the same weapons, a tie will be called and the soldiers will be asked to choose new weapon for the tie-breaker. In case another tie occurs, same process will be repeated until tie breaks.
 - After match ends, the winning soldier will be <b>revealed</b>, and his weapon will be displayed to the rival team.
 - If the <b>Crystal Holder</b> has been found and attacked, game ends. 
