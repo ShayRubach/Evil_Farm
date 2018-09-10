@@ -8,6 +8,10 @@ using UnityEngine.UI;
 public class SC_MenuController : MonoBehaviour {
 
     private static Dictionary<string, GameObject> objects;
+    private MenuModel       menuModel;
+    private SC_CoinSpawner  coinSpawner;
+    private List<GameObject> scenes;
+
     private static readonly int SLIDER_STARTING_VALUE = 50;
     private static int VALUE_RATIO = 200;
 
@@ -22,18 +26,21 @@ public class SC_MenuController : MonoBehaviour {
 
     public static readonly string SCENE_PREFIX = "Scene";
     public static readonly string MENU_OBJECTS_STR_NAME = "MenuObjects";
-
-    private MenuModel       menuModel;
-    private SC_CoinSpawner  coinSpawner;
+    public Slider progressBar;
+    public Text progressTxtValue;
 
     void Start () {
         menuModel = MenuModel.GetInstance;
         objects = new Dictionary<string, GameObject>();
+        scenes = new List<GameObject>();
         GameObject[] menuObjects = GameObject.FindGameObjectsWithTag(MENU_OBJECTS_STR_NAME);
 
         foreach (GameObject obj in menuObjects) {
             objects.Add(obj.name, obj);
-            Debug.Log("added " + obj.name);
+
+            if (obj.name.Contains(SCENE_PREFIX))
+                scenes.Add(obj);
+
             if (obj.name.StartsWith(SCENE_PREFIX) && !obj.name.Contains(SharedDataHandler.nextScreenRequested))
                 obj.SetActive(false);
         }
@@ -95,12 +102,10 @@ public class SC_MenuController : MonoBehaviour {
     }
 
     public void OnClickedSettings() {
-        Debug.Log("OnClickedSettings");
         MoveToScene(Scenes.Settings.ToString());
     }
 
     public void OnClickedStudentInfo() {
-        Debug.Log("OnClickedStudentInfo");
         MoveToScene(Scenes.StudentInfo.ToString());
     }
 
@@ -123,17 +128,44 @@ public class SC_MenuController : MonoBehaviour {
     }
 
     private void MoveToScene(string nextScene) {
+        //save our last scene
         lastScene = currScene;
         currScene = nextScene;
 
-        //only actually move screen for single/multi player:
+        //only actually change scene for single/multi player:
         if (nextScene.Contains(Scenes.SinglePlayer.ToString()))
-            SceneManager.LoadScene(SCENE_PREFIX + currScene);
+            StartCoroutine(LoadAsyncScene(SCENE_PREFIX + nextScene));
+        //else just display the requested menu screen:
         else {
             objects[SCENE_PREFIX + lastScene].SetActive(false);
             objects[SCENE_PREFIX + nextScene].SetActive(true);
         }
             
+    }
+
+    private void DisplayLoadingScreen() {
+        foreach(GameObject scene in scenes) {
+            if(scene.name.Contains(Scenes.Loader.ToString()))
+                scene.SetActive(true);
+            else
+                scene.SetActive(false);
+        }
+    }
+
+    IEnumerator LoadAsyncScene(string sceneName) {
+        
+        AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName);
+        DisplayLoadingScreen();
+
+        while (!operation.isDone) {
+            float progress = Mathf.Clamp01(operation.progress / .9f);
+            progressBar.value = progress;
+            progressTxtValue.text = progress * 100f + "%";
+            //Debug.Log("progressBar.value = " + progressBar.value + " \t progressTxtValue.text = " + progressTxtValue.text);
+
+            yield return null;
+        }
+
     }
 
     private void ExtractUsernameAndPassword() {

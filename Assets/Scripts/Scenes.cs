@@ -9,5 +9,5 @@ public enum Scenes {
     Settings,
     SinglePlayer,
     Multiplayer,
-    Gameplay
+    Loader
 }
