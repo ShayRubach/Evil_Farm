@@ -11,7 +11,7 @@ public class SC_Tile : MonoBehaviour {
 
     private GameObject initialSoldier = null;
 
-    void Start() {
+    void Awake() {
         //saving the initial soldier for game restart optimizations:
         initialSoldier = soldier;
 

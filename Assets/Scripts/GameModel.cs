@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public struct Point {
@@ -27,6 +28,8 @@ public class GameModel : MonoBehaviour {
     private bool playingVsAI = true;
     private static readonly int COLS = 7;
     private static readonly int ROWS = 6;
+    private static readonly int MAX_SOLDIER_PER_TEAM = 14;
+
 
     private static readonly string UNITY_OBJECTS_TAG = "UnityObject";
 
@@ -63,6 +66,7 @@ public class GameModel : MonoBehaviour {
 
     public GameObject FocusedEnemy { get; set; }
     public GameObject FocusedPlayer { get; set; }
+    public GameObject board;
     public MovementDirections nextMovement;
 
     private GameObject pathIndicators;
@@ -102,12 +106,39 @@ public class GameModel : MonoBehaviour {
             
         }
 
+        ShuffleTeam(players, board.transform.childCount - players.Count);
+        ShuffleTeam(enemies, 0);
+
         objects[TIE_WEAPONS_P_VAR_NAME].SetActive(false);
         pathIndicators = objects[PATH_INDICATORS_NAME_VAR];
 
         nextMoveCoord.x = 0;
         nextMoveCoord.y = 0;
 
+    }
+
+    private void SortList(List<GameObject> list) {
+        list.Sort((x, y) => string.Compare(x.name, y.name));
+    }
+
+    private void ShuffleTeam(List<GameObject> soldiers, int startingTileIdx) {
+        Vector3 newPos;
+        GameObject tile;
+
+        soldiers.Sort((x, y) => UnityEngine.Random.value < 0.5f ? -1 : 1);
+
+        for (int i = startingTileIdx, j = 0; j < soldiers.Count; i++, j++) {
+            tile = board.transform.GetChild(i).gameObject;
+
+            //save reference to old position, and then modify x and z (displayed as our 'y') values according to new tile.
+            newPos = soldiers[j].transform.position;
+            UpdateTileAndSoldierRefs(tile, soldiers[j], true, false);
+
+            newPos[0] = tile.transform.position.x;      //x value
+            newPos[2] = tile.transform.position.z;      //z value (our 'y')
+
+            soldiers[j].transform.position = newPos;
+        }
     }
 
     internal void PlayAsAI() {

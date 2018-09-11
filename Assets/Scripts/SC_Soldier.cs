@@ -35,7 +35,7 @@ public class SC_Soldier : MonoBehaviour {
     private bool markEnemy = false;
     private GameObject currEnemy = null;
 
-    void Start() {
+    void Awake() {
         
         //saving some initial soldier attributes for game restart optimizations:
         initialPos = transform.position;
@@ -56,10 +56,10 @@ public class SC_Soldier : MonoBehaviour {
         ConcealWeapon(initialWeapon);
         RemoveFocus();
     }
-
+    
     /* 
      * remove red spotlight focus that procs after a kill.
-     */ 
+     */
     private void RemoveFocus() {
         foreach(Transform child in transform) {
             if (child.gameObject.name.Contains(GameModel.SPOTLIGHT_NAME_VAR)) {
