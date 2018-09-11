@@ -15,7 +15,7 @@ public class SC_MenuController : MonoBehaviour {
     private static readonly int SLIDER_STARTING_VALUE = 50;
     private static int VALUE_RATIO = 200;
 
-    private static readonly string url = "https://github.com/ShayRubach";
+    private static readonly string url = "https://github.com/ShayRubach/Evil_Garden";
     private static string currScene = Scenes.Login.ToString();
     private static string lastScene = Scenes.Login.ToString();
     private string usernameStr, passwordStr;
