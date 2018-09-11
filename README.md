@@ -5,8 +5,8 @@ This is where I will be writing some description about the game in the future, w
 ### Version
 Alpha 1.0v
 ### Supported Devices
-- Android
-- IPhone
+- PC
+- ~~Android~~ (currently having issue with fps performance)
 
 Portrait: Supported
 Landspace: <b>Not supported</b>
