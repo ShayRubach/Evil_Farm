@@ -11,9 +11,16 @@ using UnityEngine.SceneManagement;
 
 public class SC_GameController : MonoBehaviour {
 
-    private GameObject focusedPlayerParent;                //parent GameObject that holds the soldier and its weapon
+    private GameObject focusedPlayerParent;                 //parent GameObject that holds the soldier and its weapon
     private GameObject previewSoldierPlayer;                //the enlarged previewed soldier user sees on a soldier focus (click)
     private GameModel model;                                //our game logic model
+
+    [SerializeField]
+    private GameObject countdownManager;
+    [SerializeField]
+    private GameObject shuffleHandler;
+
+
     
     private SC_Spotlight soldierSpotlight;                  //highlights the rival on drag
     private Vector3 nextPosition, startDragPos, endDragPos;
@@ -22,7 +29,7 @@ public class SC_GameController : MonoBehaviour {
 
     private bool isMyTurn = true;
     private bool duringTie = false;
-    private bool canPlay = true;
+    private bool canPlay = false;
 
 
     private MovementDirections soldierMovementDirection;
@@ -41,10 +48,10 @@ public class SC_GameController : MonoBehaviour {
         endGameOptionsAnimator = model.GetObjects()[GameModel.END_GAME_OPTIONS_VAR_NAME].GetComponent<Animator>();
         previewSoldierPlayer = model.GetObjects()[GameModel.PREVIEW_SOLDIER_NAME_VAR];
         previewSoldierAnimator = previewSoldierPlayer.GetComponent<Animator>();
-        //todo: fix this to always hold the animator of the current soldier..
-        //soldierAnimator = model.GetObjects()["soldier_player"].GetComponent<Animator>();
-
+        
         HidePreviewSoldier();
+        countdownManager.SetActive(true);
+        shuffleHandler.SetActive(true);
     }
 
     void FixedUpdate() {
@@ -96,7 +103,9 @@ public class SC_GameController : MonoBehaviour {
         SC_AnnouncerManager.FinishAnnouncementEvent += FinishAnnouncementEvent;
         SC_AnnouncerManager.StartAnnouncementEvent += StartAnnouncementEvent;
         SC_EndOptions.OnEndGameOptionChoice += OnEndGameOptionChoice;
-
+        SC_CountdownTimer.PreparationTimeOver += PreparationTimeOver;
+        SC_CountdownTimer.PreparationTimeStarted += PreparationTimeStarted;
+        SC_ShuffleIcon.OnShuffleClicked += OnShuffleClicked;
         SC_Cart.GodMode += GodMode;
     }
 
@@ -114,14 +123,31 @@ public class SC_GameController : MonoBehaviour {
         SC_AnnouncerManager.FinishAnnouncementEvent -= FinishAnnouncementEvent;
         SC_AnnouncerManager.StartAnnouncementEvent -= StartAnnouncementEvent;
         SC_EndOptions.OnEndGameOptionChoice -= OnEndGameOptionChoice;
-
+        SC_CountdownTimer.PreparationTimeOver -= PreparationTimeOver;
+        SC_CountdownTimer.PreparationTimeStarted -= PreparationTimeStarted;
+        SC_ShuffleIcon.OnShuffleClicked -= OnShuffleClicked;
         SC_Cart.GodMode -= GodMode;
+    }
+
+    private void OnShuffleClicked() {
+        model.ShuffleTeam(SoldierTeam.PLAYER);
+    }
+
+    private void PreparationTimeStarted() {
+        canPlay = false;
+    }
+
+    private void PreparationTimeOver() {
+        shuffleHandler.SetActive(false);
+        canPlay = true;
     }
 
     private void OnEndGameOptionChoice(EndGameOption choice) {
         if(choice == EndGameOption.RESTART) {
             endGameOptionsAnimator.SetBool(GameModel.END_GAME_TRIGGER, false);
             model.RestartGame();
+            countdownManager.SetActive(true);
+            shuffleHandler.SetActive(true);
         }
         else {
             SharedDataHandler.nextScreenRequested = Scenes.MainMenu.ToString();
@@ -195,9 +221,7 @@ public class SC_GameController : MonoBehaviour {
         if (winner == SoldierTeam.PLAYER)
             announcerAnimator.SetBool(GameModel.ANNOUNCER_VICTORY_TRIGGER, true);
         else
-            announcerAnimator.SetBool(GameModel.ANNOUNCER_DEFEAT_TRIGGER, true);
-
-        
+            announcerAnimator.SetBool(GameModel.ANNOUNCER_DEFEAT_TRIGGER, true);        
     }
 
     private void MarkSoldier(GameObject soldier) {

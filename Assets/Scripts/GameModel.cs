@@ -34,7 +34,7 @@ public class GameModel : MonoBehaviour {
     private static readonly string UNITY_OBJECTS_TAG = "UnityObject";
 
     private static readonly int LEFT_BOARD_EDGE_IDX = 0;
-    private static readonly int RIGHT_BOARD_EDGE_IDX = COLS - 1;
+    private static readonly int RIGHT_BOARD_EDGE_IDX = 6;
     private static readonly int TOP_BOARD_EDGE_IDX = 0;
     private static readonly int BTM_BOARD_EDGE_IDX = ROWS - 1;
     private static readonly int LEGAL_MOVES_COUNT = 4;
@@ -61,6 +61,8 @@ public class GameModel : MonoBehaviour {
     public static readonly string ANNOUNCER_VICTORY_TRIGGER = "Victory";
     public static readonly string ANNOUNCER_DEFEAT_TRIGGER = "Defeat";
     public static readonly string END_GAME_TRIGGER = "GameFinished";
+    public static readonly string SHUFFLE_TRIGGER = "Shuffle";
+
 
     public static readonly int REVEAL_SPOTLIGHT_CHILD_IDX = 1;
 
@@ -106,8 +108,8 @@ public class GameModel : MonoBehaviour {
             
         }
 
-        ShuffleTeam(players, board.transform.childCount - players.Count);
-        ShuffleTeam(enemies, 0);
+//        ShuffleTeam(players, board.transform.childCount - players.Count);
+        //ShuffleTeam(enemies, 0);
 
         objects[TIE_WEAPONS_P_VAR_NAME].SetActive(false);
         pathIndicators = objects[PATH_INDICATORS_NAME_VAR];
@@ -121,7 +123,11 @@ public class GameModel : MonoBehaviour {
         list.Sort((x, y) => string.Compare(x.name, y.name));
     }
 
-    private void ShuffleTeam(List<GameObject> soldiers, int startingTileIdx) {
+    public void ShuffleTeam(SoldierTeam team) {
+
+        List<GameObject> soldiers = (team == SoldierTeam.PLAYER) ? players : enemies;
+        int startingTileIdx = (team == SoldierTeam.PLAYER) ? board.transform.childCount - soldiers.Count : 0;
+
         Vector3 newPos;
         GameObject tile;
 
@@ -132,10 +138,12 @@ public class GameModel : MonoBehaviour {
 
             //save reference to old position, and then modify x and z (displayed as our 'y') values according to new tile.
             newPos = soldiers[j].transform.position;
+
             UpdateTileAndSoldierRefs(tile, soldiers[j], true, false);
 
-            newPos[0] = tile.transform.position.x;      //x value
-            newPos[2] = tile.transform.position.z;      //z value (our 'y')
+            //move the soldier to his new tile
+            newPos[0] = soldiers[j].GetComponent<SC_Soldier>().Tile.transform.position.x;      //x value
+            newPos[2] = soldiers[j].GetComponent<SC_Soldier>().Tile.transform.position.z;      //z value (our 'y')
 
             soldiers[j].transform.position = newPos;
         }
@@ -232,9 +240,18 @@ public class GameModel : MonoBehaviour {
      */
     public GameObject PointToTile(Vector3 pos) {
         float x=0, y=0;
+
         x = Mathf.Abs(pos.x);
         y = Mathf.Abs(pos.z);
-        return objects[TILE_NAME_VAR + x + y];
+
+        try {
+            return objects[TILE_NAME_VAR + x + y];
+        }
+        catch(KeyNotFoundException e) {
+            Debug.Log("couldn't find " + TILE_NAME_VAR + x + y);
+        }
+        return null;    
+//        return objects[TILE_NAME_VAR + x + y];
     }
 
     public Dictionary<string,GameObject> GetObjects() {
@@ -298,8 +315,7 @@ public class GameModel : MonoBehaviour {
             Debug.Log("MoveSoldier: focusedSoldierP is null.");
             return;
         }
-        //Debug.Log("exactSoldierObj.transform.position: " + exactSoldierObj.transform.position);
-
+        
         switch (soldierMovementDirection) {
             case MovementDirections.UP:
                 newPosition = new Vector3(exactSoldierObj.transform.position.x, exactSoldierObj.transform.position.y, exactSoldierObj.transform.position.z + 1);
@@ -535,7 +551,7 @@ public class GameModel : MonoBehaviour {
         if (Mathf.Abs(pos.x) == LEFT_BOARD_EDGE_IDX || RequestTileIsOccupied(PointToTile(requestedTilePos))) {
             HideObjectUnderBoard(pathIndicators.transform.GetChild((int)Indicators.LEFT).gameObject);
         }
-
+        
         //soldier is located in most right side of the border
         requestedTilePos = new Vector3(pos.x + 1, pos.y, pos.z);
         if (Mathf.Abs(pos.x) == RIGHT_BOARD_EDGE_IDX || RequestTileIsOccupied(PointToTile(requestedTilePos))) {
@@ -556,11 +572,10 @@ public class GameModel : MonoBehaviour {
     }
 
     private bool RequestTileIsOccupied(GameObject tile) {
-        return tile.GetComponent<SC_Tile>().IsOcuupied;
+        return tile ? tile.GetComponent<SC_Tile>().IsOcuupied : true;
     }
 
     private void HideObjectUnderBoard(GameObject obj) {
-        //obj.transform.position = new Vector3(obj.transform.position.x, obj.transform.position.y - 1, obj.transform.position.z);
         obj.SetActive(false);
     }
 
