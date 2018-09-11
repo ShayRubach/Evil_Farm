@@ -107,10 +107,7 @@ public class GameModel : MonoBehaviour {
             }
             
         }
-
-//        ShuffleTeam(players, board.transform.childCount - players.Count);
-        //ShuffleTeam(enemies, 0);
-
+        
         objects[TIE_WEAPONS_P_VAR_NAME].SetActive(false);
         pathIndicators = objects[PATH_INDICATORS_NAME_VAR];
 

@@ -130,7 +130,7 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void OnShuffleClicked() {
-        model.ShuffleTeam(SoldierTeam.PLAYER);
+        //model.ShuffleTeam(SoldierTeam.PLAYER);
     }
 
     private void PreparationTimeStarted() {
