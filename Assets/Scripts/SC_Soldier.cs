@@ -54,11 +54,23 @@ public class SC_Soldier : MonoBehaviour {
         //FigureInitialWeaponType();
         DisplayWeapon();
         ConcealWeapon(initialWeapon);
+        RemoveFocus();
+    }
+
+    /* 
+     * remove red spotlight focus that procs after a kill.
+     */ 
+    private void RemoveFocus() {
+        foreach(Transform child in transform) {
+            if (child.gameObject.name.Contains(GameModel.SPOTLIGHT_NAME_VAR)) {
+                child.gameObject.SetActive(false);
+            }
+        }
     }
 
     /*
      * activate the initial weapon chosen by game scene. this is a util method to enhance the restart game usability.
-     */ 
+     */
     private void DisplayWeapon() {
         GameObject child = null;
         GameObject weapons = GetAllWeapons();
@@ -156,12 +168,21 @@ public class SC_Soldier : MonoBehaviour {
     }
 
     void OnMouseDown() {
+
+        if (AttemptingToMoveEnemySoldier())
+            return;
+
         AssignCurrPos(ref startDragPos);
         if (OnStartDragging != null)
             OnStartDragging(gameObject.transform.parent.gameObject, startDragPos, transform.position);
+
     }
 
     void OnMouseDrag() {
+
+        if (AttemptingToMoveEnemySoldier())
+            return;
+
         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out hit)) {
 
@@ -176,6 +197,20 @@ public class SC_Soldier : MonoBehaviour {
                 RemoveEnemyMark(currEnemy);
             }
         }
+    }
+
+    void OnMouseUp() {
+        if (AttemptingToMoveEnemySoldier())
+            return;
+
+        AssignCurrPos(ref endDragPos);
+        if (OnFinishDragging != null)
+            OnFinishDragging(gameObject.transform.parent.gameObject, endDragPos, transform.position);
+    }
+
+    private bool AttemptingToMoveEnemySoldier() {
+        //dont let player move the enemy soldiers on his turn
+        return gameObject.GetComponent<SC_Soldier>().Team == SoldierTeam.ENEMY;
     }
 
     private void RemoveEnemyMark(GameObject currEnemy) {
@@ -197,13 +232,8 @@ public class SC_Soldier : MonoBehaviour {
     }
 
     private bool HoveredOverEnemy(string objHitName) {
+        //todo: only mark enemy if he's in range
         return (objHitName.Contains(GameModel.ENEMY_NAME_VAR));
-    }
-
-    void OnMouseUp() {
-        AssignCurrPos(ref endDragPos);
-        if (OnFinishDragging != null)
-            OnFinishDragging(gameObject.transform.parent.gameObject, endDragPos, transform.position);
     }
 
     public void OnAnimationEnded() {

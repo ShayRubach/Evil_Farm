@@ -49,6 +49,7 @@ public class SC_GameController : MonoBehaviour {
 
     void FixedUpdate() {
 
+        //for debugging purposes only:
         if (Input.GetKeyDown(KeyCode.Space)) {
             foreach (System.Collections.Generic.KeyValuePair<string, GameObject> obj in model.GetObjects()) {
                 if (obj.Value.name.Contains("tile")) {
