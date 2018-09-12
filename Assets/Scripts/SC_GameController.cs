@@ -26,6 +26,8 @@ public class SC_GameController : MonoBehaviour {
     private Vector3 nextPosition, startDragPos, endDragPos;
     private Animator soldierAnimator, previewSoldierAnimator;
     private Animator announcerAnimator, endGameOptionsAnimator;
+    private Animator battleAnimator;
+
 
     private bool isMyTurn = true;
     private bool duringTie = false;
@@ -46,12 +48,15 @@ public class SC_GameController : MonoBehaviour {
         soldierSpotlight = model.GetObjects()[GameModel.SPOTLIGHT_NAME_VAR].GetComponent<SC_Spotlight>();
         announcerAnimator = model.GetObjects()[GameModel.ANNOUNCER_VAR_NAME].GetComponent<Animator>();
         endGameOptionsAnimator = model.GetObjects()[GameModel.END_GAME_OPTIONS_VAR_NAME].GetComponent<Animator>();
+        battleAnimator = model.GetObjects()[GameModel.BATTLE_ANIMATOR_VAR_NAME].GetComponent<Animator>();
+
         previewSoldierPlayer = model.GetObjects()[GameModel.PREVIEW_SOLDIER_NAME_VAR];
         previewSoldierAnimator = previewSoldierPlayer.GetComponent<Animator>();
         
         HidePreviewSoldier();
         countdownManager.SetActive(true);
         shuffleHandler.SetActive(true);
+        battleAnimator.gameObject.SetActive(false);
     }
 
     void FixedUpdate() {
@@ -90,15 +95,16 @@ public class SC_GameController : MonoBehaviour {
     }
 
     void OnEnable() {
+        GameModel.FinishGame += FinishGame;
+        GameModel.AIMoveFinished += AIMoveFinished;
+        GameModel.CallTieBreaker += TieBreaker;
+        GameModel.OnMatchStarted += OnMatchStarted;
+        GameModel.OnMatchFinished += OnMatchFinished;
         SC_Soldier.OnStartDragging += OnStartDraggingSoldier;
         SC_Soldier.OnFinishDragging += OnFinishDraggingSoldier;
         SC_Soldier.OnSoldierMovementAnimationEnd += OnSoldierMovementAnimationEnd;
         SC_Soldier.MarkSoldier += MarkSoldier;
         SC_Soldier.UnmarkSoldier += UnmarkSoldier;
-        GameModel.FinishGame += FinishGame;
-        GameModel.AIMoveFinished += AIMoveFinished;
-        GameModel.CallTieBreaker += TieBreaker;
-        GameModel.OnMatchFinished += OnMatchFinished;
         SC_TieWeapon.OnNewWeaponChoice += OnNewWeaponChoice;
         SC_AnnouncerManager.FinishAnnouncementEvent += FinishAnnouncementEvent;
         SC_AnnouncerManager.StartAnnouncementEvent += StartAnnouncementEvent;
@@ -106,19 +112,21 @@ public class SC_GameController : MonoBehaviour {
         SC_CountdownTimer.PreparationTimeOver += PreparationTimeOver;
         SC_CountdownTimer.PreparationTimeStarted += PreparationTimeStarted;
         SC_ShuffleIcon.OnShuffleClicked += OnShuffleClicked;
+        SC_BattleAnimations.BattleAnimationFinish += OnBattleAnimationFinish;
         SC_Cart.GodMode += GodMode;
     }
 
     void OnDisable() {
+        GameModel.FinishGame -= FinishGame;
+        GameModel.AIMoveFinished -= AIMoveFinished;
+        GameModel.CallTieBreaker -= TieBreaker;
+        GameModel.OnMatchStarted -= OnMatchStarted;
+        GameModel.OnMatchFinished -= OnMatchFinished;
+        SC_Soldier.UnmarkSoldier -= UnmarkSoldier;
         SC_Soldier.OnStartDragging -= OnStartDraggingSoldier;
         SC_Soldier.OnFinishDragging -= OnFinishDraggingSoldier;
         SC_Soldier.OnSoldierMovementAnimationEnd -= OnSoldierMovementAnimationEnd;
         SC_Soldier.MarkSoldier -= MarkSoldier;
-        SC_Soldier.UnmarkSoldier -= UnmarkSoldier;
-        GameModel.FinishGame -= FinishGame;
-        GameModel.AIMoveFinished -= AIMoveFinished;
-        GameModel.CallTieBreaker -= TieBreaker;
-        GameModel.OnMatchFinished -= OnMatchFinished;
         SC_TieWeapon.OnNewWeaponChoice -= OnNewWeaponChoice;
         SC_AnnouncerManager.FinishAnnouncementEvent -= FinishAnnouncementEvent;
         SC_AnnouncerManager.StartAnnouncementEvent -= StartAnnouncementEvent;
@@ -126,10 +134,31 @@ public class SC_GameController : MonoBehaviour {
         SC_CountdownTimer.PreparationTimeOver -= PreparationTimeOver;
         SC_CountdownTimer.PreparationTimeStarted -= PreparationTimeStarted;
         SC_ShuffleIcon.OnShuffleClicked -= OnShuffleClicked;
+        SC_BattleAnimations.BattleAnimationFinish -= OnBattleAnimationFinish;
         SC_Cart.GodMode -= GodMode;
     }
 
+    //private void OnMatchStarted(SoldierType playerType, SoldierType enemyType) {
+    private void OnMatchStarted() {
+        canPlay = false;
+        battleAnimator.gameObject.SetActive(true);
+        ResetAnimatorParameters(battleAnimator);
+        EnableBattleAnimationParameters();
+    }
+
+    private void EnableBattleAnimationParameters() {
+        string parameter = model.GetCurrentBattleAnimationParameters();
+        battleAnimator.SetBool(parameter, true);
+    }
+
+    private void OnBattleAnimationFinish() {
+        canPlay = true;
+        ResetAnimatorParameters(battleAnimator);
+        battleAnimator.gameObject.SetActive(false);
+    }
+
     private void OnShuffleClicked() {
+        //todo: fix issue with tile 74 not found in FilterIndicators
         //model.ShuffleTeam(SoldierTeam.PLAYER);
     }
 
@@ -162,16 +191,16 @@ public class SC_GameController : MonoBehaviour {
 
     //let user interact with game when animation ends:
     private void FinishAnnouncementEvent() {
-        ResetAllAnnouncementAnimations();
+        ResetAnimatorParameters(announcerAnimator);
         canPlay = true;
     }
 
-    private void ResetAllAnnouncementAnimations() {
-        announcerAnimator.SetBool(GameModel.ANNOUNCER_TIE_TRIGGER, false);
-        announcerAnimator.SetBool(GameModel.ANNOUNCER_LOSE_TRIGGER, false);
-        announcerAnimator.SetBool(GameModel.ANNOUNCER_WIN_TRIGGER, false);
-        announcerAnimator.SetBool(GameModel.ANNOUNCER_VICTORY_TRIGGER, false);
-        announcerAnimator.SetBool(GameModel.ANNOUNCER_DEFEAT_TRIGGER, false);
+    private void ResetAnimatorParameters(Animator animator) {
+
+        for (int i = 0; i < animator.parameterCount ; i++) {
+            //if(animator.GetParameter(i).GetType() == typeof(bool))
+            animator.SetBool(animator.GetParameter(i).name, false);
+        }
     }
 
     private void OnNewWeaponChoice(SoldierType newWeapon) {

@@ -23,7 +23,11 @@ public class GameModel : MonoBehaviour {
 
     public delegate void NotifyToController();
     public static event NotifyToController AIMoveFinished;
+    public static event NotifyToController OnMatchStarted;
     public static event NotifyToController CallTieBreaker;
+
+    //public delegate void MatchStep(SoldierType playerType, SoldierType enemyType);
+    //public static event MatchStep OnMatchStarted;
 
     private bool playingVsAI = true;
     private static readonly int COLS = 7;
@@ -53,6 +57,7 @@ public class GameModel : MonoBehaviour {
     public static readonly string TIE_WEAPONS_P_VAR_NAME = "tie_weapon_options";
     public static readonly string END_GAME_OPTIONS_VAR_NAME = "end_game_options";
     public static readonly string PREVIEW_ANIMATION_TRIGGER_PREFIX = "Preview";
+    public static readonly string BATTLE_ANIMATOR_VAR_NAME = "battle_animations";
 
     public static readonly string ANNOUNCER_VAR_NAME = "announcer";
     public static readonly string ANNOUNCER_WIN_TRIGGER = "Win";
@@ -128,6 +133,7 @@ public class GameModel : MonoBehaviour {
         Vector3 newPos;
         GameObject tile;
 
+        //shuffle (internaly) the soldiers list:
         soldiers.Sort((x, y) => UnityEngine.Random.value < 0.5f ? -1 : 1);
 
         for (int i = startingTileIdx, j = 0; j < soldiers.Count; i++, j++) {
@@ -151,6 +157,24 @@ public class GameModel : MonoBehaviour {
         
         FocusedPlayer = ChooseValidRandomSoldier();
         StartCoroutine(SimulateThinkingTime(THINKING_TIME_IN_SECONDS));
+    }
+
+    internal string GetCurrentBattleAnimationParameters() {
+        //get current weapons of the player and enemy in our current battle:
+        string playerWeapon = FocusedPlayer.GetComponent<SC_Soldier>().Type.ToString();
+        string enemyWeapon = FocusedEnemy.GetComponent<SC_Soldier>().Type.ToString();
+        
+        //fix their naming to be first uppercase letter (to match the animation trigger param names):
+        string fixedPlayerWeaponParamName = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(playerWeapon.ToString().ToLower());
+        string fixedEnemyWeaponParamName = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(enemyWeapon.ToString().ToLower());
+
+        //the focused player is set by the initiating team, so if the AI was the initiator, 
+        //we make sure to swap parameter order for a mirror view of the animationg:
+        if (FocusedPlayer.GetComponent<SC_Soldier>().Team == SoldierTeam.PLAYER)
+            return fixedPlayerWeaponParamName + fixedEnemyWeaponParamName;
+        else
+            return fixedEnemyWeaponParamName + fixedPlayerWeaponParamName;
+
     }
 
     private IEnumerator SimulateThinkingTime(float waitTime) {
@@ -245,10 +269,9 @@ public class GameModel : MonoBehaviour {
             return objects[TILE_NAME_VAR + x + y];
         }
         catch(KeyNotFoundException e) {
-            Debug.Log("couldn't find " + TILE_NAME_VAR + x + y);
+            Debug.Log("COULD NOT FIND THIS TILE = " + TILE_NAME_VAR + x + y);
         }
         return null;    
-//        return objects[TILE_NAME_VAR + x + y];
     }
 
     public Dictionary<string,GameObject> GetObjects() {
@@ -357,8 +380,6 @@ public class GameModel : MonoBehaviour {
             return false;
         }
 
-        
-
         tile.GetComponent<SC_Tile>().soldier = soldier;
         tile.GetComponent<SC_Tile>().IsOcuupied = occupied;
         tile.GetComponent<SC_Tile>().IsTraversal = traversal;
@@ -367,64 +388,60 @@ public class GameModel : MonoBehaviour {
         //else, we wish to update both tile and soldier with their references.
         if(soldier != null) {
             soldier.GetComponent<SC_Soldier>().Tile = tile;
-            //Debug.Log("UpdateTileAndSoldierRefs: called with soldier=" + soldier + " and tile=" + tile);
         }
-        else {
-            //Debug.Log("UpdateTileAndSoldierRefs: clearing tile=" + tile);
-        }
-
         
         return true;
     }
 
     public void Match() {
-        //Debug.Log("Starting Match...");
 
+        if (OnMatchStarted != null) {
+            OnMatchStarted();
+            //SetBattleAnimationFlags();
+        }
         //call our MatchHandler to evaluate the match result:
         MatchStatus result = MatchHandler.GetInstance.EvaluateMatchResult(FocusedPlayer, FocusedEnemy);
-        //Debug.Log("match status = " + result);
-
         HandleMatchResult(result);
     }
 
     /*
      * take the necessary actions by the result: remove losing soldier, call MoveSoldier() ,update new references etc..
      */
-        private void HandleMatchResult(MatchStatus result) {
+    private void HandleMatchResult(MatchStatus result) {
         
-        //get the initiator's movement direction:
-        MovementDirections direction = CalculateMovementDirectionByAngle(Mathf.Atan2(-relativePos.y, -relativePos.x) * Mathf.Rad2Deg);
+    //get the initiator's movement direction:
+    MovementDirections direction = CalculateMovementDirectionByAngle(Mathf.Atan2(-relativePos.y, -relativePos.x) * Mathf.Rad2Deg);
 
-        //Debug.Log("FocusedPlayer = " + FocusedPlayer.name);
-        //Debug.Log("FocusedEnemy  = " + FocusedEnemy.name);
+    //Debug.Log("FocusedPlayer = " + FocusedPlayer.name);
+    //Debug.Log("FocusedEnemy  = " + FocusedEnemy.name);
 
-        switch (result) {
-            case MatchStatus.INITIATOR_WON_THE_MATCH:
-            case MatchStatus.INITIATOR_REVEALED:
-                RemoveSoldier(FocusedEnemy);
-                RevealSoldier(FocusedPlayer);
-                AnnounceMatchWinner(FocusedPlayer.GetComponent<SC_Soldier>().Team);
-                break;
-            case MatchStatus.VICTIM_WON_THE_MATCH:
-            case MatchStatus.VICTIM_REVEALED:
-                RemoveSoldier(FocusedPlayer);
-                RevealSoldier(FocusedEnemy);
-                AnnounceMatchWinner(FocusedEnemy.GetComponent<SC_Soldier>().Team);
-                break;
-            case MatchStatus.BOTH_LOST_MATCH:
-                RemoveSoldier(FocusedPlayer);
-                RemoveSoldier(FocusedEnemy);
-                AnnounceMatchWinner(SoldierTeam.NO_TEAM);
-                break;
-            case MatchStatus.TIE:
-                TieBreaker();
-                break;
-            case MatchStatus.INITIATOR_WON_THE_GAME:
-                CallFinishGame(FocusedPlayer);
-                break;
-            case MatchStatus.VICTIM_WON_THE_GAME:
-                CallFinishGame(FocusedEnemy);   
-                break;
+    switch (result) {
+        case MatchStatus.INITIATOR_WON_THE_MATCH:
+        case MatchStatus.INITIATOR_REVEALED:
+            RemoveSoldier(FocusedEnemy);
+            RevealSoldier(FocusedPlayer);
+            AnnounceMatchWinner(FocusedPlayer.GetComponent<SC_Soldier>().Team);
+            break;
+        case MatchStatus.VICTIM_WON_THE_MATCH:
+        case MatchStatus.VICTIM_REVEALED:
+            RemoveSoldier(FocusedPlayer);
+            RevealSoldier(FocusedEnemy);
+            AnnounceMatchWinner(FocusedEnemy.GetComponent<SC_Soldier>().Team);
+            break;
+        case MatchStatus.BOTH_LOST_MATCH:
+            RemoveSoldier(FocusedPlayer);
+            RemoveSoldier(FocusedEnemy);
+            AnnounceMatchWinner(SoldierTeam.NO_TEAM);
+            break;
+        case MatchStatus.TIE:
+            TieBreaker();
+            break;
+        case MatchStatus.INITIATOR_WON_THE_GAME:
+            CallFinishGame(FocusedPlayer);
+            break;
+        case MatchStatus.VICTIM_WON_THE_GAME:
+            CallFinishGame(FocusedEnemy);   
+            break;
         }
 
     }
@@ -545,13 +562,13 @@ public class GameModel : MonoBehaviour {
 
         //soldier is located in most left side of the border
         requestedTilePos = new Vector3(pos.x-1, pos.y, pos.z);
-        if (Mathf.Abs(pos.x) == LEFT_BOARD_EDGE_IDX || RequestTileIsOccupied(PointToTile(requestedTilePos))) {
+        if (pos.x == LEFT_BOARD_EDGE_IDX || RequestTileIsOccupied(PointToTile(requestedTilePos))) {
             HideObjectUnderBoard(pathIndicators.transform.GetChild((int)Indicators.LEFT).gameObject);
         }
         
         //soldier is located in most right side of the border
         requestedTilePos = new Vector3(pos.x + 1, pos.y, pos.z);
-        if (Mathf.Abs(pos.x) == RIGHT_BOARD_EDGE_IDX || RequestTileIsOccupied(PointToTile(requestedTilePos))) {
+        if (pos.x == 6 || RequestTileIsOccupied(PointToTile(requestedTilePos))) {
             HideObjectUnderBoard(pathIndicators.transform.GetChild((int)Indicators.RIGHT).gameObject);
         }
 
