@@ -156,7 +156,7 @@ public class GameModel : MonoBehaviour {
         Debug.Log("Playing as AI");
         
         FocusedPlayer = ChooseValidRandomSoldier();
-        StartCoroutine(SimulateThinkingTime(THINKING_TIME_IN_SECONDS));
+        StartCoroutine(SimulateThinkingTimeAndMove(THINKING_TIME_IN_SECONDS));
     }
 
     internal string GetCurrentBattleAnimationParameters() {
@@ -177,7 +177,7 @@ public class GameModel : MonoBehaviour {
 
     }
 
-    private IEnumerator SimulateThinkingTime(float waitTime) {
+    private IEnumerator SimulateThinkingTimeAndMove(float waitTime) {
         yield return new WaitForSeconds(waitTime);
         if (IsPossibleMatch(nextMoveCoord)) {
             Match();

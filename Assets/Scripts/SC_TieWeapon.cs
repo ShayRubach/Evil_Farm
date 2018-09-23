@@ -7,6 +7,7 @@ public class SC_TieWeapon : MonoBehaviour {
 
     public delegate void NotifyToController(SoldierType newWeapon);
     public static event NotifyToController OnNewWeaponChoice;
+    private bool tieAnimationEnded = false;
 
     private Animator animator;
     public static readonly string TRIGGER_NAME = "Hovered";
@@ -16,11 +17,18 @@ public class SC_TieWeapon : MonoBehaviour {
         animator = gameObject.GetComponent<Animator>();
         animator.SetBool(TRIGGER_NAME, false);
 	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+
+    private void OnEnable() {
+        SC_BattleAnimations.BattleAnimationFinish += OnBattleAnimationFinished;
+    }
+
+    private void OnDisable() {
+        SC_BattleAnimations.BattleAnimationFinish -= OnBattleAnimationFinished;
+    }
+
+    private void OnBattleAnimationFinished() {
+        tieAnimationEnded = true;
+    }
 
     void OnMouseOver() {
         animator.SetBool(TRIGGER_NAME, true);
@@ -31,8 +39,12 @@ public class SC_TieWeapon : MonoBehaviour {
     }
 
     void OnMouseDown() {
-        if (OnNewWeaponChoice != null)
-            OnNewWeaponChoice(GetClickedWeapon());
+        if (tieAnimationEnded) {
+            if (OnNewWeaponChoice != null)
+                OnNewWeaponChoice(GetClickedWeapon());
+        }
+        tieAnimationEnded = false;
+
     }
 
     private SoldierType GetClickedWeapon() {

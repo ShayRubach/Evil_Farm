@@ -32,6 +32,7 @@ public class SC_GameController : MonoBehaviour {
     private bool isMyTurn = true;
     private bool duringTie = false;
     private bool canPlay = false;
+    private bool AIAlreadyPlaying = false;
 
 
     private MovementDirections soldierMovementDirection;
@@ -40,7 +41,7 @@ public class SC_GameController : MonoBehaviour {
 
 
     void Start() {
-        
+
         //get reference to our model class
         model = GameObject.Find(GameModel.GAME_MODEL_NAME_VAR).GetComponent<GameModel>();
 
@@ -52,7 +53,11 @@ public class SC_GameController : MonoBehaviour {
 
         previewSoldierPlayer = model.GetObjects()[GameModel.PREVIEW_SOLDIER_NAME_VAR];
         previewSoldierAnimator = previewSoldierPlayer.GetComponent<Animator>();
-        
+
+        Init();
+    }
+
+    private void Init() {
         HidePreviewSoldier();
         countdownManager.SetActive(true);
         shuffleHandler.SetActive(true);
@@ -72,14 +77,16 @@ public class SC_GameController : MonoBehaviour {
             }
         }
 
-        if(isMyTurn == false && !duringTie) {
-            PlayAsAI();
+        if(!isMyTurn && !duringTie && canPlay) {
+            if (!AIAlreadyPlaying)
+                PlayAsAI();
         }
     }
 
     private void PlayAsAI() {
+        AIAlreadyPlaying = true;
         model.PlayAsAI();
-        isMyTurn = true;
+        //isMyTurn = true;
     }
 
     IEnumerator Fade() {
@@ -175,8 +182,7 @@ public class SC_GameController : MonoBehaviour {
         if(choice == EndGameOption.RESTART) {
             endGameOptionsAnimator.SetBool(GameModel.END_GAME_TRIGGER, false);
             model.RestartGame();
-            countdownManager.SetActive(true);
-            shuffleHandler.SetActive(true);
+            Init();
         }
         else {
             SharedDataHandler.nextScreenRequested = Scenes.MainMenu.ToString();
@@ -192,7 +198,7 @@ public class SC_GameController : MonoBehaviour {
     //let user interact with game when animation ends:
     private void FinishAnnouncementEvent() {
         ResetAnimatorParameters(announcerAnimator);
-        canPlay = true;
+        //canPlay = true;
     }
 
     private void ResetAnimatorParameters(Animator animator) {
@@ -240,6 +246,8 @@ public class SC_GameController : MonoBehaviour {
     
     //called when AI is finished with his move (inc. animations):
     private void AIMoveFinished() {
+        Debug.Log("AIMoveFinished");
+        AIAlreadyPlaying = false;
         isMyTurn = true;
     }
 
@@ -312,7 +320,6 @@ public class SC_GameController : MonoBehaviour {
                     MoveSoldier(focusedPlayerParent, soldierMovementDirection);
                 }
                 isMyTurn = false;
-
             }
 
             //Debug.Log("focusedSoldier.transform.GetChild(0).position= " + focusedPlayerParent.transform.GetChild(0).position);
