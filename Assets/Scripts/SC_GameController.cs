@@ -61,7 +61,7 @@ public class SC_GameController : MonoBehaviour {
         HidePreviewSoldier();
         countdownManager.SetActive(true);
         shuffleHandler.SetActive(true);
-        battleAnimator.gameObject.SetActive(false);
+        //battleAnimator.gameObject.SetActive(false);
     }
 
     void FixedUpdate() {
@@ -169,7 +169,7 @@ public class SC_GameController : MonoBehaviour {
     private void OnBattleAnimationFinish() {
         canPlay = true;
         ResetAnimatorParameters(battleAnimator);
-        battleAnimator.gameObject.SetActive(false);
+        //battleAnimator.gameObject.SetActive(false);
     }
 
     private void OnShuffleClicked() {
@@ -215,6 +215,7 @@ public class SC_GameController : MonoBehaviour {
             //if(animator.GetParameter(i).GetType() == typeof(bool))
             animator.SetBool(animator.GetParameter(i).name, false);
         }
+
     }
 
     private void OnNewWeaponChoice(SoldierType newWeapon) {

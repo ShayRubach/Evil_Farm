@@ -74,11 +74,13 @@ public class SC_MenuController : MonoBehaviour {
     }
 
     public void OnClickedSinglePlayer() {
+        SharedDataHandler.SetMultiplayerMode(false);
         MoveToScene(Scenes.SinglePlayer.ToString());
     }
 
     public void OnClickedMultiplayer() {
-        MoveToScene(Scenes.Multiplayer.ToString());
+        SharedDataHandler.SetMultiplayerMode(true);
+        MoveToScene(Scenes.SinglePlayer.ToString());
     }
 
     public void OnClickedGithubPage() {
