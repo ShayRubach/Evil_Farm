@@ -156,11 +156,14 @@ public class SC_GameController : MonoBehaviour {
     private void EnableBattleAnimationParameters() {
         string parameter = model.GetCurrentBattleAnimationParameters();
         
-        if (!parameter.Contains(GameModel.CRYSTAL_VAR_NAME)) {
+        //if game ended, dont show anymore battle animations
+        if (parameter.Contains(GameModel.CRYSTAL_VAR_NAME)) {
+            battleAnimator.gameObject.SetActive(false);
+        }
+        else {
             battleAnimator.SetBool(parameter, true);
         }
-
-        battleAnimator.gameObject.SetActive(false);
+        
     }
 
     private void OnBattleAnimationFinish() {
