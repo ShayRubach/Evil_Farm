@@ -58,6 +58,8 @@ public class GameModel : MonoBehaviour {
     public static readonly string END_GAME_OPTIONS_VAR_NAME = "end_game_options";
     public static readonly string PREVIEW_ANIMATION_TRIGGER_PREFIX = "Preview";
     public static readonly string BATTLE_ANIMATOR_VAR_NAME = "battle_animations";
+    public static readonly string CRYSTAL_VAR_NAME = "Crystal";
+
 
     public static readonly string ANNOUNCER_VAR_NAME = "announcer";
     public static readonly string ANNOUNCER_WIN_TRIGGER = "Win";
@@ -397,7 +399,6 @@ public class GameModel : MonoBehaviour {
 
         if (OnMatchStarted != null) {
             OnMatchStarted();
-            //SetBattleAnimationFlags();
         }
         //call our MatchHandler to evaluate the match result:
         MatchStatus result = MatchHandler.GetInstance.EvaluateMatchResult(FocusedPlayer, FocusedEnemy);

@@ -155,7 +155,12 @@ public class SC_GameController : MonoBehaviour {
 
     private void EnableBattleAnimationParameters() {
         string parameter = model.GetCurrentBattleAnimationParameters();
-        battleAnimator.SetBool(parameter, true);
+        
+        if (!parameter.Contains(GameModel.CRYSTAL_VAR_NAME)) {
+            battleAnimator.SetBool(parameter, true);
+        }
+
+        battleAnimator.gameObject.SetActive(false);
     }
 
     private void OnBattleAnimationFinish() {
