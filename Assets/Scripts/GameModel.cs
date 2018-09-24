@@ -569,7 +569,7 @@ public class GameModel : MonoBehaviour {
         
         //soldier is located in most right side of the border
         requestedTilePos = new Vector3(pos.x + 1, pos.y, pos.z);
-        if (pos.x == 6 || RequestTileIsOccupied(PointToTile(requestedTilePos))) {
+        if (pos.x == RIGHT_BOARD_EDGE_IDX || RequestTileIsOccupied(PointToTile(requestedTilePos))) {
             HideObjectUnderBoard(pathIndicators.transform.GetChild((int)Indicators.RIGHT).gameObject);
         }
 
