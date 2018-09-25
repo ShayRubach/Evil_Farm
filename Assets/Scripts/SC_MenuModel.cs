@@ -18,6 +18,9 @@ public class SC_MenuModel : MonoBehaviour {
     public static readonly string WRONG_DETAILS_POPUP_MSG = "Wrong username or password.";
     public static readonly string SCENE_PREFIX = "Scene";
     public static readonly string MENU_OBJECTS_STR_NAME = "MenuObjects";
+    public static readonly string ROOM_GRP_PASSWORD_KEY = "Password";
+    public static readonly string ROOM_GRP_PASSWORD_VAL = "shenkar";
+
     public static readonly string GITHUB_URL = "https://github.com/ShayRubach/Evil_Garden";
 
     private string apiKey = "33d4ff44dbe11a5a2c994c9aeae94e6de31abd37c85c797d09d30398318f4876";
@@ -27,8 +30,8 @@ public class SC_MenuModel : MonoBehaviour {
     private string passowrd = "";
 
     private Dictionary<string, GameObject> objects = null;
-    private Dictionary<string, object> matchRoomData;
-    private List<string> rooms;
+    public Dictionary<string, object> matchRoomData { get; set; }
+    public List<string> rooms { get; set; }
 
     private int roomIndex = INITIAL_ROOM_IDX;
     private string roomId = INITIAL_ROOM_ID;
@@ -49,7 +52,14 @@ public class SC_MenuModel : MonoBehaviour {
             foreach (GameObject obj in menuObjects) {
                 objects.Add(obj.name, obj);
             }
+
+            InitMatchRoomData(ROOM_GRP_PASSWORD_KEY, ROOM_GRP_PASSWORD_VAL);
         }
+    }
+
+    private void InitMatchRoomData(string key, string value) {
+        matchRoomData = new Dictionary<string, object>();
+        matchRoomData.Add(key, value);
     }
 
     public Dictionary<string, GameObject> GetObjects() {
@@ -65,7 +75,7 @@ public class SC_MenuModel : MonoBehaviour {
         passowrd = passwordStr;
     }
 
-    public string getUserName() {
+    public string GetUserName() {
         return username;
     }
 

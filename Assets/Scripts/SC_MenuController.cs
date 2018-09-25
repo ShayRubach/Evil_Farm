@@ -131,7 +131,11 @@ public class SC_MenuController : MonoBehaviour {
 
     public void OnClickedMultiplayer() {
         SharedDataHandler.SetMultiplayerMode(true);
-        MoveToScene(Scenes.SinglePlayer.ToString());
+
+        WarpClient.GetInstance().Connect(model.GetUserName());
+        Debug.Log("Connecting...");
+
+        //MoveToScene(Scenes.SinglePlayer.ToString());
     }
 
     public void OnClickedGithubPage() {
