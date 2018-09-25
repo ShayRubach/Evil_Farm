@@ -12,17 +12,14 @@ public class SC_MenuController : MonoBehaviour {
     private SC_CoinSpawner  coinSpawner;
     private List<GameObject> scenes;
 
-    private static readonly int SLIDER_STARTING_VALUE = 50;
-    private static int VALUE_RATIO = 200;
-
     private static readonly string url = "https://github.com/ShayRubach/Evil_Garden";
     private static string currScene = Scenes.Login.ToString();
     private static string lastScene = Scenes.Login.ToString();
     private string usernameStr, passwordStr;
-    private static int sfxValue = SLIDER_STARTING_VALUE;
-    private static int bgMusicValue = SLIDER_STARTING_VALUE;
-    private static int coinsValue = SLIDER_STARTING_VALUE;
-    private static int valueRatio = VALUE_RATIO;
+    private static int sfxValue = MenuModel.SLIDER_STARTING_VALUE;
+    private static int bgMusicValue = MenuModel.SLIDER_STARTING_VALUE;
+    private static int coinsValue = MenuModel.SLIDER_STARTING_VALUE;
+    private static int valueRatio = MenuModel.VALUE_RATIO;
 
     public static readonly string SCENE_PREFIX = "Scene";
     public static readonly string MENU_OBJECTS_STR_NAME = "MenuObjects";
@@ -52,9 +49,8 @@ public class SC_MenuController : MonoBehaviour {
         
         //only invoke if Scene is "Scene_Settings":
         if(currScene.Equals(Scenes.Settings.ToString())) {
-            Debug.Log("updating sliders value..");
-            objects["slider_sfx"].GetComponent<Slider>().value = sfxValue;
-            objects["slider_bg_music"].GetComponent<Slider>().value = bgMusicValue;
+            objects[MenuModel.SLIDER_SFX_VAR_NAME].GetComponent<Slider>().value = sfxValue;
+            objects[MenuModel.SLIDER_BG_MUSIC_VAR_NAME].GetComponent<Slider>().value = bgMusicValue;
         }
     }
 
@@ -72,11 +68,12 @@ public class SC_MenuController : MonoBehaviour {
 
     private void VerifyUserAndPass(string usernameStr, string passwordStr) {
         if (menuModel.VerifyUsernameAndPassword(usernameStr, passwordStr)) {
-            Debug.Log("Logged in.");
+            Debug.Log(MenuModel.LOGGED_IN_POPUP_MSG);
             MoveToScene(Scenes.MainMenu.ToString());
         }
-        else
-            Debug.Log("Wrong username or password.");
+        else {
+            Debug.Log(MenuModel.WRONG_DETAILS_POPUP_MSG);
+        }
     }
 
     public void OnClickedLogoutButton() {
