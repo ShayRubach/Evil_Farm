@@ -13,7 +13,7 @@ public static class SharedDataHandler {
     public static bool isMultiplayer = false;
 
     static SharedDataHandler() {
-        nextScreenRequested = MenuModel.INITIAL_SCENE;
+        nextScreenRequested = SC_MenuModel.INITIAL_SCENE;
     }
 
     internal static void SetMultiplayerMode(bool mode) {

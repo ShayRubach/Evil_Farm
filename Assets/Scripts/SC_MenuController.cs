@@ -7,8 +7,11 @@ using UnityEngine.UI;
 
 public class SC_MenuController : MonoBehaviour {
 
+    [SerializeField]
+    private GameObject menuModelObject;
+    private SC_MenuModel model;
+
     private static Dictionary<string, GameObject> objects;
-    private MenuModel       menuModel;
     private SC_CoinSpawner  coinSpawner;
     private List<GameObject> scenes;
 
@@ -16,10 +19,10 @@ public class SC_MenuController : MonoBehaviour {
     private static string currScene = Scenes.Login.ToString();
     private static string lastScene = Scenes.Login.ToString();
     private string usernameStr, passwordStr;
-    private static int sfxValue = MenuModel.SLIDER_STARTING_VALUE;
-    private static int bgMusicValue = MenuModel.SLIDER_STARTING_VALUE;
-    private static int coinsValue = MenuModel.SLIDER_STARTING_VALUE;
-    private static int valueRatio = MenuModel.VALUE_RATIO;
+    private static int sfxValue = SC_MenuModel.SLIDER_STARTING_VALUE;
+    private static int bgMusicValue = SC_MenuModel.SLIDER_STARTING_VALUE;
+    private static int coinsValue = SC_MenuModel.SLIDER_STARTING_VALUE;
+    private static int valueRatio = SC_MenuModel.VALUE_RATIO;
 
     public static readonly string SCENE_PREFIX = "Scene";
     public static readonly string MENU_OBJECTS_STR_NAME = "MenuObjects";
@@ -27,7 +30,11 @@ public class SC_MenuController : MonoBehaviour {
     public Text progressTxtValue;
 
     void Start () {
-        menuModel = MenuModel.GetInstance;
+        Init();
+    }
+
+    private void Init() {
+        model = menuModelObject.GetComponent<SC_MenuModel>();
         objects = new Dictionary<string, GameObject>();
         scenes = new List<GameObject>();
         GameObject[] menuObjects = GameObject.FindGameObjectsWithTag(MENU_OBJECTS_STR_NAME);
@@ -41,16 +48,16 @@ public class SC_MenuController : MonoBehaviour {
             if (obj.name.StartsWith(SCENE_PREFIX) && !obj.name.Contains(SharedDataHandler.nextScreenRequested))
                 obj.SetActive(false);
         }
-    
-       InitSliderValues();
+
+        InitSliderValues();
     }
 
     private void InitSliderValues() {
         
         //only invoke if Scene is "Scene_Settings":
         if(currScene.Equals(Scenes.Settings.ToString())) {
-            objects[MenuModel.SLIDER_SFX_VAR_NAME].GetComponent<Slider>().value = sfxValue;
-            objects[MenuModel.SLIDER_BG_MUSIC_VAR_NAME].GetComponent<Slider>().value = bgMusicValue;
+            objects[SC_MenuModel.SLIDER_SFX_VAR_NAME].GetComponent<Slider>().value = sfxValue;
+            objects[SC_MenuModel.SLIDER_BG_MUSIC_VAR_NAME].GetComponent<Slider>().value = bgMusicValue;
         }
     }
 
@@ -63,16 +70,18 @@ public class SC_MenuController : MonoBehaviour {
     }
 
     private void RegisterNewUser(string usernameStr, string passwordStr) {
-        menuModel.RegisterNewUser(usernameStr, passwordStr);
+        model.RegisterNewUser(usernameStr, passwordStr);
+        
     }
 
+    
     private void VerifyUserAndPass(string usernameStr, string passwordStr) {
-        if (menuModel.VerifyUsernameAndPassword(usernameStr, passwordStr)) {
-            Debug.Log(MenuModel.LOGGED_IN_POPUP_MSG);
+        if (model.VerifyUsernameAndPassword(usernameStr, passwordStr)) {
+            Debug.Log(SC_MenuModel.LOGGED_IN_POPUP_MSG);
             MoveToScene(Scenes.MainMenu.ToString());
         }
         else {
-            Debug.Log(MenuModel.WRONG_DETAILS_POPUP_MSG);
+            Debug.Log(SC_MenuModel.WRONG_DETAILS_POPUP_MSG);
         }
     }
 

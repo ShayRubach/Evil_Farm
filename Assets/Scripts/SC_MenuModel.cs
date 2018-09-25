@@ -4,7 +4,7 @@ using UnityEngine;
 using com.shephertz.app42.gaming.multiplayer.client;
 using com.shephertz.app42.gaming.multiplayer.client.events;
 
-public sealed class MenuModel {
+public class SC_MenuModel : MonoBehaviour {
 
     public static int VALUE_RATIO = 200;
     public static readonly int SLIDER_STARTING_VALUE = 50;
@@ -18,10 +18,7 @@ public sealed class MenuModel {
 
     private string apiKey = "33d4ff44dbe11a5a2c994c9aeae94e6de31abd37c85c797d09d30398318f4876";
     private string secretKey = "cbd6ccd273f31f5753eb384f92e072d932d3b99c34bf886d1795f579ca425a4e";
-
-    private static MenuModel instance = null;
-    private static readonly System.Object lockingObj = new System.Object();
-    
+        
     private string username = "sh";
     private string passowrd = "sh";
 
@@ -33,23 +30,11 @@ public sealed class MenuModel {
     private int roomIndex = INITIAL_ROOM_IDX;
     private string roomId = INITIAL_ROOM_ID;
 
-    private MenuModel() {}	
-
-    public static MenuModel GetInstance {
-        get {
-            if(instance == null) {
-                lock (lockingObj) {
-                    instance = (instance == null) ? new MenuModel() : instance;
-                }
-            }
-            return instance;
-        }
-    }
     public bool VerifyUsernameAndPassword(string un, string pass) {
         return username.Equals(un) && passowrd.Equals(pass);
     }
 
-    internal void RegisterNewUser(string usernameStr, string passwordStr) {
+    public void RegisterNewUser(string usernameStr, string passwordStr) {
         username = usernameStr;
         passowrd = passwordStr;
     }
