@@ -103,11 +103,11 @@ public class SC_MenuController : MonoBehaviour {
     }
 
     public void OnClickedMuteBgMusic() {
-        Mute("slider_bg_music");
+        Mute(SC_MenuModel.SLIDER_BG_MUSIC_VAR_NAME);
     }
 
     public void OnClickedMuteSfx() {
-        Mute("slider_sfx");
+        Mute(SC_MenuModel.SLIDER_SFX_VAR_NAME);
     }
 
     public void Mute(string sliderName) {
@@ -128,14 +128,15 @@ public class SC_MenuController : MonoBehaviour {
         permanentValueHolder = (int)slider.value;
     }
 
+    //todo: change these literal strings into constants
     public void OnSfxValueChanged() {
         ChangeSettingsSliderValue("slider_sfx", "sfx_value", ref sfxValue);
     }
-
+    //todo: change these literal strings into constants
     public void OnBgMusicValueChanged() {
         ChangeSettingsSliderValue("slider_bg_music", "bg_music_value", ref bgMusicValue);
     }
-
+    //todo: change these literal strings into constants
     public void OnCoinsValueChanged() {
         ChangeSettingsSliderValue("slider_coins", "coins_value", ref coinsValue);
     }
@@ -174,13 +175,12 @@ public class SC_MenuController : MonoBehaviour {
             float progress = Mathf.Clamp01(operation.progress / .9f);
             progressBar.value = progress;
             progressTxtValue.text = progress * 100f + "%";
-            //Debug.Log("progressBar.value = " + progressBar.value + " \t progressTxtValue.text = " + progressTxtValue.text);
 
             yield return null;
         }
 
     }
-
+    //todo: change these literal strings into constants
     private void ExtractUsernameAndPassword() {
         usernameStr = objects["inf_username"].GetComponent<InputField>().text;
         passwordStr = objects["inf_pass"].GetComponent<InputField>().text;
