@@ -10,6 +10,8 @@ public class SC_MenuModel : MonoBehaviour {
     public static int VALUE_RATIO = 200;
     public static readonly int SLIDER_STARTING_VALUE = 50;
     public static readonly int INITIAL_ROOM_IDX = 0;
+    public static readonly int MAX_TURN_TIME = 30;
+
     public static readonly string INITIAL_SCENE = "Login";
     public static readonly string INITIAL_ROOM_ID = "";
     public static readonly string SLIDER_SFX_VAR_NAME = "slider_sfx";
@@ -30,12 +32,8 @@ public class SC_MenuModel : MonoBehaviour {
     private string passowrd = "";
 
     private Dictionary<string, GameObject> objects = null;
-    public Dictionary<string, object> matchRoomData { get; set; }
-    public List<string> rooms { get; set; }
-
-    private int roomIndex = INITIAL_ROOM_IDX;
-    private string roomId = INITIAL_ROOM_ID;
-
+    public Dictionary<string, object> MatchRoomData { get; set; }
+    public List<string> Rooms { get; set; }
 
     private void Awake() {
         Init();
@@ -58,8 +56,8 @@ public class SC_MenuModel : MonoBehaviour {
     }
 
     private void InitMatchRoomData(string key, string value) {
-        matchRoomData = new Dictionary<string, object>();
-        matchRoomData.Add(key, value);
+        MatchRoomData = new Dictionary<string, object>();
+        MatchRoomData.Add(key, value);
     }
 
     public Dictionary<string, GameObject> GetObjects() {
@@ -87,5 +85,14 @@ public class SC_MenuModel : MonoBehaviour {
         return secretKey;
     }
 
-
+    internal void SearchRoom(int roomIndex) {
+        if (roomIndex < Rooms.Count) {
+            Debug.Log("Getting room Details (" + Rooms[roomIndex] + ")");
+            WarpClient.GetInstance().GetLiveRoomInfo(Rooms[roomIndex]);
+        }
+        else {
+            Debug.Log("Creating Room...");
+            WarpClient.GetInstance().CreateTurnRoom("Test" + username, username, 2, MatchRoomData, MAX_TURN_TIME);
+        }
+    }
 }

@@ -27,6 +27,9 @@ public class SC_MenuController : MonoBehaviour {
     private static int coinsValue = SC_MenuModel.SLIDER_STARTING_VALUE;
     private static int valueRatio = SC_MenuModel.VALUE_RATIO;
 
+    private int roomIndex = SC_MenuModel.INITIAL_ROOM_IDX;
+    private string roomId = SC_MenuModel.INITIAL_ROOM_ID;
+
     public Slider progressBar;
     public Text progressTxtValue;
 
@@ -230,18 +233,68 @@ public class SC_MenuController : MonoBehaviour {
         passwordStr = objects["inf_pass"].GetComponent<InputField>().text;
     }
 
-    private void OnConnect(bool _IsSuccess) { }
+    private void OnConnect(bool isSuccess) {
+        Debug.Log(isSuccess);
+        if (isSuccess) {
+            Debug.Log("Connected!");
+            //objects["UserName"].GetComponent<Text>().text = model.GetUserName();
+            //objects["Btn_Play"].SetActive(true);
 
-    public void OnRoomsInRange(bool _IsSuccess, MatchedRoomsEvent eventObj) { }
+            WarpClient.GetInstance().GetRoomsInRange(1, 2);
+            Debug.Log("Searching for room..");
+        }
+    }
 
-    private void OnCreateRoom(bool _IsSuccess, string _RoomId) { }
+    public void OnRoomsInRange(bool isSuccess, MatchedRoomsEvent eventObj) {
+        if (isSuccess) {
+            Debug.Log("Parsing rooms..");
+            model.Rooms = new List<string>();
+            foreach (var roomData in eventObj.getRoomsData()) {
+                Debug.Log("Room Id: " + roomData.getId());
+                Debug.Log("Room Owner: " + roomData.getRoomOwner());
+                model.Rooms.Add(roomData.getId());
+            }
 
-    public void OnGetLiveRoomInfo(LiveRoomInfoEvent eventObj) { }
+            roomIndex = 0;
+            SearchRoom(roomIndex);
+        }
+    }
 
-    public void OnJoinRoom(bool _IsSuccess, string _RoomId) { }
+    private void SearchRoom(int roomIndex) {
+        model.SearchRoom(roomIndex);
+    }
 
-    public void OnUserJoinRoom(RoomData eventObj, string _UserName) { }
+    private void OnCreateRoom(bool isSuccess, string createdRoomId) {
+        if (isSuccess) {
+            Debug.Log("Room Created! " + createdRoomId);
+            this.roomId = createdRoomId;
+            WarpClient.GetInstance().JoinRoom(roomId);
+            WarpClient.GetInstance().SubscribeRoom(roomId);
+        }
+        else { 
+            Debug.Log("Error create room");
+        }
+    }
 
-    public void OnGameStarted(string _Sender, string _RoomId, string _NextTurn) { }
+    public void OnGetLiveRoomInfo(LiveRoomInfoEvent eventObj) {
+
+    }
+
+    public void OnJoinRoom(bool isSuccess, string joinedRoomId) {
+        if (isSuccess)
+            Debug.Log("Joined Room: " + joinedRoomId);
+    }
+
+    public void OnUserJoinRoom(RoomData eventObj, string userJoinedName) {
+        Debug.Log("User: " + userJoinedName + " joined the room");
+        if (userJoinedName != model.GetUserName()) {
+            Debug.Log("OnUserJoinRoom ");
+            WarpClient.GetInstance().startGame();
+        }
+    }
+
+    public void OnGameStarted(string _Sender, string _RoomId, string _NextTurn) {
+        //MoveToScene(Scenes.SinglePlayer.ToString());
+    }
 
 }
