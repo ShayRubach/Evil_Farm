@@ -1,4 +1,7 @@
-﻿using System;
+﻿using AssemblyCSharp;
+using com.shephertz.app42.gaming.multiplayer.client;
+using com.shephertz.app42.gaming.multiplayer.client.events;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,6 +13,7 @@ public class SC_MenuController : MonoBehaviour {
     [SerializeField]
     private GameObject menuModelObject;
     private SC_MenuModel model;
+    private Listener listener;
 
     private static Dictionary<string, GameObject> objects;
     private SC_CoinSpawner  coinSpawner;
@@ -25,6 +29,26 @@ public class SC_MenuController : MonoBehaviour {
 
     public Slider progressBar;
     public Text progressTxtValue;
+
+    private void OnEnable() {
+        Listener.OnConnect += OnConnect;
+        Listener.OnRoomsInRange += OnRoomsInRange;
+        Listener.OnCreateRoom += OnCreateRoom;
+        Listener.OnGetLiveRoomInfo += OnGetLiveRoomInfo;
+        Listener.OnJoinRoom += OnJoinRoom;
+        Listener.OnUserJoinRoom += OnUserJoinRoom;
+        Listener.OnGameStarted += OnGameStarted;
+    }
+
+    private void OnDisable() {
+        Listener.OnConnect -= OnConnect;
+        Listener.OnRoomsInRange -= OnRoomsInRange;
+        Listener.OnCreateRoom -= OnCreateRoom;
+        Listener.OnGetLiveRoomInfo -= OnGetLiveRoomInfo;
+        Listener.OnJoinRoom -= OnJoinRoom;
+        Listener.OnUserJoinRoom -= OnUserJoinRoom;
+        Listener.OnGameStarted -= OnGameStarted;
+    }
 
     void Start () {
         Init();
@@ -45,6 +69,22 @@ public class SC_MenuController : MonoBehaviour {
         }
 
         InitSliderValues();
+        ListenToRoomEvents();
+    }
+
+    private void ListenToRoomEvents() {
+        if (listener == null)
+            listener = new Listener();
+
+        WarpClient.initialize(model.GetAPIKey(), model.GetSecretKey());
+        WarpClient.GetInstance().AddConnectionRequestListener(listener);
+        WarpClient.GetInstance().AddChatRequestListener(listener);
+        WarpClient.GetInstance().AddUpdateRequestListener(listener);
+        WarpClient.GetInstance().AddLobbyRequestListener(listener);
+        WarpClient.GetInstance().AddNotificationListener(listener);
+        WarpClient.GetInstance().AddRoomRequestListener(listener);
+        WarpClient.GetInstance().AddZoneRequestListener(listener);
+        WarpClient.GetInstance().AddTurnBasedRoomRequestListener(listener);
     }
 
     private void InitSliderValues() {
@@ -185,5 +225,19 @@ public class SC_MenuController : MonoBehaviour {
         usernameStr = objects["inf_username"].GetComponent<InputField>().text;
         passwordStr = objects["inf_pass"].GetComponent<InputField>().text;
     }
+
+    private void OnConnect(bool _IsSuccess) { }
+
+    public void OnRoomsInRange(bool _IsSuccess, MatchedRoomsEvent eventObj) { }
+
+    private void OnCreateRoom(bool _IsSuccess, string _RoomId) { }
+
+    public void OnGetLiveRoomInfo(LiveRoomInfoEvent eventObj) { }
+
+    public void OnJoinRoom(bool _IsSuccess, string _RoomId) { }
+
+    public void OnUserJoinRoom(RoomData eventObj, string _UserName) { }
+
+    public void OnGameStarted(string _Sender, string _RoomId, string _NextTurn) { }
 
 }

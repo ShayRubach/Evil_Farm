@@ -23,14 +23,13 @@ public class SC_MenuModel : MonoBehaviour {
     private string apiKey = "33d4ff44dbe11a5a2c994c9aeae94e6de31abd37c85c797d09d30398318f4876";
     private string secretKey = "cbd6ccd273f31f5753eb384f92e072d932d3b99c34bf886d1795f579ca425a4e";
         
-    private string username = "sh";
-    private string passowrd = "sh";
+    private string username = "";
+    private string passowrd = "";
 
     private Dictionary<string, GameObject> objects = null;
     private Dictionary<string, object> matchRoomData;
     private List<string> rooms;
 
-    private Listener listener;
     private int roomIndex = INITIAL_ROOM_IDX;
     private string roomId = INITIAL_ROOM_ID;
 
@@ -69,4 +68,14 @@ public class SC_MenuModel : MonoBehaviour {
     public string getUserName() {
         return username;
     }
+
+    internal string GetAPIKey() {
+        return apiKey;
+    }
+
+    internal string GetSecretKey() {
+        return secretKey;
+    }
+
+
 }
