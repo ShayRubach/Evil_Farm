@@ -194,7 +194,7 @@ public class SC_GameController : MonoBehaviour {
         }
         else {
             SharedDataHandler.nextScreenRequested = Scenes.MainMenu.ToString();
-            SceneManager.LoadScene(SC_MenuController.SCENE_PREFIX + Scenes.Login);
+            SceneManager.LoadScene(SC_MenuModel.SCENE_PREFIX + Scenes.Login);
         }
     }
 

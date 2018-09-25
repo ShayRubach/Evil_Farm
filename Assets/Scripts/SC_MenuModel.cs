@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using com.shephertz.app42.gaming.multiplayer.client;
 using com.shephertz.app42.gaming.multiplayer.client.events;
+using System;
 
 public class SC_MenuModel : MonoBehaviour {
 
@@ -15,6 +16,9 @@ public class SC_MenuModel : MonoBehaviour {
     public static readonly string SLIDER_BG_MUSIC_VAR_NAME = "slider_bg_music";
     public static readonly string LOGGED_IN_POPUP_MSG = "Logged in.";
     public static readonly string WRONG_DETAILS_POPUP_MSG = "Wrong username or password.";
+    public static readonly string SCENE_PREFIX = "Scene";
+    public static readonly string MENU_OBJECTS_STR_NAME = "MenuObjects";
+    public static readonly string GITHUB_URL = "https://github.com/ShayRubach/Evil_Garden";
 
     private string apiKey = "33d4ff44dbe11a5a2c994c9aeae94e6de31abd37c85c797d09d30398318f4876";
     private string secretKey = "cbd6ccd273f31f5753eb384f92e072d932d3b99c34bf886d1795f579ca425a4e";
@@ -22,13 +26,36 @@ public class SC_MenuModel : MonoBehaviour {
     private string username = "sh";
     private string passowrd = "sh";
 
-    private Dictionary<string, GameObject> unityObjects;
+    private Dictionary<string, GameObject> objects = null;
     private Dictionary<string, object> matchRoomData;
     private List<string> rooms;
 
     private Listener listener;
     private int roomIndex = INITIAL_ROOM_IDX;
     private string roomId = INITIAL_ROOM_ID;
+
+
+    private void Awake() {
+        Init();
+    }
+
+    private void Init() {
+
+        //only fetch all tagged game objects once:
+        if (objects == null) {
+            objects = new Dictionary<string, GameObject>();
+
+            GameObject[] menuObjects = GameObject.FindGameObjectsWithTag(MENU_OBJECTS_STR_NAME);
+
+            foreach (GameObject obj in menuObjects) {
+                objects.Add(obj.name, obj);
+            }
+        }
+    }
+
+    public Dictionary<string, GameObject> GetObjects() {
+        return objects;
+    }
 
     public bool VerifyUsernameAndPassword(string un, string pass) {
         return username.Equals(un) && passowrd.Equals(pass);

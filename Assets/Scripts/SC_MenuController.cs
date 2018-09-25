@@ -15,7 +15,6 @@ public class SC_MenuController : MonoBehaviour {
     private SC_CoinSpawner  coinSpawner;
     private List<GameObject> scenes;
 
-    private static readonly string url = "https://github.com/ShayRubach/Evil_Garden";
     private static string currScene = Scenes.Login.ToString();
     private static string lastScene = Scenes.Login.ToString();
     private string usernameStr, passwordStr;
@@ -24,8 +23,6 @@ public class SC_MenuController : MonoBehaviour {
     private static int coinsValue = SC_MenuModel.SLIDER_STARTING_VALUE;
     private static int valueRatio = SC_MenuModel.VALUE_RATIO;
 
-    public static readonly string SCENE_PREFIX = "Scene";
-    public static readonly string MENU_OBJECTS_STR_NAME = "MenuObjects";
     public Slider progressBar;
     public Text progressTxtValue;
 
@@ -35,18 +32,16 @@ public class SC_MenuController : MonoBehaviour {
 
     private void Init() {
         model = menuModelObject.GetComponent<SC_MenuModel>();
-        objects = new Dictionary<string, GameObject>();
+        objects = model.GetObjects();
         scenes = new List<GameObject>();
-        GameObject[] menuObjects = GameObject.FindGameObjectsWithTag(MENU_OBJECTS_STR_NAME);
 
-        foreach (GameObject obj in menuObjects) {
-            objects.Add(obj.name, obj);
+        foreach (KeyValuePair<string,GameObject> obj in objects) {
 
-            if (obj.name.Contains(SCENE_PREFIX))
-                scenes.Add(obj);
+            if (obj.Value.name.Contains(SC_MenuModel.SCENE_PREFIX))
+                scenes.Add(obj.Value);
 
-            if (obj.name.StartsWith(SCENE_PREFIX) && !obj.name.Contains(SharedDataHandler.nextScreenRequested))
-                obj.SetActive(false);
+            if (obj.Value.name.StartsWith(SC_MenuModel.SCENE_PREFIX) && !(obj.Value.name.Contains(SharedDataHandler.nextScreenRequested)))
+                obj.Value.SetActive(false);
         }
 
         InitSliderValues();
@@ -100,7 +95,7 @@ public class SC_MenuController : MonoBehaviour {
     }
 
     public void OnClickedGithubPage() {
-        Application.OpenURL(url);
+        Application.OpenURL(SC_MenuModel.GITHUB_URL);
     }
 
     public void OnClickedBack() {
@@ -152,11 +147,11 @@ public class SC_MenuController : MonoBehaviour {
 
         //only actually change scene for single/multi player:
         if (nextScene.Contains(Scenes.SinglePlayer.ToString()))
-            StartCoroutine(LoadAsyncScene(SCENE_PREFIX + nextScene));
+            StartCoroutine(LoadAsyncScene(SC_MenuModel.SCENE_PREFIX + nextScene));
         //else just display the requested menu screen:
         else {
-            objects[SCENE_PREFIX + lastScene].SetActive(false);
-            objects[SCENE_PREFIX + nextScene].SetActive(true);
+            objects[SC_MenuModel.SCENE_PREFIX + lastScene].SetActive(false);
+            objects[SC_MenuModel.SCENE_PREFIX + nextScene].SetActive(true);
         }
             
     }
