@@ -60,7 +60,17 @@ public class SC_MenuController : MonoBehaviour {
 
     public void OnClickedLoginButton() {
         ExtractUsernameAndPassword();
+        RegisterNewUser(usernameStr, passwordStr);
+        MoveToScene(Scenes.MainMenu.ToString());
 
+        //VerifyUserAndPass(usernameStr, passwordStr);
+    }
+
+    private void RegisterNewUser(string usernameStr, string passwordStr) {
+        menuModel.RegisterNewUser(usernameStr, passwordStr);
+    }
+
+    private void VerifyUserAndPass(string usernameStr, string passwordStr) {
         if (menuModel.VerifyUsernameAndPassword(usernameStr, passwordStr)) {
             Debug.Log("Logged in.");
             MoveToScene(Scenes.MainMenu.ToString());

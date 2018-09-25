@@ -1,11 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public sealed class MenuModel {
 
     private static MenuModel instance = null;
-    private static readonly Object lockingObj = new Object();
+    private static readonly System.Object lockingObj = new System.Object();
     
     private string username = "sh";
     private string passowrd = "sh";
@@ -25,5 +26,14 @@ public sealed class MenuModel {
     }
     public bool VerifyUsernameAndPassword(string un, string pass) {
         return username.Equals(un) && passowrd.Equals(pass);
+    }
+
+    internal void RegisterNewUser(string usernameStr, string passwordStr) {
+        username = usernameStr;
+        passowrd = passwordStr;
+    }
+
+    public string getUserName() {
+        return username;
     }
 }
