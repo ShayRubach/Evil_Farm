@@ -304,7 +304,19 @@ public class SC_MenuController : MonoBehaviour {
     }
 
     public void OnGetLiveRoomInfo(LiveRoomInfoEvent eventObj) {
+        Debug.Log("OnGetLiveRoomInfo called");
 
+        Dictionary<string, object> properties = eventObj.getProperties();
+        Debug.Log(properties[SC_MenuModel.ROOM_GRP_PASSWORD_KEY]); ;
+        if (properties[SC_MenuModel.ROOM_GRP_PASSWORD_KEY].ToString() == model.MatchRoomData[SC_MenuModel.ROOM_GRP_PASSWORD_KEY].ToString()) {
+            roomId = eventObj.getData().getId();
+            WarpClient.GetInstance().JoinRoom(roomId);
+            WarpClient.GetInstance().SubscribeRoom(roomId);
+        }
+        else {
+            roomIndex++;
+            model.SearchRoom(roomIndex);
+        }
     }
 
     public void OnJoinRoom(bool isSuccess, string joinedRoomId) {
@@ -319,7 +331,6 @@ public class SC_MenuController : MonoBehaviour {
         objects[SC_MenuModel.WAITING_FOR_PLAYER_VAR_NAME].SetActive(true);
 
         string fixedString = SC_MenuModel.WAITING_FOR_PLAYER_PREFIX;
-        //fixedString.Replace(SC_MenuModel.ROOM_ID_WILDCARD, joinedRoomId);
         objects[SC_MenuModel.WAITING_FOR_PLAYER_VAR_NAME].GetComponent<Text>().text = fixedString.Replace(SC_MenuModel.ROOM_ID_WILDCARD, joinedRoomId);
         
     }
