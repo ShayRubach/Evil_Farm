@@ -71,8 +71,22 @@ public class SC_MenuController : MonoBehaviour {
                 obj.Value.SetActive(false);
         }
 
-        InitSliderValues();
+        InitGameObjectInitialStates();
         ListenToRoomEvents();
+    }
+
+    private void InitGameObjectInitialStates() {
+        InitSliderValues();
+        InitConnectionStatusMsgs();
+    }
+
+    private void InitConnectionStatusMsgs() {
+        objects[SC_MenuModel.CONNECTED_GRP_VAR_NAME].SetActive(true);
+        objects[SC_MenuModel.CONNECTING_TO_SERVER_VAR_NAME].SetActive(false);
+
+        objects[SC_MenuModel.WAITING_FOR_PLAYER_VAR_NAME].GetComponent<Text>().text = SC_MenuModel.WAITING_FOR_PLAYER_PREFIX;
+        objects[SC_MenuModel.WAITING_FOR_PLAYER_VAR_NAME].SetActive(false);
+
     }
 
     private void ListenToRoomEvents() {
@@ -237,18 +251,31 @@ public class SC_MenuController : MonoBehaviour {
         Debug.Log(isSuccess);
         if (isSuccess) {
             Debug.Log("Connected!");
-            //objects["UserName"].GetComponent<Text>().text = model.GetUserName();
-            //objects["Btn_Play"].SetActive(true);
-
-            WarpClient.GetInstance().GetRoomsInRange(1, 2);
-            Debug.Log("Searching for room..");
+            model.objects[SC_MenuModel.USER_CONN_VAR_NAME].GetComponent<Text>().text = SC_MenuModel.CONNECTED_AS_PREFIX + model.GetUserName();
+            objects[SC_MenuModel.BTN_FIND_MATCH_VAR_NAME].GetComponent<Button>().interactable = true;
+            MoveToScene(Scenes.Multiplayer.ToString());
         }
+    }
+
+    public void OnClickedFindMatch() {
+        
+        //disable button interaction
+        objects[SC_MenuModel.BTN_FIND_MATCH_VAR_NAME].GetComponent<Button>().interactable = false;
+
+        DisplayConnectingToServerMsg();
+
+        WarpClient.GetInstance().GetRoomsInRange(1, 2);
+        Debug.Log("Searching for room..");
+    }
+
+    private void DisplayConnectingToServerMsg() {
+        objects[SC_MenuModel.CONNECTED_GRP_VAR_NAME].SetActive(false);
+        objects[SC_MenuModel.CONNECTING_TO_SERVER_VAR_NAME].SetActive(true);
     }
 
     public void OnRoomsInRange(bool isSuccess, MatchedRoomsEvent eventObj) {
         if (isSuccess) {
             Debug.Log("Parsing rooms..");
-            model.Rooms = new List<string>();
             foreach (var roomData in eventObj.getRoomsData()) {
                 Debug.Log("Room Id: " + roomData.getId());
                 Debug.Log("Room Owner: " + roomData.getRoomOwner());
@@ -281,8 +308,20 @@ public class SC_MenuController : MonoBehaviour {
     }
 
     public void OnJoinRoom(bool isSuccess, string joinedRoomId) {
-        if (isSuccess)
+        if (isSuccess) {
             Debug.Log("Joined Room: " + joinedRoomId);
+            DisplayJoinedRoomMsg(joinedRoomId);
+        }
+    }
+
+    private void DisplayJoinedRoomMsg(string joinedRoomId) {
+        objects[SC_MenuModel.CONNECTING_TO_SERVER_VAR_NAME].SetActive(false);
+        objects[SC_MenuModel.WAITING_FOR_PLAYER_VAR_NAME].SetActive(true);
+
+        string fixedString = SC_MenuModel.WAITING_FOR_PLAYER_PREFIX;
+        //fixedString.Replace(SC_MenuModel.ROOM_ID_WILDCARD, joinedRoomId);
+        objects[SC_MenuModel.WAITING_FOR_PLAYER_VAR_NAME].GetComponent<Text>().text = fixedString.Replace(SC_MenuModel.ROOM_ID_WILDCARD, joinedRoomId);
+        
     }
 
     public void OnUserJoinRoom(RoomData eventObj, string userJoinedName) {

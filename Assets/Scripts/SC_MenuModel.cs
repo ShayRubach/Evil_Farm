@@ -4,6 +4,7 @@ using UnityEngine;
 using com.shephertz.app42.gaming.multiplayer.client;
 using com.shephertz.app42.gaming.multiplayer.client.events;
 using System;
+using UnityEngine.UI;
 
 public class SC_MenuModel : MonoBehaviour {
 
@@ -12,10 +13,19 @@ public class SC_MenuModel : MonoBehaviour {
     public static readonly int INITIAL_ROOM_IDX = 0;
     public static readonly int MAX_TURN_TIME = 30;
 
+    public static readonly string SLIDER_SFX_VAR_NAME = "slider_sfx";
+    public static readonly string USER_CONN_VAR_NAME = "txt_conn_username";
+    public static readonly string SLIDER_BG_MUSIC_VAR_NAME = "slider_bg_music";
+    public static readonly string BTN_FIND_MATCH_VAR_NAME = "btn_auto_find_room";
+    public static readonly string CONNECTED_GRP_VAR_NAME = "txt_connected_grp";
+    public static readonly string CONNECTING_TO_SERVER_VAR_NAME = "txt_connecting";
+    public static readonly string WAITING_FOR_PLAYER_VAR_NAME = "txt_waiting_for_player";
+    
+    public static readonly string ROOM_ID_WILDCARD = "?";
+    public static readonly string WAITING_FOR_PLAYER_PREFIX = "Joined room ? \nWaiting for another player...";
+    public static readonly string CONNECTED_AS_PREFIX = "Connected as\n";
     public static readonly string INITIAL_SCENE = "Login";
     public static readonly string INITIAL_ROOM_ID = "";
-    public static readonly string SLIDER_SFX_VAR_NAME = "slider_sfx";
-    public static readonly string SLIDER_BG_MUSIC_VAR_NAME = "slider_bg_music";
     public static readonly string LOGGED_IN_POPUP_MSG = "Logged in.";
     public static readonly string WRONG_DETAILS_POPUP_MSG = "Wrong username or password.";
     public static readonly string SCENE_PREFIX = "Scene";
@@ -31,15 +41,18 @@ public class SC_MenuModel : MonoBehaviour {
     private string username = "";
     private string passowrd = "";
 
-    private Dictionary<string, GameObject> objects = null;
+    public Dictionary<string, GameObject> objects { get; set; }
     public Dictionary<string, object> MatchRoomData { get; set; }
     public List<string> Rooms { get; set; }
 
     private void Awake() {
+        objects = null;
         Init();
     }
 
     private void Init() {
+        Rooms = new List<string>();
+        InitMatchRoomData(ROOM_GRP_PASSWORD_KEY, ROOM_GRP_PASSWORD_VAL);
 
         //only fetch all tagged game objects once:
         if (objects == null) {
@@ -50,8 +63,6 @@ public class SC_MenuModel : MonoBehaviour {
             foreach (GameObject obj in menuObjects) {
                 objects.Add(obj.name, obj);
             }
-
-            InitMatchRoomData(ROOM_GRP_PASSWORD_KEY, ROOM_GRP_PASSWORD_VAL);
         }
     }
 
