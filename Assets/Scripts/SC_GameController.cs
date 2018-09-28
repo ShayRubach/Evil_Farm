@@ -86,7 +86,6 @@ public class SC_GameController : MonoBehaviour {
     private void PlayAsAI() {
         AIAlreadyPlaying = true;
         model.PlayAsAI();
-        //isMyTurn = true;
     }
 
     IEnumerator Fade() {
@@ -145,7 +144,6 @@ public class SC_GameController : MonoBehaviour {
         SC_Cart.GodMode -= GodMode;
     }
 
-    //private void OnMatchStarted(SoldierType playerType, SoldierType enemyType) {
     private void OnMatchStarted() {
         canPlay = false;
         battleAnimator.gameObject.SetActive(true);
@@ -174,7 +172,7 @@ public class SC_GameController : MonoBehaviour {
 
     private void OnShuffleClicked() {
         //todo: fix issue with tile 74 not found in FilterIndicators
-        //model.ShuffleTeam(SoldierTeam.PLAYER);
+        model.ShuffleTeam(SoldierTeam.PLAYER);
     }
 
     private void PreparationTimeStarted() {

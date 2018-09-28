@@ -343,8 +343,9 @@ public class SC_MenuController : MonoBehaviour {
         }
     }
 
-    public void OnGameStarted(string _Sender, string _RoomId, string _NextTurn) {
-        //MoveToScene(Scenes.SinglePlayer.ToString());
+    public void OnGameStarted(string sender, string thisRoomId, string nextTurn) {
+        Debug.Log("OnGameStarted called");
+        MoveToScene(Scenes.SinglePlayer.ToString());
     }
 
 }

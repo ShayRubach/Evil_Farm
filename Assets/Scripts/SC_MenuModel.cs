@@ -97,6 +97,7 @@ public class SC_MenuModel : MonoBehaviour {
     }
 
     internal void SearchRoom(int roomIndex) {
+
         if (roomIndex < Rooms.Count) {
             Debug.Log("Getting room Details (" + Rooms[roomIndex] + ")");
             WarpClient.GetInstance().GetLiveRoomInfo(Rooms[roomIndex]);
