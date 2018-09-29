@@ -134,12 +134,14 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void OnMoveCompleted(MoveEvent move) {
-        Debug.Log("SC_GameController: OnMoveCompleted" + move.getMoveData() + "" + move.getNextTurn());
+        Debug.Log("SC_GameController: OnMoveCompleted. data=" + move.getMoveData() + ", nextTurn=" + move.getNextTurn());
+        Debug.Log("move.getSender()=" + move.getSender());
+
         if (move.getSender() != SharedDataHandler.username) {
             if (move.getMoveData() != null) {
                 Dictionary<string, object> receivedData = MiniJSON.Json.Deserialize(move.getMoveData()) as Dictionary<string, object>;
                 if (receivedData != null) {
-                    int idx = int.Parse(receivedData["Data"].ToString());
+                    //int idx = int.Parse(receivedData["Data"].ToString());
                     //SubmitLogic(idx);
                 }
             }

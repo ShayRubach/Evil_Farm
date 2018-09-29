@@ -346,18 +346,13 @@ public class SC_GameModel : MonoBehaviour {
         Debug.Log("now moving " + exactSoldierObj + " to " + newPosition);
         exactSoldierObj.transform.position = newPosition;
 
+        Dictionary<string, object> _toSend = new Dictionary<string, object>();
+        _toSend.Add("UserName", SharedDataHandler.username);
+        _toSend.Add("Data", "some data");
+        string _jsonToSend = MiniJSON.Json.Serialize(_toSend);
+        Debug.Log("sending move with warpClient");
 
-        //if (isMyTurn && currentBoard[_Index] == GlobalEnums.SlotState.Empty) {
-            //isMyTurn = false;
-            Dictionary<string, object> _toSend = new Dictionary<string, object>();
-            _toSend.Add("UserName", SharedDataHandler.username);
-            _toSend.Add("Data", "some data");
-            string _jsonToSend = MiniJSON.Json.Serialize(_toSend);
-            Debug.Log("sending move with warpClient");
-            SharedDataHandler.client.sendMove(_jsonToSend);
-
-            //SubmitLogic(_Index);
-        //}
+        SharedDataHandler.client.sendMove(_jsonToSend);
     }
 
     internal string GetPreviewAnimationTriggerByWeapon(SoldierType weapon) {

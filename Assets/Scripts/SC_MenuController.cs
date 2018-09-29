@@ -1,4 +1,5 @@
 ﻿using com.shephertz.app42.gaming.multiplayer.client.events;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -186,8 +187,9 @@ public class SC_MenuController : MonoBehaviour {
         currScene = nextScene;
 
         //only actually change scene for single/multi player:
-        if (nextScene.Contains(Scenes.SinglePlayer.ToString()))
+        if (nextScene.Contains(Scenes.SinglePlayer.ToString())) {
             StartCoroutine(LoadAsyncScene(SC_MenuModel.SCENE_PREFIX + nextScene));
+        }
         //else just display the requested menu screen:
         else {
             objects[SC_MenuModel.SCENE_PREFIX + lastScene].SetActive(false);
@@ -208,7 +210,9 @@ public class SC_MenuController : MonoBehaviour {
     IEnumerator LoadAsyncScene(string sceneName) {
 
         Scene currentScene = SceneManager.GetActiveScene();
+        //AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
         AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+
         DisplayLoadingScreen();
 
         while (!operation.isDone) {
@@ -218,9 +222,18 @@ public class SC_MenuController : MonoBehaviour {
             yield return null;
         }
 
+        //todo: refactor code here
+        DisableConfilctObjectsFromOldScene();
+        
         //todo: remove this when gameplay scene is stable
-        SceneManager.MoveGameObjectToScene(objects[SC_MenuModel.MENU_SCRIPTS_VAR_NAME], SceneManager.GetSceneByName(sceneName));
-        SceneManager.UnloadSceneAsync(currentScene);
+        //SceneManager.MoveGameObjectToScene(objects[SC_MenuModel.MENU_SCRIPTS_VAR_NAME], SceneManager.GetSceneByName(sceneName));
+        //SceneManager.UnloadSceneAsync(currentScene);
+    }
+
+    private void DisableConfilctObjectsFromOldScene() {
+        //todo: lose literal strings
+        GameObject.Find("camera_menu").SetActive(false);
+        GameObject.Find("SceneLoader").SetActive(false);
     }
 
     private void ExtractUsernameAndPassword() {
@@ -339,6 +352,7 @@ public class SC_MenuController : MonoBehaviour {
 
     public void OnGameStarted(string sender, string thisRoomId, string nextTurn) {
         Debug.Log("OnGameStarted called");
+
         MoveToScene(Scenes.SinglePlayer.ToString());
     }
 

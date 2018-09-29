@@ -87,6 +87,8 @@ public class SC_MenuModel : MonoBehaviour {
     public void RegisterNewUser(string usernameStr, string passwordStr) {
         username = usernameStr;
         passowrd = passwordStr;
+
+        SharedDataHandler.username = username;
     }
 
     internal void SearchRoom(int roomIndex) {
