@@ -41,6 +41,7 @@ public class SC_MenuController : MonoBehaviour {
         Listener.OnJoinRoom += OnJoinRoom;
         Listener.OnUserJoinRoom += OnUserJoinRoom;
         Listener.OnGameStarted += OnGameStarted;
+        Listener.OnMoveCompleted += OnMoveCompleted;
     }
 
     private void OnDisable() {
@@ -51,9 +52,16 @@ public class SC_MenuController : MonoBehaviour {
         Listener.OnJoinRoom -= OnJoinRoom;
         Listener.OnUserJoinRoom -= OnUserJoinRoom;
         Listener.OnGameStarted -= OnGameStarted;
+        Listener.OnMoveCompleted -= OnMoveCompleted;
+    }
+
+    private void OnMoveCompleted(MoveEvent _Move) {
+        //if (OnMoveCompletedNotify != null)
+        //    OnMoveCompletedNotify();
     }
 
     void Start () {
+        Debug.Log("Start from" + gameObject);
         Init();
     }
 
@@ -203,6 +211,7 @@ public class SC_MenuController : MonoBehaviour {
     }
 
     private void MoveToScene(string nextScene) {
+
         //save our last scene
         lastScene = currScene;
         currScene = nextScene;
@@ -228,19 +237,22 @@ public class SC_MenuController : MonoBehaviour {
     }
 
     IEnumerator LoadAsyncScene(string sceneName) {
-        
-        AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName);
+
+        Scene currentScene = SceneManager.GetActiveScene();
+        AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
         DisplayLoadingScreen();
 
         while (!operation.isDone) {
             float progress = Mathf.Clamp01(operation.progress / .9f);
             progressBar.value = progress;
             progressTxtValue.text = progress * 100f + "%";
-
             yield return null;
         }
 
+        SceneManager.MoveGameObjectToScene(objects[SC_MenuModel.MENU_SCRIPTS_VAR_NAME], SceneManager.GetSceneByName(sceneName));
+        SceneManager.UnloadSceneAsync(currentScene);
     }
+
     //todo: change these literal strings into constants
     private void ExtractUsernameAndPassword() {
         usernameStr = objects["inf_username"].GetComponent<InputField>().text;

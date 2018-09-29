@@ -643,55 +643,6 @@ public class GameModel : MonoBehaviour {
                 break;
         }
 
-        if (!isValid) {
-            Debug.Log("Invalid move.");
-        }
-
-        return isValid;
-    }
-    public bool IsValidMove2(Vector3 soldierPos, MovementDirections move) {
-
-        bool isValid = false;
-        nextMoveCoord.x = (int)Mathf.Abs(soldierPos.x);
-        nextMoveCoord.y = (int)Mathf.Abs(soldierPos.z);
-
-
-        //the 'z' axis is treated as 'y' on our board, due to camera placement.
-        switch (move) {
-            case MovementDirections.UP:
-                if (Mathf.Abs(soldierPos.z) - 1 >= TOP_BOARD_EDGE_IDX) {
-                    nextMoveCoord.y -= 1;
-                    if(!OverlayingTeamMember(nextMoveCoord))
-                        isValid = true;
-                }
-                break;
-            case MovementDirections.DOWN:
-                if (Mathf.Abs(soldierPos.z) + 1 <= BTM_BOARD_EDGE_IDX) { // && !OverlayingTeamMember(nextMoveCoord)) {
-                    nextMoveCoord.y += 1;
-                    if (!OverlayingTeamMember(nextMoveCoord))
-                        isValid = true;
-                }
-                break;
-            case MovementDirections.LEFT:
-                if (soldierPos.x - 1 >= LEFT_BOARD_EDGE_IDX) { // && !OverlayingTeamMember(nextMoveCoord)) {
-                    nextMoveCoord.x -= 1;
-                    if (!OverlayingTeamMember(nextMoveCoord))
-                        isValid = true;
-                }
-                break;
-            case MovementDirections.RIGHT:
-                if (soldierPos.x + 1 <= RIGHT_BOARD_EDGE_IDX) { // && !OverlayingTeamMember(nextMoveCoord)) {
-                    nextMoveCoord.x += 1;
-                    if (!OverlayingTeamMember(nextMoveCoord))
-                        isValid = true;
-                }
-                break;
-        }
-
-        if (!isValid) {
-            Debug.Log("Invalid move.");
-        }
-
         return isValid;
     }
 

@@ -20,6 +20,8 @@ public class SC_MenuModel : MonoBehaviour {
     public static readonly string CONNECTED_GRP_VAR_NAME = "txt_connected_grp";
     public static readonly string CONNECTING_TO_SERVER_VAR_NAME = "txt_connecting";
     public static readonly string WAITING_FOR_PLAYER_VAR_NAME = "txt_waiting_for_player";
+    public static readonly string MENU_SCRIPTS_VAR_NAME = "scripts_menu";
+
     
     public static readonly string ROOM_ID_WILDCARD = "?";
     public static readonly string WAITING_FOR_PLAYER_PREFIX = "Joined room ? \nWaiting for another player...";
@@ -46,6 +48,7 @@ public class SC_MenuModel : MonoBehaviour {
     public List<string> Rooms { get; set; }
 
     private void Awake() {
+        Debug.Log("Awake from" + gameObject);
         objects = null;
         Init();
     }

@@ -20,20 +20,16 @@ public class SC_GameController : MonoBehaviour {
     [SerializeField]
     private GameObject shuffleHandler;
 
-
-    
     private SC_Spotlight soldierSpotlight;                  //highlights the rival on drag
     private Vector3 nextPosition, startDragPos, endDragPos;
     private Animator soldierAnimator, previewSoldierAnimator;
     private Animator announcerAnimator, endGameOptionsAnimator;
     private Animator battleAnimator;
 
-
     private bool isMyTurn = true;
     private bool duringTie = false;
     private bool canPlay = false;
     private bool AIAlreadyPlaying = false;
-
 
     private MovementDirections soldierMovementDirection;
     private string previewAnimationTrigger = "";
@@ -61,7 +57,6 @@ public class SC_GameController : MonoBehaviour {
         HidePreviewSoldier();
         countdownManager.SetActive(true);
         shuffleHandler.SetActive(true);
-        //battleAnimator.gameObject.SetActive(false);
     }
 
     void FixedUpdate() {
@@ -76,8 +71,11 @@ public class SC_GameController : MonoBehaviour {
 
             }
         }
+        if (Input.GetKey(KeyCode.Escape)) {
+            Application.Quit();
+        }
 
-        if(!isMyTurn && !duringTie && canPlay) {
+        if (!isMyTurn && !duringTie && canPlay) {
             if (!AIAlreadyPlaying)
                 PlayAsAI();
         }
@@ -87,19 +85,7 @@ public class SC_GameController : MonoBehaviour {
         AIAlreadyPlaying = true;
         model.PlayAsAI();
     }
-
-    IEnumerator Fade() {
-        GameObject leaf = GameObject.Find("leaf_test");
-        Renderer sr = leaf.GetComponent<Renderer>();
-
-        for (float f = 1f; f >= 0; f -= 0.1f) {
-            Color c = sr.material.color;
-            c.a = f;
-            sr.material.color = c;
-            yield return new WaitForSeconds(0.05f);
-        }
-    }
-
+    
     void OnEnable() {
         GameModel.FinishGame += FinishGame;
         GameModel.AIMoveFinished += AIMoveFinished;
@@ -167,11 +153,9 @@ public class SC_GameController : MonoBehaviour {
     private void OnBattleAnimationFinish() {
         canPlay = true;
         ResetAnimatorParameters(battleAnimator);
-        //battleAnimator.gameObject.SetActive(false);
     }
 
     private void OnShuffleClicked() {
-        //todo: fix issue with tile 74 not found in FilterIndicators
         model.ShuffleTeam(SoldierTeam.PLAYER);
     }
 
@@ -394,7 +378,6 @@ public class SC_GameController : MonoBehaviour {
     private void ShowDuelSoldier(SoldierType weapon) {
         previewAnimationTrigger = model.GetPreviewAnimationTriggerByWeapon(weapon);
         previewSoldierAnimator.SetBool(previewAnimationTrigger, true);
-        //previewSoldierPlayer.SetActive(true);
     }
 
 
