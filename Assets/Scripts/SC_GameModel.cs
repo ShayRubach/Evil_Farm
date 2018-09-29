@@ -14,7 +14,7 @@ public struct Point {
  * of the GameObjects.
 */
 
-public class GameModel : MonoBehaviour {
+public class SC_GameModel : MonoBehaviour {
 
     public delegate void Announcement (SoldierTeam winner);
     public static event Announcement FinishGame;

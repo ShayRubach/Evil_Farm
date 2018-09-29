@@ -13,7 +13,7 @@ public class SC_GameController : MonoBehaviour {
 
     private GameObject focusedPlayerParent;                 //parent GameObject that holds the soldier and its weapon
     private GameObject previewSoldierPlayer;                //the enlarged previewed soldier user sees on a soldier focus (click)
-    private GameModel model;                                //our game logic model
+    private SC_GameModel model;                                //our game logic model
 
     [SerializeField]
     private GameObject countdownManager;
@@ -39,15 +39,15 @@ public class SC_GameController : MonoBehaviour {
     void Start() {
 
         //get reference to our model class
-        model = GameObject.Find(GameModel.GAME_MODEL_NAME_VAR).GetComponent<GameModel>();
+        model = GameObject.Find(SC_GameModel.GAME_MODEL_NAME_VAR).GetComponent<SC_GameModel>();
 
         //save references for some general objects we need to control
-        soldierSpotlight = model.GetObjects()[GameModel.SPOTLIGHT_NAME_VAR].GetComponent<SC_Spotlight>();
-        announcerAnimator = model.GetObjects()[GameModel.ANNOUNCER_VAR_NAME].GetComponent<Animator>();
-        endGameOptionsAnimator = model.GetObjects()[GameModel.END_GAME_OPTIONS_VAR_NAME].GetComponent<Animator>();
-        battleAnimator = model.GetObjects()[GameModel.BATTLE_ANIMATOR_VAR_NAME].GetComponent<Animator>();
+        soldierSpotlight = model.GetObjects()[SC_GameModel.SPOTLIGHT_NAME_VAR].GetComponent<SC_Spotlight>();
+        announcerAnimator = model.GetObjects()[SC_GameModel.ANNOUNCER_VAR_NAME].GetComponent<Animator>();
+        endGameOptionsAnimator = model.GetObjects()[SC_GameModel.END_GAME_OPTIONS_VAR_NAME].GetComponent<Animator>();
+        battleAnimator = model.GetObjects()[SC_GameModel.BATTLE_ANIMATOR_VAR_NAME].GetComponent<Animator>();
 
-        previewSoldierPlayer = model.GetObjects()[GameModel.PREVIEW_SOLDIER_NAME_VAR];
+        previewSoldierPlayer = model.GetObjects()[SC_GameModel.PREVIEW_SOLDIER_NAME_VAR];
         previewSoldierAnimator = previewSoldierPlayer.GetComponent<Animator>();
 
         Init();
@@ -87,11 +87,11 @@ public class SC_GameController : MonoBehaviour {
     }
     
     void OnEnable() {
-        GameModel.FinishGame += FinishGame;
-        GameModel.AIMoveFinished += AIMoveFinished;
-        GameModel.CallTieBreaker += TieBreaker;
-        GameModel.OnMatchStarted += OnMatchStarted;
-        GameModel.OnMatchFinished += OnMatchFinished;
+        SC_GameModel.FinishGame += FinishGame;
+        SC_GameModel.AIMoveFinished += AIMoveFinished;
+        SC_GameModel.CallTieBreaker += TieBreaker;
+        SC_GameModel.OnMatchStarted += OnMatchStarted;
+        SC_GameModel.OnMatchFinished += OnMatchFinished;
         SC_Soldier.OnStartDragging += OnStartDraggingSoldier;
         SC_Soldier.OnFinishDragging += OnFinishDraggingSoldier;
         SC_Soldier.OnSoldierMovementAnimationEnd += OnSoldierMovementAnimationEnd;
@@ -111,11 +111,11 @@ public class SC_GameController : MonoBehaviour {
     }
 
     void OnDisable() {
-        GameModel.FinishGame -= FinishGame;
-        GameModel.AIMoveFinished -= AIMoveFinished;
-        GameModel.CallTieBreaker -= TieBreaker;
-        GameModel.OnMatchStarted -= OnMatchStarted;
-        GameModel.OnMatchFinished -= OnMatchFinished;
+        SC_GameModel.FinishGame -= FinishGame;
+        SC_GameModel.AIMoveFinished -= AIMoveFinished;
+        SC_GameModel.CallTieBreaker -= TieBreaker;
+        SC_GameModel.OnMatchStarted -= OnMatchStarted;
+        SC_GameModel.OnMatchFinished -= OnMatchFinished;
         SC_Soldier.UnmarkSoldier -= UnmarkSoldier;
         SC_Soldier.OnStartDragging -= OnStartDraggingSoldier;
         SC_Soldier.OnFinishDragging -= OnFinishDraggingSoldier;
@@ -164,7 +164,7 @@ public class SC_GameController : MonoBehaviour {
         string parameter = model.GetCurrentBattleAnimationParameters();
         
         //if game ended, dont show anymore battle animations
-        if (parameter.Contains(GameModel.CRYSTAL_VAR_NAME)) {
+        if (parameter.Contains(SC_GameModel.CRYSTAL_VAR_NAME)) {
             battleAnimator.gameObject.SetActive(false);
         }
         else {
@@ -193,7 +193,7 @@ public class SC_GameController : MonoBehaviour {
 
     private void OnEndGameOptionChoice(EndGameOption choice) {
         if(choice == EndGameOption.RESTART) {
-            endGameOptionsAnimator.SetBool(GameModel.END_GAME_TRIGGER, false);
+            endGameOptionsAnimator.SetBool(SC_GameModel.END_GAME_TRIGGER, false);
             model.RestartGame();
             Init();
         }
@@ -237,11 +237,11 @@ public class SC_GameController : MonoBehaviour {
     */
     private void OnMatchFinished(SoldierTeam matchWinningTeam) {
         if(matchWinningTeam == SoldierTeam.PLAYER)
-            announcerAnimator.SetBool(GameModel.ANNOUNCER_WIN_TRIGGER, true);
+            announcerAnimator.SetBool(SC_GameModel.ANNOUNCER_WIN_TRIGGER, true);
         if(matchWinningTeam == SoldierTeam.ENEMY)
-            announcerAnimator.SetBool(GameModel.ANNOUNCER_LOSE_TRIGGER, true);
+            announcerAnimator.SetBool(SC_GameModel.ANNOUNCER_LOSE_TRIGGER, true);
         if(matchWinningTeam == SoldierTeam.NO_TEAM)
-            announcerAnimator.SetBool(GameModel.ANNOUNCER_LOSE_TRIGGER, true);
+            announcerAnimator.SetBool(SC_GameModel.ANNOUNCER_LOSE_TRIGGER, true);
 
     }
 
@@ -249,13 +249,13 @@ public class SC_GameController : MonoBehaviour {
     * callback for a tied match
     */
     private void TieBreaker() {
-        announcerAnimator.SetBool(GameModel.ANNOUNCER_TIE_TRIGGER, true);
+        announcerAnimator.SetBool(SC_GameModel.ANNOUNCER_TIE_TRIGGER, true);
         duringTie = true;
         ShowTieWeapons(true);
     }
 
     private void ShowTieWeapons(bool isVisible) {
-        model.GetObjects()[GameModel.TIE_WEAPONS_P_VAR_NAME].SetActive(isVisible);
+        model.GetObjects()[SC_GameModel.TIE_WEAPONS_P_VAR_NAME].SetActive(isVisible);
     }
     
     //called when AI is finished with his move (inc. animations):
@@ -267,12 +267,12 @@ public class SC_GameController : MonoBehaviour {
 
     private void FinishGame(SoldierTeam winner) {
         canPlay = false;
-        endGameOptionsAnimator.SetBool(GameModel.END_GAME_TRIGGER, true);
+        endGameOptionsAnimator.SetBool(SC_GameModel.END_GAME_TRIGGER, true);
 
         if (winner == SoldierTeam.PLAYER)
-            announcerAnimator.SetBool(GameModel.ANNOUNCER_VICTORY_TRIGGER, true);
+            announcerAnimator.SetBool(SC_GameModel.ANNOUNCER_VICTORY_TRIGGER, true);
         else
-            announcerAnimator.SetBool(GameModel.ANNOUNCER_DEFEAT_TRIGGER, true);        
+            announcerAnimator.SetBool(SC_GameModel.ANNOUNCER_DEFEAT_TRIGGER, true);        
     }
 
     private void MarkSoldier(GameObject soldier) {

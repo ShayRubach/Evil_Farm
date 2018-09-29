@@ -18,13 +18,13 @@ public class SC_ShuffleIcon : MonoBehaviour {
 	}
 
     void OnMouseDown() {
-        animator.SetBool(GameModel.SHUFFLE_TRIGGER,true);
+        animator.SetBool(SC_GameModel.SHUFFLE_TRIGGER,true);
         if(OnShuffleClicked != null)
             OnShuffleClicked();
 
     }
 
     public void ResetAnimation() {
-        animator.SetBool(GameModel.SHUFFLE_TRIGGER, false);
+        animator.SetBool(SC_GameModel.SHUFFLE_TRIGGER, false);
     }
 }

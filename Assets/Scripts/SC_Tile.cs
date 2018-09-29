@@ -19,7 +19,7 @@ public class SC_Tile : MonoBehaviour {
     }
 
     public void Init() {
-        if (initialSoldier.name == GameModel.NO_SOLDIER_NAME_VAR) {
+        if (initialSoldier.name == SC_GameModel.NO_SOLDIER_NAME_VAR) {
             soldier = null;
             IsOcuupied = false;
             IsTraversal = true;

@@ -46,7 +46,7 @@ public class SC_Soldier : MonoBehaviour {
 
     public void Init() {
         gameObject.SetActive(true);
-        Team = gameObject.name.Contains(GameModel.PLAYER_NAME_VAR) ? SoldierTeam.PLAYER : SoldierTeam.ENEMY;
+        Team = gameObject.name.Contains(SC_GameModel.PLAYER_NAME_VAR) ? SoldierTeam.PLAYER : SoldierTeam.ENEMY;
         transform.position = initialPos;
         Revealed = false;
         Alive = true;
@@ -62,7 +62,7 @@ public class SC_Soldier : MonoBehaviour {
      */
     private void RemoveFocus() {
         foreach(Transform child in transform) {
-            if (child.gameObject.name.Contains(GameModel.SPOTLIGHT_NAME_VAR)) {
+            if (child.gameObject.name.Contains(SC_GameModel.SPOTLIGHT_NAME_VAR)) {
                 child.gameObject.SetActive(false);
             }
         }
@@ -233,7 +233,7 @@ public class SC_Soldier : MonoBehaviour {
 
     private bool HoveredOverEnemy(string objHitName) {
         //todo: only mark enemy if he's in range
-        return (objHitName.Contains(GameModel.ENEMY_NAME_VAR));
+        return (objHitName.Contains(SC_GameModel.ENEMY_NAME_VAR));
     }
 
     public void OnAnimationEnded() {
