@@ -1,7 +1,4 @@
-﻿using AssemblyCSharp;
-using com.shephertz.app42.gaming.multiplayer.client;
-using com.shephertz.app42.gaming.multiplayer.client.events;
-using System;
+﻿using com.shephertz.app42.gaming.multiplayer.client.events;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,7 +10,6 @@ public class SC_MenuController : MonoBehaviour {
     [SerializeField]
     private GameObject menuModelObject;
     private SC_MenuModel model;
-    private Listener listener;
 
     private static Dictionary<string, GameObject> objects;
     private SC_CoinSpawner  coinSpawner;
@@ -34,29 +30,26 @@ public class SC_MenuController : MonoBehaviour {
     public Text progressTxtValue;
 
     private void OnEnable() {
-        Listener.OnConnect += OnConnect;
-        Listener.OnRoomsInRange += OnRoomsInRange;
-        Listener.OnCreateRoom += OnCreateRoom;
-        Listener.OnGetLiveRoomInfo += OnGetLiveRoomInfo;
-        Listener.OnJoinRoom += OnJoinRoom;
-        Listener.OnUserJoinRoom += OnUserJoinRoom;
-        Listener.OnGameStarted += OnGameStarted;
-        Listener.OnMoveCompleted += OnMoveCompleted;
+        SharedDataHandler.OnConnect += OnConnect;
+        SharedDataHandler.OnRoomsInRange += OnRoomsInRange;
+        SharedDataHandler.OnCreateRoom += OnCreateRoom;
+        SharedDataHandler.OnGetLiveRoomInfo += OnGetLiveRoomInfo;
+        SharedDataHandler.OnJoinRoom += OnJoinRoom;
+        SharedDataHandler.OnUserJoinRoom += OnUserJoinRoom;
+        SharedDataHandler.OnGameStarted += OnGameStarted;
     }
 
     private void OnDisable() {
-        Listener.OnConnect -= OnConnect;
-        Listener.OnRoomsInRange -= OnRoomsInRange;
-        Listener.OnCreateRoom -= OnCreateRoom;
-        Listener.OnGetLiveRoomInfo -= OnGetLiveRoomInfo;
-        Listener.OnJoinRoom -= OnJoinRoom;
-        Listener.OnUserJoinRoom -= OnUserJoinRoom;
-        Listener.OnGameStarted -= OnGameStarted;
-        Listener.OnMoveCompleted -= OnMoveCompleted;
+        SharedDataHandler.OnConnect -= OnConnect;
+        SharedDataHandler.OnRoomsInRange -= OnRoomsInRange;
+        SharedDataHandler.OnCreateRoom -= OnCreateRoom;
+        SharedDataHandler.OnGetLiveRoomInfo -= OnGetLiveRoomInfo;
+        SharedDataHandler.OnJoinRoom -= OnJoinRoom;
+        SharedDataHandler.OnUserJoinRoom -= OnUserJoinRoom;
+        SharedDataHandler.OnGameStarted -= OnGameStarted;
     }
 
     void Start () {
-        Debug.Log("Start from" + gameObject);
         Init();
     }
 
@@ -75,7 +68,7 @@ public class SC_MenuController : MonoBehaviour {
         }
 
         InitGameObjectInitialStates();
-        ListenToRoomEvents();
+        AddRoomEvents();
     }
 
     private void InitGameObjectInitialStates() {
@@ -92,19 +85,8 @@ public class SC_MenuController : MonoBehaviour {
 
     }
 
-    private void ListenToRoomEvents() {
-        if (listener == null)
-            listener = new Listener();
-
-        WarpClient.initialize(model.GetAPIKey(), model.GetSecretKey());
-        WarpClient.GetInstance().AddConnectionRequestListener(listener);
-        WarpClient.GetInstance().AddChatRequestListener(listener);
-        WarpClient.GetInstance().AddUpdateRequestListener(listener);
-        WarpClient.GetInstance().AddLobbyRequestListener(listener);
-        WarpClient.GetInstance().AddNotificationListener(listener);
-        WarpClient.GetInstance().AddRoomRequestListener(listener);
-        WarpClient.GetInstance().AddZoneRequestListener(listener);
-        WarpClient.GetInstance().AddTurnBasedRoomRequestListener(listener);
+    private void AddRoomEvents() {
+        SharedDataHandler.AddEvents(model.GetAPIKey(), model.GetSecretKey());
     }
 
     private void InitSliderValues() {
@@ -121,12 +103,12 @@ public class SC_MenuController : MonoBehaviour {
         RegisterNewUser(usernameStr, passwordStr);
         MoveToScene(Scenes.MainMenu.ToString());
 
+        //todo: verify logic
         //VerifyUserAndPass(usernameStr, passwordStr);
     }
 
     private void RegisterNewUser(string usernameStr, string passwordStr) {
         model.RegisterNewUser(usernameStr, passwordStr);
-        
     }
 
     
@@ -150,12 +132,9 @@ public class SC_MenuController : MonoBehaviour {
     }
 
     public void OnClickedMultiplayer() {
-        SharedDataHandler.SetMultiplayerMode(true);
-
-        WarpClient.GetInstance().Connect(model.GetUserName());
         Debug.Log("Connecting...");
-
-        //MoveToScene(Scenes.SinglePlayer.ToString());
+        SharedDataHandler.SetMultiplayerMode(true);
+        SharedDataHandler.client.Connect(model.GetUserName());
     }
 
     public void OnClickedGithubPage() {
@@ -239,6 +218,7 @@ public class SC_MenuController : MonoBehaviour {
             yield return null;
         }
 
+        //todo: remove this when gameplay scene is stable
         SceneManager.MoveGameObjectToScene(objects[SC_MenuModel.MENU_SCRIPTS_VAR_NAME], SceneManager.GetSceneByName(sceneName));
         SceneManager.UnloadSceneAsync(currentScene);
     }
@@ -249,7 +229,6 @@ public class SC_MenuController : MonoBehaviour {
     }
 
     private void OnConnect(bool isSuccess) {
-        Debug.Log(isSuccess);
         if (isSuccess) {
             Debug.Log("Connected!");
             model.objects[SC_MenuModel.USER_CONN_VAR_NAME].GetComponent<Text>().text = SC_MenuModel.CONNECTED_AS_PREFIX + model.GetUserName();
@@ -259,14 +238,14 @@ public class SC_MenuController : MonoBehaviour {
     }
 
     public void OnClickedFindMatch() {
-        
+        Debug.Log("Searching for room..");
+
         //disable button interaction
         objects[SC_MenuModel.BTN_FIND_MATCH_VAR_NAME].GetComponent<Button>().interactable = false;
 
         DisplayConnectingToServerMsg();
+        SharedDataHandler.client.GetRoomsInRange(1, 2);
 
-        WarpClient.GetInstance().GetRoomsInRange(1, 2);
-        Debug.Log("Searching for room..");
     }
 
     private void DisplayConnectingToServerMsg() {
@@ -289,30 +268,43 @@ public class SC_MenuController : MonoBehaviour {
     }
 
     private void SearchRoom(int roomIndex) {
-        model.SearchRoom(roomIndex);
+        
+        
+        //todo: move this logic to model code:
+        if (roomIndex < model.Rooms.Count) {
+            Debug.Log("Getting room Details (" + model.Rooms[roomIndex] + ")");
+            SharedDataHandler.client.GetLiveRoomInfo(model.Rooms[roomIndex]);
+
+        }
+        else {
+            Debug.Log("Creating Room ...");
+            SharedDataHandler.client.CreateTurnRoom("Test" + model.GetUserName(), model.GetUserName(), 2, model.MatchRoomData, SC_MenuModel.MAX_TURN_TIME);
+        }
     }
 
     private void OnCreateRoom(bool isSuccess, string createdRoomId) {
         if (isSuccess) {
+            //todo: move this logic to model code:
             Debug.Log("Room Created! " + createdRoomId);
             this.roomId = createdRoomId;
-            WarpClient.GetInstance().JoinRoom(roomId);
-            WarpClient.GetInstance().SubscribeRoom(roomId);
+
+            SharedDataHandler.client.JoinRoom(roomId);
+            SharedDataHandler.client.SubscribeRoom(roomId);
         }
         else { 
-            Debug.Log("Error create room");
+            Debug.Log("Error creating room");
         }
     }
 
     public void OnGetLiveRoomInfo(LiveRoomInfoEvent eventObj) {
-        Debug.Log("OnGetLiveRoomInfo called");
 
+        //todo: move this logic to model code:
         Dictionary<string, object> properties = eventObj.getProperties();
         Debug.Log(properties[SC_MenuModel.ROOM_GRP_PASSWORD_KEY]); ;
         if (properties[SC_MenuModel.ROOM_GRP_PASSWORD_KEY].ToString() == model.MatchRoomData[SC_MenuModel.ROOM_GRP_PASSWORD_KEY].ToString()) {
             roomId = eventObj.getData().getId();
-            WarpClient.GetInstance().JoinRoom(roomId);
-            WarpClient.GetInstance().SubscribeRoom(roomId);
+            SharedDataHandler.client.JoinRoom(roomId);
+            SharedDataHandler.client.SubscribeRoom(roomId);
         }
         else {
             roomIndex++;
@@ -328,6 +320,7 @@ public class SC_MenuController : MonoBehaviour {
     }
 
     private void DisplayJoinedRoomMsg(string joinedRoomId) {
+
         objects[SC_MenuModel.CONNECTING_TO_SERVER_VAR_NAME].SetActive(false);
         objects[SC_MenuModel.WAITING_FOR_PLAYER_VAR_NAME].SetActive(true);
 
@@ -340,7 +333,7 @@ public class SC_MenuController : MonoBehaviour {
         Debug.Log("User: " + userJoinedName + " joined the room");
         if (userJoinedName != model.GetUserName()) {
             Debug.Log("OnUserJoinRoom ");
-            WarpClient.GetInstance().startGame();
+            SharedDataHandler.client.startGame();
         }
     }
 
@@ -349,8 +342,4 @@ public class SC_MenuController : MonoBehaviour {
         MoveToScene(Scenes.SinglePlayer.ToString());
     }
 
-    private void OnMoveCompleted(MoveEvent _Move) {
-        //if (OnMoveCompletedNotify != null)
-        //    OnMoveCompletedNotify();
-    }
 }

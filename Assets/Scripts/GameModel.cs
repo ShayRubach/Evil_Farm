@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public struct Point {
@@ -346,6 +345,19 @@ public class GameModel : MonoBehaviour {
         //physically move the soldier
         Debug.Log("now moving " + exactSoldierObj + " to " + newPosition);
         exactSoldierObj.transform.position = newPosition;
+
+
+        //if (isMyTurn && currentBoard[_Index] == GlobalEnums.SlotState.Empty) {
+            //isMyTurn = false;
+            Dictionary<string, object> _toSend = new Dictionary<string, object>();
+            _toSend.Add("UserName", SharedDataHandler.username);
+            _toSend.Add("Data", "some data");
+            string _jsonToSend = MiniJSON.Json.Serialize(_toSend);
+            Debug.Log("sending move with warpClient");
+            SharedDataHandler.client.sendMove(_jsonToSend);
+
+            //SubmitLogic(_Index);
+        //}
     }
 
     internal string GetPreviewAnimationTriggerByWeapon(SoldierType weapon) {

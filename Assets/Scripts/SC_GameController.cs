@@ -1,6 +1,6 @@
 ﻿using System;
-using System;
-using System.Collections;
+using System.Collections.Generic;
+using com.shephertz.app42.gaming.multiplayer.client.events;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -105,7 +105,9 @@ public class SC_GameController : MonoBehaviour {
         SC_CountdownTimer.PreparationTimeStarted += PreparationTimeStarted;
         SC_ShuffleIcon.OnShuffleClicked += OnShuffleClicked;
         SC_BattleAnimations.BattleAnimationFinish += OnBattleAnimationFinish;
+        SharedDataHandler.OnMoveCompleted += OnMoveCompleted;
         SC_Cart.GodMode += GodMode;
+
     }
 
     void OnDisable() {
@@ -127,7 +129,28 @@ public class SC_GameController : MonoBehaviour {
         SC_CountdownTimer.PreparationTimeStarted -= PreparationTimeStarted;
         SC_ShuffleIcon.OnShuffleClicked -= OnShuffleClicked;
         SC_BattleAnimations.BattleAnimationFinish -= OnBattleAnimationFinish;
+        SharedDataHandler.OnMoveCompleted -= OnMoveCompleted;
         SC_Cart.GodMode -= GodMode;
+    }
+
+    private void OnMoveCompleted(MoveEvent move) {
+        Debug.Log("SC_GameController: OnMoveCompleted" + move.getMoveData() + "" + move.getNextTurn());
+        if (move.getSender() != SharedDataHandler.username) {
+            if (move.getMoveData() != null) {
+                Dictionary<string, object> receivedData = MiniJSON.Json.Deserialize(move.getMoveData()) as Dictionary<string, object>;
+                if (receivedData != null) {
+                    int idx = int.Parse(receivedData["Data"].ToString());
+                    //SubmitLogic(idx);
+                }
+            }
+            else
+                SharedDataHandler.client.stopGame();
+        }
+
+        if (move.getNextTurn() == SharedDataHandler.username)
+            isMyTurn = true;
+        else
+            isMyTurn = false;
     }
 
     private void OnMatchStarted() {

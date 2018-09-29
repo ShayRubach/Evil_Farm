@@ -7,7 +7,7 @@ using System;
 using UnityEngine.UI;
 
 public class SC_MenuModel : MonoBehaviour {
-
+    
     public static int VALUE_RATIO = 200;
     public static readonly int SLIDER_STARTING_VALUE = 50;
     public static readonly int INITIAL_ROOM_IDX = 0;
@@ -51,7 +51,6 @@ public class SC_MenuModel : MonoBehaviour {
     public List<string> Rooms { get; set; }
 
     private void Awake() {
-        Debug.Log("Awake from" + gameObject);
         objects = null;
         Init();
     }
@@ -90,6 +89,20 @@ public class SC_MenuModel : MonoBehaviour {
         passowrd = passwordStr;
     }
 
+    internal void SearchRoom(int roomIndex) {
+
+        if (roomIndex < Rooms.Count) {
+            Debug.Log("Getting room Details (" + Rooms[roomIndex] + ")");
+            SharedDataHandler.client.GetLiveRoomInfo(Rooms[roomIndex]);
+
+        }
+        else {
+            Debug.Log("Creating Room ...");
+            SharedDataHandler.client.CreateTurnRoom("Test" + username, username, 2, MatchRoomData, MAX_TURN_TIME);
+            Debug.Log("Room created");
+        }
+    }
+
     public string GetUserName() {
         return username;
     }
@@ -100,17 +113,5 @@ public class SC_MenuModel : MonoBehaviour {
 
     internal string GetSecretKey() {
         return secretKey;
-    }
-
-    internal void SearchRoom(int roomIndex) {
-
-        if (roomIndex < Rooms.Count) {
-            Debug.Log("Getting room Details (" + Rooms[roomIndex] + ")");
-            WarpClient.GetInstance().GetLiveRoomInfo(Rooms[roomIndex]);
-        }
-        else {
-            Debug.Log("Creating Room...");
-            WarpClient.GetInstance().CreateTurnRoom("Test" + username, username, 2, MatchRoomData, MAX_TURN_TIME);
-        }
     }
 }
