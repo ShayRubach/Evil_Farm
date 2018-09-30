@@ -370,8 +370,6 @@ public class SC_GameController : MonoBehaviour {
     }
     
     private void HidePreviewSoldier() {
-        //previewSoldierPlayer.SetActive(false);
-        
         previewSoldierAnimator.SetBool(previewAnimationTrigger, false);
     }
 

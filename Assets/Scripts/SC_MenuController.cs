@@ -55,11 +55,6 @@ public class SC_MenuController : MonoBehaviour {
         Listener.OnMoveCompleted -= OnMoveCompleted;
     }
 
-    private void OnMoveCompleted(MoveEvent _Move) {
-        //if (OnMoveCompletedNotify != null)
-        //    OnMoveCompletedNotify();
-    }
-
     void Start () {
         Debug.Log("Start from" + gameObject);
         Init();
@@ -197,17 +192,12 @@ public class SC_MenuController : MonoBehaviour {
         permanentValueHolder = (int)slider.value;
     }
 
-    //todo: change these literal strings into constants
     public void OnSfxValueChanged() {
-        ChangeSettingsSliderValue("slider_sfx", "sfx_value", ref sfxValue);
+        ChangeSettingsSliderValue(SC_MenuModel.SLIDER_SFX_VAR_NAME, SC_MenuModel.SFX_VALUE_VAR_NAME, ref sfxValue);
     }
-    //todo: change these literal strings into constants
+
     public void OnBgMusicValueChanged() {
-        ChangeSettingsSliderValue("slider_bg_music", "bg_music_value", ref bgMusicValue);
-    }
-    //todo: change these literal strings into constants
-    public void OnCoinsValueChanged() {
-        ChangeSettingsSliderValue("slider_coins", "coins_value", ref coinsValue);
+        ChangeSettingsSliderValue(SC_MenuModel.SLIDER_BG_MUSIC_VAR_NAME, SC_MenuModel.BG_MUSIC_VALUE_VAR_NAME, ref bgMusicValue);
     }
 
     private void MoveToScene(string nextScene) {
@@ -253,10 +243,9 @@ public class SC_MenuController : MonoBehaviour {
         SceneManager.UnloadSceneAsync(currentScene);
     }
 
-    //todo: change these literal strings into constants
     private void ExtractUsernameAndPassword() {
-        usernameStr = objects["inf_username"].GetComponent<InputField>().text;
-        passwordStr = objects["inf_pass"].GetComponent<InputField>().text;
+        usernameStr = objects[SC_MenuModel.USERNAME_INPUT_FILED_VAR_NAME].GetComponent<InputField>().text;
+        passwordStr = objects[SC_MenuModel.PASSWORD_INPUT_FILED_VAR_NAME].GetComponent<InputField>().text;
     }
 
     private void OnConnect(bool isSuccess) {
@@ -360,4 +349,8 @@ public class SC_MenuController : MonoBehaviour {
         MoveToScene(Scenes.SinglePlayer.ToString());
     }
 
+    private void OnMoveCompleted(MoveEvent _Move) {
+        //if (OnMoveCompletedNotify != null)
+        //    OnMoveCompletedNotify();
+    }
 }

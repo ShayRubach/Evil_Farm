@@ -14,14 +14,17 @@ public class SC_MenuModel : MonoBehaviour {
     public static readonly int MAX_TURN_TIME = 30;
 
     public static readonly string SLIDER_SFX_VAR_NAME = "slider_sfx";
-    public static readonly string USER_CONN_VAR_NAME = "txt_conn_username";
     public static readonly string SLIDER_BG_MUSIC_VAR_NAME = "slider_bg_music";
+    public static readonly string SFX_VALUE_VAR_NAME = "sfx_value";
+    public static readonly string BG_MUSIC_VALUE_VAR_NAME = "bg_music_value";
+    public static readonly string USER_CONN_VAR_NAME = "txt_conn_username";
     public static readonly string BTN_FIND_MATCH_VAR_NAME = "btn_auto_find_room";
     public static readonly string CONNECTED_GRP_VAR_NAME = "txt_connected_grp";
     public static readonly string CONNECTING_TO_SERVER_VAR_NAME = "txt_connecting";
     public static readonly string WAITING_FOR_PLAYER_VAR_NAME = "txt_waiting_for_player";
     public static readonly string MENU_SCRIPTS_VAR_NAME = "scripts_menu";
-
+    public static readonly string USERNAME_INPUT_FILED_VAR_NAME = "inf_username";
+    public static readonly string PASSWORD_INPUT_FILED_VAR_NAME = "inf_pass";
     
     public static readonly string ROOM_ID_WILDCARD = "?";
     public static readonly string WAITING_FOR_PLAYER_PREFIX = "Joined room ? \nWaiting for another player...";
