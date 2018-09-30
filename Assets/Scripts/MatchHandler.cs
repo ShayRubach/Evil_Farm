@@ -13,8 +13,8 @@ public class MatchHandler {
     private static readonly System.Object lockingObj = new System.Object();
 
     public delegate void ClickAction(GameObject obj);
-    public static event ClickAction OnClickedSoldier;
-    public static event ClickAction OnClickedTile;
+    //public static event ClickAction OnClickedSoldier;
+    //public static event ClickAction OnClickedTile;
 
     private MatchHandler() { }
 
@@ -30,8 +30,9 @@ public class MatchHandler {
     }
 
     public MatchStatus EvaluateMatchResult(GameObject initiator, GameObject opponent) {
-        Debug.Log("initiator is " + initiator.name + ": " + initiator.GetComponent<SC_Soldier>());
-        Debug.Log("victim  is " + opponent.name + ": " + opponent.GetComponent<SC_Soldier>());
+
+        //Debug.Log("initiator is " + initiator.name + ": " + initiator.GetComponent<SC_Soldier>());
+        //Debug.Log("victim  is " + opponent.name + ": " + opponent.GetComponent<SC_Soldier>());
 
         //todo: add all weapons in the future:
 

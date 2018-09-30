@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using com.shephertz.app42.gaming.multiplayer.client.events;
 using UnityEngine;
 
 public struct Point {
@@ -28,13 +29,13 @@ public class SC_GameModel : MonoBehaviour {
     private bool playingVsAI = true;
     private static readonly int COLS = 7;
     private static readonly int ROWS = 6;
-    private static readonly int MAX_SOLDIER_PER_TEAM = 14;
+    //private static readonly int MAX_SOLDIER_PER_TEAM = 14;
 
     public static readonly int REVEAL_SPOTLIGHT_CHILD_IDX = 1;
 
     private static readonly string UNITY_OBJECTS_TAG = "UnityObject";
     private static readonly int LEFT_BOARD_EDGE_IDX = 0;
-    private static readonly int RIGHT_BOARD_EDGE_IDX = 6;
+    private static readonly int RIGHT_BOARD_EDGE_IDX = COLS - 1;
     private static readonly int TOP_BOARD_EDGE_IDX = 0;
     private static readonly int BTM_BOARD_EDGE_IDX = ROWS - 1;
     private static readonly int LEGAL_MOVES_COUNT = 4;
@@ -52,12 +53,11 @@ public class SC_GameModel : MonoBehaviour {
     public static readonly string LEAF_INDICATOR_NAME_VAR = "leaf";
     public static readonly string TIE_WEAPONS_P_VAR_NAME = "tie_weapon_options";
     public static readonly string END_GAME_OPTIONS_VAR_NAME = "end_game_options";
-    public static readonly string PREVIEW_ANIMATION_TRIGGER_PREFIX = "Preview";
     public static readonly string BATTLE_ANIMATOR_VAR_NAME = "battle_animations";
     public static readonly string CRYSTAL_VAR_NAME = "Crystal";
-
-
     public static readonly string ANNOUNCER_VAR_NAME = "announcer";
+
+    public static readonly string PREVIEW_ANIMATION_TRIGGER_PREFIX = "Preview";
     public static readonly string ANNOUNCER_WIN_TRIGGER = "Win";
     public static readonly string ANNOUNCER_LOSE_TRIGGER = "Lose";
     public static readonly string ANNOUNCER_TIE_TRIGGER = "Tie";
@@ -65,6 +65,15 @@ public class SC_GameModel : MonoBehaviour {
     public static readonly string ANNOUNCER_DEFEAT_TRIGGER = "Defeat";
     public static readonly string END_GAME_TRIGGER = "GameFinished";
     public static readonly string SHUFFLE_TRIGGER = "Shuffle";
+
+    public static readonly string ACTION_MOVE_UP = "MU";
+    public static readonly string ACTION_MOVE_DOWN = "MD";
+    public static readonly string ACTION_MOVE_LEFT = "ML";
+    public static readonly string ACTION_MOVE_RIGHT = "MR";
+    public static readonly string ACTION_SHUFFLE = "S";
+    public static readonly string ACTION_TIE = "T";
+
+
 
     public GameObject FocusedEnemy { get; set; }
     public GameObject FocusedPlayer { get; set; }
@@ -74,6 +83,9 @@ public class SC_GameModel : MonoBehaviour {
     private GameObject pathIndicators;
     private Vector3 relativePos;
     private Point nextMoveCoord;
+
+    Dictionary<string, object> sentData = new Dictionary<string, object>();
+    Dictionary<string, object> receivedData = new Dictionary<string, object>();
 
     List<GameObject> players = new List<GameObject>();
     List<GameObject> enemies = new List<GameObject>();
@@ -103,7 +115,7 @@ public class SC_GameModel : MonoBehaviour {
 
             }
             catch (ArgumentException e) {
-                Debug.Log("there's already " + obj.name + " in the dictionary!");
+                Debug.Log("there's already " + obj.name + " in the dictionary!" + e.ToString());
             }
             
         }
@@ -145,6 +157,26 @@ public class SC_GameModel : MonoBehaviour {
 
             soldiers[j].transform.position = newPos;
         }
+    }
+
+    internal bool HandleMoveAck(MoveEvent move) {
+        Debug.Log("sender=" + move.getSender() + ", data=" + move.getMoveData() + ", nextTurn=" + move.getNextTurn());
+
+        if (move.getSender() != SharedDataHandler.username) {
+            if (move.getMoveData() != null) {
+                receivedData.Clear();
+                receivedData = MiniJSON.Json.Deserialize(move.getMoveData()) as Dictionary<string, object>;
+                if (receivedData != null) {
+                    //int idx = int.Parse(receivedData["Data"].ToString());
+                    //SubmitLogic(idx);
+                }
+            }
+            else
+                SharedDataHandler.client.stopGame();
+        }
+
+        //returns whether its our turn or rival's:
+        return (move.getNextTurn() == SharedDataHandler.username);
     }
 
     internal void PlayAsAI() {
@@ -193,7 +225,7 @@ public class SC_GameModel : MonoBehaviour {
 
         System.Random rand = new System.Random();
         int MAX_ATTEMPTS = 100;
-        int randomSoldier = 0, attempts = 0;
+        int randomSoldier = 0;
         FocusedPlayer = null;
         MovementDirections movement = MovementDirections.NONE;
 
@@ -259,7 +291,7 @@ public class SC_GameModel : MonoBehaviour {
             return objects[TILE_NAME_VAR + x + y];
         }
         catch(KeyNotFoundException e) {
-            Debug.Log("Tile not found = " + TILE_NAME_VAR + x + y);
+            Debug.Log("Tile not found = " + TILE_NAME_VAR + x + y + " " + e.ToString());
         }
         return null;    
     }
@@ -343,17 +375,50 @@ public class SC_GameModel : MonoBehaviour {
         UpdateTileAndSoldierRefs(newTile, exactSoldierObj, true, false);
 
         //physically move the soldier
-        Debug.Log("now moving " + exactSoldierObj + " to " + newPosition);
         exactSoldierObj.transform.position = newPosition;
 
-        Dictionary<string, object> _toSend = new Dictionary<string, object>();
-        _toSend.Add("UserName", SharedDataHandler.username);
-        _toSend.Add("Data", "some data");
-        string _jsonToSend = MiniJSON.Json.Serialize(_toSend);
-        Debug.Log("sending move with warpClient");
+        if (SharedDataHandler.isMultiplayer) {
+            string newSoldierPosStr = exactSoldierObj.transform.position.x.ToString() + Mathf.Abs(exactSoldierObj.transform.position.z).ToString();
+            SendMovementAck(soldierMovementDirection, newSoldierPosStr);
+        }
+        
 
-        SharedDataHandler.client.sendMove(_jsonToSend);
     }
+
+    private string DirectionToJsonStringFormat(MovementDirections direction) {
+        switch (direction) {
+            case MovementDirections.UP:     return ACTION_MOVE_UP;
+            case MovementDirections.DOWN:   return ACTION_MOVE_DOWN;
+            case MovementDirections.LEFT:   return ACTION_MOVE_LEFT;
+            case MovementDirections.RIGHT:  return ACTION_MOVE_RIGHT;
+        }
+        return null;
+    }
+
+    private void SendMovementAck(MovementDirections direction, string tileIdx) {
+        string action = DirectionToJsonStringFormat(direction);
+        SendDataToServer(action + tileIdx);
+    }
+
+
+    private void SendTieAck(string tieJson) {
+        string msg = null ;
+        SendDataToServer(msg);
+    }
+
+    private void SendShuffleAck(string shuffleJson) {
+        string msg = null;
+        SendDataToServer(msg);
+    }
+
+    private void SendDataToServer(string data) {
+        sentData.Clear();
+        sentData.Add(SharedDataHandler.userNameKey, SharedDataHandler.username);
+        sentData.Add(SharedDataHandler.dataKey, data);
+        string dataJson = MiniJSON.Json.Serialize(sentData);
+        SharedDataHandler.client.sendMove(dataJson);
+    }
+
 
     internal string GetPreviewAnimationTriggerByWeapon(SoldierType weapon) {
 
@@ -401,7 +466,7 @@ public class SC_GameModel : MonoBehaviour {
     private void HandleMatchResult(MatchStatus result) {
         
     //get the initiator's movement direction:
-    MovementDirections direction = CalculateMovementDirectionByAngle(Mathf.Atan2(-relativePos.y, -relativePos.x) * Mathf.Rad2Deg);
+    //MovementDirections direction = CalculateMovementDirectionByAngle(Mathf.Atan2(-relativePos.y, -relativePos.x) * Mathf.Rad2Deg);
 
     switch (result) {
         case MatchStatus.INITIATOR_WON_THE_MATCH:
@@ -487,7 +552,6 @@ public class SC_GameModel : MonoBehaviour {
 
     private void HideSoldier(GameObject soldier) {
         return;
-        soldier.GetComponent<SC_Soldier>().ConcealWeapon(soldier.transform.GetChild(0).gameObject.transform.GetChild(0).gameObject);
     }
 
     private void RemoveSoldier(GameObject soldier) {

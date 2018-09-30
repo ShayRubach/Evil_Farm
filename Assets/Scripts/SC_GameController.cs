@@ -71,14 +71,18 @@ public class SC_GameController : MonoBehaviour {
 
             }
         }
+
         if (Input.GetKey(KeyCode.Escape)) {
             Application.Quit();
         }
 
-        if (!isMyTurn && !duringTie && canPlay) {
-            if (!AIAlreadyPlaying)
-                PlayAsAI();
+        if (!SharedDataHandler.isMultiplayer) {
+            if (!isMyTurn && !duringTie && canPlay) {
+                if (!AIAlreadyPlaying)
+                    PlayAsAI();
+            }
         }
+
     }
 
     private void PlayAsAI() {
@@ -134,25 +138,26 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void OnMoveCompleted(MoveEvent move) {
-        Debug.Log("SC_GameController: OnMoveCompleted. data=" + move.getMoveData() + ", nextTurn=" + move.getNextTurn());
-        Debug.Log("move.getSender()=" + move.getSender());
+        ChangeTurnIconIndicator();
+        isMyTurn = model.HandleMoveAck(move);
+        //Debug.Log("sender="+ move.getSender()+ ", data=" + move.getMoveData() + ", nextTurn=" + move.getNextTurn());
 
-        if (move.getSender() != SharedDataHandler.username) {
-            if (move.getMoveData() != null) {
-                Dictionary<string, object> receivedData = MiniJSON.Json.Deserialize(move.getMoveData()) as Dictionary<string, object>;
-                if (receivedData != null) {
-                    //int idx = int.Parse(receivedData["Data"].ToString());
-                    //SubmitLogic(idx);
-                }
-            }
-            else
-                SharedDataHandler.client.stopGame();
-        }
+        //if (move.getSender() != SharedDataHandler.username) {
+        //    if (move.getMoveData() != null) {
+        //        Dictionary<string, object> receivedData = MiniJSON.Json.Deserialize(move.getMoveData()) as Dictionary<string, object>;
+        //        if (receivedData != null) {
+        //            //int idx = int.Parse(receivedData["Data"].ToString());
+        //            //SubmitLogic(idx);
+        //        }
+        //    }
+        //    else
+        //        SharedDataHandler.client.stopGame();
+        //}
 
-        if (move.getNextTurn() == SharedDataHandler.username)
-            isMyTurn = true;
-        else
-            isMyTurn = false;
+        //if (move.getNextTurn() == SharedDataHandler.username)
+        //    isMyTurn = true;
+        //else
+        //    isMyTurn = false;
     }
 
     private void OnMatchStarted() {
@@ -262,7 +267,6 @@ public class SC_GameController : MonoBehaviour {
     
     //called when AI is finished with his move (inc. animations):
     private void AIMoveFinished() {
-        Debug.Log("AIMoveFinished");
         AIAlreadyPlaying = false;
         isMyTurn = true;
     }
@@ -278,6 +282,7 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void MarkSoldier(GameObject soldier) {
+        //todo: remove this and turn the inner light in enemy's pumpkin on and off
         soldierSpotlight.HighlightSoldier(soldier);
     }
 

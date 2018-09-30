@@ -8,7 +8,7 @@ public class SC_PathIndicator : MonoBehaviour {
     private RaycastHit hit;
     private static float spinSpeed = 15.0f;
     private bool shouldSpin = false;
-    private GameObject leafObj = null;
+    //private GameObject leafObj = null;
     private Quaternion originalRotation;
 
     void Start() {

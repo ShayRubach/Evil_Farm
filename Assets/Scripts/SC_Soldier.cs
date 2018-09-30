@@ -5,9 +5,6 @@ using UnityEngine;
 
 public class SC_Soldier : MonoBehaviour {
 
-    public delegate void ClickAction(GameObject obj);
-    public static event ClickAction OnClickedSoldier;
-
     public delegate void OnSoldierAction(GameObject obj);
     public static event OnSoldierAction MarkSoldier;
     public static event OnSoldierAction UnmarkSoldier;

@@ -21,8 +21,8 @@ public class SC_MenuController : MonoBehaviour {
     private string usernameStr, passwordStr;
     private static int sfxValue = SC_MenuModel.SLIDER_STARTING_VALUE;
     private static int bgMusicValue = SC_MenuModel.SLIDER_STARTING_VALUE;
-    private static int coinsValue = SC_MenuModel.SLIDER_STARTING_VALUE;
-    private static int valueRatio = SC_MenuModel.VALUE_RATIO;
+    //private static int coinsValue = SC_MenuModel.SLIDER_STARTING_VALUE;
+    //private static int valueRatio = SC_MenuModel.VALUE_RATIO;
 
     private int roomIndex = SC_MenuModel.INITIAL_ROOM_IDX;
     private string roomId = SC_MenuModel.INITIAL_ROOM_ID;
@@ -209,7 +209,7 @@ public class SC_MenuController : MonoBehaviour {
 
     IEnumerator LoadAsyncScene(string sceneName) {
 
-        Scene currentScene = SceneManager.GetActiveScene();
+        //Scene currentScene = SceneManager.GetActiveScene();
         //AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
         AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
 

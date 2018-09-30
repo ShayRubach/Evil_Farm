@@ -40,8 +40,10 @@ public static class SharedDataHandler {
     public static WarpClient client;
     public static Listener listener = new Listener();
 
+    internal static string userNameKey = "UserName";
+    internal static string dataKey = "Data";
+
     static SharedDataHandler() {
-        Debug.Log("SharedDataHandler Ctor called");
         nextScreenRequested = SC_MenuModel.INITIAL_SCENE;
         ListenToEvents();
     }
