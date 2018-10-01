@@ -57,6 +57,9 @@ public class SC_GameModel : MonoBehaviour {
     public static readonly string CRYSTAL_VAR_NAME = "Crystal";
     public static readonly string ANNOUNCER_VAR_NAME = "announcer";
 
+    private readonly string PLAYER_TURN_INDICATOR_VAR_NAME = "player_turn_indicator";
+    private readonly string ENEMY_TURN_INDICATOR_VAR_NAME = "enemy_turn_indicator";
+
     public static readonly string PREVIEW_ANIMATION_TRIGGER_PREFIX = "Preview";
     public static readonly string ANNOUNCER_WIN_TRIGGER = "Win";
     public static readonly string ANNOUNCER_LOSE_TRIGGER = "Lose";
@@ -73,16 +76,16 @@ public class SC_GameModel : MonoBehaviour {
     public static readonly string ACTION_SHUFFLE = "S";
     public static readonly string ACTION_TIE = "T";
 
-
-
     public GameObject FocusedEnemy { get; set; }
     public GameObject FocusedPlayer { get; set; }
     public GameObject board;
     public MovementDirections nextMovement;
 
     private GameObject pathIndicators;
+    private GameObject playerTurnIndicator, enemyTurnIndicator;
     private Vector3 relativePos;
     private Point nextMoveCoord;
+    private SoldierTeam winningTeam;
 
     Dictionary<string, object> sentData = new Dictionary<string, object>();
     Dictionary<string, object> receivedData = new Dictionary<string, object>();
@@ -91,10 +94,15 @@ public class SC_GameModel : MonoBehaviour {
     List<GameObject> enemies = new List<GameObject>();
     List<GameObject> tiles = new List<GameObject>();
 
-
     private Dictionary<string, GameObject> objects = new Dictionary<string, GameObject>();
 
     private void Awake() {
+        CreateObjectsDictionary();
+        AssignGameObjectsReference();
+        InitSpecialGameObjects();
+    }
+
+    private void CreateObjectsDictionary() {
 
         GameObject[] objectsArray = GameObject.FindGameObjectsWithTag(UNITY_OBJECTS_TAG);
 
@@ -103,33 +111,43 @@ public class SC_GameModel : MonoBehaviour {
                 objects.Add(obj.name, obj);
 
                 //save these objects for a later use such as in restart game (optimization)
-                if (obj.name.Contains(PLAYER_NAME_VAR)) {
+                if (obj.name.Contains(PLAYER_NAME_VAR))
                     players.Add(obj);
-                }
-                if (obj.name.Contains(ENEMY_NAME_VAR)) {
+                if (obj.name.Contains(ENEMY_NAME_VAR))
                     enemies.Add(obj);
-                }
-                if (obj.name.Contains(TILE_NAME_VAR)) {
+                if (obj.name.Contains(TILE_NAME_VAR))
                     tiles.Add(obj);
-                }
-
             }
             catch (ArgumentException e) {
                 Debug.Log("there's already " + obj.name + " in the dictionary!" + e.ToString());
             }
-            
         }
-        
+    }
+
+    private void InitSpecialGameObjects() {
         objects[TIE_WEAPONS_P_VAR_NAME].SetActive(false);
-        pathIndicators = objects[PATH_INDICATORS_NAME_VAR];
+        objects[PLAYER_TURN_INDICATOR_VAR_NAME].SetActive(false);
+        objects[ENEMY_TURN_INDICATOR_VAR_NAME].SetActive(false);
+
+        SetStartingPlayer(SharedDataHandler.isPlayerStarting);
 
         nextMoveCoord.x = 0;
         nextMoveCoord.y = 0;
+    }
 
+    private void AssignGameObjectsReference() {
+        pathIndicators = objects[PATH_INDICATORS_NAME_VAR];
+        playerTurnIndicator = objects[PLAYER_TURN_INDICATOR_VAR_NAME];
+        enemyTurnIndicator = objects[ENEMY_TURN_INDICATOR_VAR_NAME];
     }
 
     private void SortList(List<GameObject> list) {
         list.Sort((x, y) => string.Compare(x.name, y.name));
+    }
+
+    internal void SetStartingPlayer(bool isPlayerStarting) {
+        playerTurnIndicator.SetActive(isPlayerStarting);
+        enemyTurnIndicator.SetActive(!isPlayerStarting);
     }
 
     public void ShuffleTeam(SoldierTeam team) {
@@ -180,10 +198,10 @@ public class SC_GameModel : MonoBehaviour {
     }
 
     internal void PlayAsAI() {
-        Debug.Log("Playing as AI");
+        //Debug.Log("Playing as AI");
         
         FocusedPlayer = ChooseValidRandomSoldier();
-        StartCoroutine(SimulateThinkingTimeAndMove(THINKING_TIME_IN_SECONDS));
+        StartCoroutine(MoveAsAIWithThinkingTime(THINKING_TIME_IN_SECONDS));
     }
 
     internal string GetCurrentBattleAnimationParameters() {
@@ -204,7 +222,7 @@ public class SC_GameModel : MonoBehaviour {
 
     }
 
-    private IEnumerator SimulateThinkingTimeAndMove(float waitTime) {
+    private IEnumerator MoveAsAIWithThinkingTime(float waitTime) {
         yield return new WaitForSeconds(waitTime);
         if (IsPossibleMatch(nextMoveCoord)) {
             Match();
@@ -260,6 +278,10 @@ public class SC_GameModel : MonoBehaviour {
             enemy.GetComponent<SC_Soldier>().Init();
         foreach (GameObject tile in tiles)
             tile.GetComponent<SC_Tile>().Init();
+
+        //winner starts the next match
+        SharedDataHandler.isPlayerStarting = (winningTeam == SoldierTeam.PLAYER);
+        InitSpecialGameObjects();
     }
 
     private MovementDirections GetAvailableMove() {
@@ -381,8 +403,14 @@ public class SC_GameModel : MonoBehaviour {
             string newSoldierPosStr = exactSoldierObj.transform.position.x.ToString() + Mathf.Abs(exactSoldierObj.transform.position.z).ToString();
             SendMovementAck(soldierMovementDirection, newSoldierPosStr);
         }
-        
 
+        DisplayTurnIndicator();
+    }
+
+    internal void DisplayTurnIndicator() {
+        Debug.Log("DisplayTurnIndicator");
+        objects[PLAYER_TURN_INDICATOR_VAR_NAME].SetActive(!objects[PLAYER_TURN_INDICATOR_VAR_NAME].activeSelf);
+        objects[ENEMY_TURN_INDICATOR_VAR_NAME].SetActive(!objects[ENEMY_TURN_INDICATOR_VAR_NAME].activeSelf);
     }
 
     private string DirectionToJsonStringFormat(MovementDirections direction) {
@@ -458,6 +486,10 @@ public class SC_GameModel : MonoBehaviour {
         //call our MatchHandler to evaluate the match result:
         MatchStatus result = MatchHandler.GetInstance.EvaluateMatchResult(FocusedPlayer, FocusedEnemy);
         HandleMatchResult(result);
+
+        if (result != MatchStatus.TIE) {
+            DisplayTurnIndicator();
+        }
     }
 
     /*
@@ -561,7 +593,7 @@ public class SC_GameModel : MonoBehaviour {
     }
 
     void CallFinishGame(GameObject winner) {
-        SoldierTeam winningTeam = winner.GetComponent<SC_Soldier>().Team;
+        winningTeam = winner.GetComponent<SC_Soldier>().Team;
 
         if (FinishGame != null)
             FinishGame(winningTeam);

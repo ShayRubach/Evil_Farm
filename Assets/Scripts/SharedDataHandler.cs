@@ -37,6 +37,8 @@ public static class SharedDataHandler {
     public static int wins {get;set;}
     public static int loses {get;set;}
     public static bool isMultiplayer = false;
+    public static bool isPlayerStarting = true;
+
     public static WarpClient client;
     public static Listener listener = new Listener();
 

@@ -13,7 +13,7 @@ public class SC_GameController : MonoBehaviour {
 
     private GameObject focusedPlayerParent;                 //parent GameObject that holds the soldier and its weapon
     private GameObject previewSoldierPlayer;                //the enlarged previewed soldier user sees on a soldier focus (click)
-    private SC_GameModel model;                                //our game logic model
+    private SC_GameModel model;                             //our game logic model
 
     [SerializeField]
     private GameObject countdownManager;
@@ -25,7 +25,7 @@ public class SC_GameController : MonoBehaviour {
     private Animator soldierAnimator, previewSoldierAnimator;
     private Animator announcerAnimator, endGameOptionsAnimator;
     private Animator battleAnimator;
-
+   
     private bool isMyTurn = true;
     private bool duringTie = false;
     private bool canPlay = false;
@@ -33,8 +33,6 @@ public class SC_GameController : MonoBehaviour {
 
     private MovementDirections soldierMovementDirection;
     private string previewAnimationTrigger = "";
-
-
 
     void Start() {
 
@@ -57,6 +55,7 @@ public class SC_GameController : MonoBehaviour {
         HidePreviewSoldier();
         countdownManager.SetActive(true);
         shuffleHandler.SetActive(true);
+        isMyTurn = SharedDataHandler.isPlayerStarting;
     }
 
     void FixedUpdate() {
@@ -138,7 +137,6 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void OnMoveCompleted(MoveEvent move) {
-        ChangeTurnIconIndicator();
         isMyTurn = model.HandleMoveAck(move);
         //Debug.Log("sender="+ move.getSender()+ ", data=" + move.getMoveData() + ", nextTurn=" + move.getNextTurn());
 
@@ -218,7 +216,6 @@ public class SC_GameController : MonoBehaviour {
     //let user interact with game when animation ends:
     private void FinishAnnouncementEvent() {
         ResetAnimatorParameters(announcerAnimator);
-        //canPlay = true;
     }
 
     private void ResetAnimatorParameters(Animator animator) {
