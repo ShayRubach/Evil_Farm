@@ -55,6 +55,9 @@ public class SC_GameController : MonoBehaviour {
         countdownManager.SetActive(true);
         shuffleHandler.SetActive(true);
         isMyTurn = SharedDataHandler.isPlayerStarting;
+
+        //force shuffle when game starts to invoke HandleShuffleAck() on remote player side
+        model.ShuffleTeam(SoldierTeam.PLAYER);
     }
 
     void FixedUpdate() {
@@ -108,8 +111,8 @@ public class SC_GameController : MonoBehaviour {
         SC_ShuffleIcon.OnShuffleClicked += OnShuffleClicked;
         SC_BattleAnimations.BattleAnimationFinish += OnBattleAnimationFinish;
         SharedDataHandler.OnMoveCompleted += OnMoveCompleted;
+        SharedDataHandler.OnGameStarted += OnGameStarted;
         SC_Cart.GodMode += GodMode;
-
     }
 
     void OnDisable() {
@@ -132,7 +135,13 @@ public class SC_GameController : MonoBehaviour {
         SC_ShuffleIcon.OnShuffleClicked -= OnShuffleClicked;
         SC_BattleAnimations.BattleAnimationFinish -= OnBattleAnimationFinish;
         SharedDataHandler.OnMoveCompleted -= OnMoveCompleted;
+        SharedDataHandler.OnGameStarted -= OnGameStarted;
         SC_Cart.GodMode -= GodMode;
+    }
+
+    private void OnGameStarted(string sender, string thisRoomId, string nextTurn) {
+        //force shuffle when game starts to invoke HandleShuffleAck() on remote player side
+        model.ShuffleTeam(SoldierTeam.PLAYER);
     }
 
     private void OnMoveCompleted(MoveEvent move) {
