@@ -159,25 +159,31 @@ public class SC_GameModel : MonoBehaviour {
         List<GameObject> soldiers = (team == SoldierTeam.PLAYER) ? players : enemies;
         int startingTileIdx = (team == SoldierTeam.PLAYER) ? board.transform.childCount - soldiers.Count : 0;
 
-        Vector3 newPos;
-        GameObject tile;
-
         //shuffle (internaly) the soldiers list:
         soldiers.Sort((x, y) => UnityEngine.Random.value < 0.5f ? -1 : 1);
 
-        for (int i = startingTileIdx, j = 0; j < soldiers.Count; i++, j++) {
+        UpdateShuffledPositions(soldiers, startingTileIdx);
+
+;    }
+
+    private void UpdateShuffledPositions(List<GameObject> soldierList, int startingTileIdx) {
+
+        Vector3 newPos;
+        GameObject tile;
+
+        for (int i = startingTileIdx, j = 0; j < soldierList.Count; i++, j++) {
             tile = board.transform.GetChild(i).gameObject;
 
             //save reference to old position, and then modify x and z (displayed as our 'y') values according to new tile.
-            newPos = soldiers[j].transform.position;
+            newPos = soldierList[j].transform.position;
 
-            UpdateTileAndSoldierRefs(tile, soldiers[j], true, false);
+            UpdateTileAndSoldierRefs(tile, soldierList[j], true, false);
 
             //move the soldier to his new tile
-            newPos[0] = soldiers[j].GetComponent<SC_Soldier>().Tile.transform.position.x;      //x value
-            newPos[2] = soldiers[j].GetComponent<SC_Soldier>().Tile.transform.position.z;      //z value (our 'y')
+            newPos[0] = soldierList[j].GetComponent<SC_Soldier>().Tile.transform.position.x;      //x value
+            newPos[2] = soldierList[j].GetComponent<SC_Soldier>().Tile.transform.position.z;      //z value (our 'y')
 
-            soldiers[j].transform.position = newPos;
+            soldierList[j].transform.position = newPos;
         }
     }
 
