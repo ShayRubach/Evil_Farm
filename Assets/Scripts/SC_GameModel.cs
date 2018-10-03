@@ -27,8 +27,10 @@ public class SC_GameModel : MonoBehaviour {
     public static event NotifyToController CallTieBreaker;
 
     private bool playingVsAI = true;
-    private static readonly int COLS = 7;
-    private static readonly int ROWS = 6;
+    private const int COLS = 7;
+    private const int ROWS = 6;
+    private const int MIRROR_OFFSET = 1;
+
     //private static readonly int MAX_SOLDIER_PER_TEAM = 14;
 
     public static readonly int REVEAL_SPOTLIGHT_CHILD_IDX = 1;
@@ -57,8 +59,9 @@ public class SC_GameModel : MonoBehaviour {
     public static readonly string CRYSTAL_VAR_NAME = "Crystal";
     public static readonly string ANNOUNCER_VAR_NAME = "announcer";
 
-    private readonly string PLAYER_TURN_INDICATOR_VAR_NAME = "player_turn_indicator";
-    private readonly string ENEMY_TURN_INDICATOR_VAR_NAME = "enemy_turn_indicator";
+    private static readonly string DATA_KEY_VAR_NAME = "Data";
+    private static readonly string PLAYER_TURN_INDICATOR_VAR_NAME = "player_turn_indicator";
+    private static readonly string ENEMY_TURN_INDICATOR_VAR_NAME = "enemy_turn_indicator";
 
     public static readonly string PREVIEW_ANIMATION_TRIGGER_PREFIX = "Preview";
     public static readonly string ANNOUNCER_WIN_TRIGGER = "Win";
@@ -69,12 +72,13 @@ public class SC_GameModel : MonoBehaviour {
     public static readonly string END_GAME_TRIGGER = "GameFinished";
     public static readonly string SHUFFLE_TRIGGER = "Shuffle";
 
-    public static readonly string ACTION_MOVE_UP = "MU";
-    public static readonly string ACTION_MOVE_DOWN = "MD";
-    public static readonly string ACTION_MOVE_LEFT = "ML";
-    public static readonly string ACTION_MOVE_RIGHT = "MR";
-    public static readonly string ACTION_SHUFFLE = "S";
-    public static readonly string ACTION_TIE = "T";
+    private const string ACTION_MOVE = "M";
+    private const string ACTION_MOVE_UP = "MU";
+    private const string ACTION_MOVE_DOWN = "MD";
+    private const string ACTION_MOVE_LEFT = "ML";
+    private const string ACTION_MOVE_RIGHT = "MR";
+    private const string ACTION_SHUFFLE = "S";
+    private const string ACTION_TIE = "T";
 
     public GameObject FocusedEnemy { get; set; }
     public GameObject FocusedPlayer { get; set; }
@@ -185,8 +189,7 @@ public class SC_GameModel : MonoBehaviour {
                 receivedData.Clear();
                 receivedData = MiniJSON.Json.Deserialize(move.getMoveData()) as Dictionary<string, object>;
                 if (receivedData != null) {
-                    //int idx = int.Parse(receivedData["Data"].ToString());
-                    //SubmitLogic(idx);
+                    ParseJsonData(receivedData[DATA_KEY_VAR_NAME].ToString());
                 }
             }
             else
@@ -195,6 +198,57 @@ public class SC_GameModel : MonoBehaviour {
 
         //returns whether its our turn or rival's:
         return (move.getNextTurn() == SharedDataHandler.username);
+    }
+
+    private void ParseJsonData(string data) {
+        Debug.Log("ParseJsonData: data[0].ToString() = " + data[0].ToString());
+        switch (data[0].ToString()) {
+            case ACTION_MOVE:
+                HandleEnemyMovement(data);
+                break;
+            case ACTION_SHUFFLE:
+                //HandleEnemyShuffle(data);
+                break;
+            case ACTION_TIE:
+                //HandleEnemyTie(data);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void HandleEnemyMovement(string data) {
+        Debug.Log("HandleEnemyMovement: called.");
+        string tile = JsonToTileIndex(data);
+        MovementDirections direction = JsonToMovementDirection(data);
+        FocusedPlayer = objects[TILE_NAME_VAR + tile].GetComponent<SC_Tile>().soldier;
+
+        Debug.Log("FocusedPlayer = " + FocusedPlayer);
+        Debug.Log("FocusedPlayer.transform.parent.gameObject= " + FocusedPlayer.transform.parent.gameObject);
+
+        PerformMove(FocusedPlayer.transform.parent.gameObject, FocusedPlayer.transform.position, direction, false);
+    }
+
+    private string JsonToTileIndex(string data) {
+        const int TILE_IDX_START = 2;
+        const int TILE_IDX_STR_LEN = 2;
+        string fixedTileStr = data.Substring(TILE_IDX_START, TILE_IDX_STR_LEN);
+        Debug.Log("JsonToTileIndex: fixedTileStr = " + fixedTileStr);
+
+        return fixedTileStr;
+    }
+
+    private MovementDirections JsonToMovementDirection(string data) {
+        const int ACTION_MOVE_IDX_START = 0;
+        const int ACTION_MOVE_STR_LEN = 2;
+
+        switch (data.Substring(ACTION_MOVE_IDX_START, ACTION_MOVE_STR_LEN)) {
+            case ACTION_MOVE_UP: return MovementDirections.UP;
+            case ACTION_MOVE_DOWN: return MovementDirections.DOWN;
+            case ACTION_MOVE_LEFT: return MovementDirections.LEFT;
+            case ACTION_MOVE_RIGHT: return MovementDirections.RIGHT;
+            default: return MovementDirections.NONE;
+        }
     }
 
     internal void PlayAsAI() {
@@ -224,6 +278,8 @@ public class SC_GameModel : MonoBehaviour {
 
     private IEnumerator MoveAsAIWithThinkingTime(float waitTime) {
         yield return new WaitForSeconds(waitTime);
+
+        //todo: refactor this part to user PerformMove() func instead
         if (IsPossibleMatch(nextMoveCoord)) {
             Match();
         }
@@ -322,6 +378,31 @@ public class SC_GameModel : MonoBehaviour {
         return objects;
     }
 
+    internal bool PerformMove(GameObject focusedPlayerParent, Vector3 exactSoldierPosition, MovementDirections soldierMovementDirection, bool sendAck = true) {
+
+        bool rc = true;
+
+        if (soldierMovementDirection != MovementDirections.NONE) {
+            
+            //only move if its within board borders:
+            if (IsValidMove(exactSoldierPosition, soldierMovementDirection)) {
+
+                //check if next movement will initiate a fight (as landing on a rival tile): 
+                if (IsPossibleMatch(GetNextMoveCoord())) {
+                    Match();
+                }
+                else {
+                    //currrently a static movement, will turn into animation later.
+                    MoveSoldier(focusedPlayerParent, soldierMovementDirection, sendAck);
+                }
+                //isMyTurn = false;
+                rc = false;
+            }
+        }
+
+        return rc;
+    }
+
     public GameObject GetObject(string name) {
         return objects[name];
     }
@@ -355,14 +436,14 @@ public class SC_GameModel : MonoBehaviour {
         return movement;
     }
 
-    /*
-     * this function moves the player to a new desired position and updates
-     * both tile and soldier with their new references.
-     * pay attention there's the 'focusedSoldierP' which is the actual soldier parent (wrapper in scene)
-     * and there's the 'exactSoldierObj' which is the actual soldier GameObject and the 1st child of 'focusedSoldierP'.
-     * the parent is used to move all soldier and it's children relatively on board
-     */ 
-    public void MoveSoldier(GameObject focusedSoldierP, MovementDirections soldierMovementDirection) {
+    /// <summary>
+    ///      this function moves the player to a new desired position and updates. 
+    ///      both tile and soldier with their new references.
+    /// </summary>
+    /// <param name="focusedSoldierP">the soldier parent (wrapper in scene)</param>
+    /// <param name="soldierMovementDirection">the actual soldier GameObject and the 1st child of 'focusedSoldierP'</param>
+    /// <param name="sendAck">should user send ack to the rival on this movement. false when invoked from HandleMovementAck()</param>
+    public void MoveSoldier(GameObject focusedSoldierP, MovementDirections soldierMovementDirection, bool sendAck = true) {
         //start as default position just for initialization:
         Vector3 newPosition = focusedSoldierP.transform.position;
         GameObject exactSoldierObj = focusedSoldierP.transform.GetChild(0).gameObject;
@@ -396,12 +477,17 @@ public class SC_GameModel : MonoBehaviour {
         ResetTileReference(currTile);
         UpdateTileAndSoldierRefs(newTile, exactSoldierObj, true, false);
 
+        //save old positions for SendMovementAck():
+        int x = (int)(Math.Round(exactSoldierObj.transform.position.x));
+        int y = (int)(Math.Round(Mathf.Abs(exactSoldierObj.transform.position.z)));
+
         //physically move the soldier
         exactSoldierObj.transform.position = newPosition;
 
-        if (SharedDataHandler.isMultiplayer) {
-            string newSoldierPosStr = exactSoldierObj.transform.position.x.ToString() + Mathf.Abs(exactSoldierObj.transform.position.z).ToString();
-            SendMovementAck(soldierMovementDirection, newSoldierPosStr);
+        if (SharedDataHandler.isMultiplayer && sendAck) {
+            //string newSoldierPosStr = exactSoldierObj.transform.position.x.ToString() + Mathf.Abs(exactSoldierObj.transform.position.z).ToString();
+            //SendMovementAck(soldierMovementDirection, newSoldierPosStr);
+            SendMovementAck(soldierMovementDirection, x, y);
         }
 
         DisplayTurnIndicator();
@@ -413,21 +499,21 @@ public class SC_GameModel : MonoBehaviour {
         objects[ENEMY_TURN_INDICATOR_VAR_NAME].SetActive(!objects[ENEMY_TURN_INDICATOR_VAR_NAME].activeSelf);
     }
 
-    private string DirectionToJsonStringFormat(MovementDirections direction) {
+    private string GetMirroredDirection(MovementDirections direction) {
         switch (direction) {
-            case MovementDirections.UP:     return ACTION_MOVE_UP;
-            case MovementDirections.DOWN:   return ACTION_MOVE_DOWN;
-            case MovementDirections.LEFT:   return ACTION_MOVE_LEFT;
-            case MovementDirections.RIGHT:  return ACTION_MOVE_RIGHT;
+            case MovementDirections.UP:     return ACTION_MOVE_DOWN;
+            case MovementDirections.DOWN:   return ACTION_MOVE_UP;
+            case MovementDirections.LEFT:   return ACTION_MOVE_RIGHT;
+            case MovementDirections.RIGHT:  return ACTION_MOVE_LEFT;
         }
         return null;
     }
 
-    private void SendMovementAck(MovementDirections direction, string tileIdx) {
-        string action = DirectionToJsonStringFormat(direction);
-        SendDataToServer(action + tileIdx);
+    private void SendMovementAck(MovementDirections direction, int x, int y) {
+        string action = GetMirroredDirection(direction);
+        string mirroredTile = GetMirroredPosition(x, y);
+        SendDataToServer(action + mirroredTile);
     }
-
 
     private void SendTieAck(string tieJson) {
         string msg = null ;
@@ -739,6 +825,13 @@ public class SC_GameModel : MonoBehaviour {
 
     public Point GetNextMoveCoord() {
         return nextMoveCoord;
+    }
+
+    private string GetMirroredPosition(int x, int y) {
+        string mirroredX, mirroredY;
+        mirroredX = (COLS - x - MIRROR_OFFSET).ToString();
+        mirroredY = (ROWS - y - MIRROR_OFFSET).ToString();
+        return mirroredX+mirroredY;
     }
 
     public void GodMode(bool state) {
