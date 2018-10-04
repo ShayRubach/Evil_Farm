@@ -33,15 +33,15 @@ public enum TileStatus {
 }
 
 public enum SoldierType {
-    PITCHFORK,  // pitchfork > axe
-    CLUB,       // club > pitchfork
-    AXE,        // axe > club
-    SCYTHE,     // scythe == throwing weapon??
-    SHIELD,     // kamikazee . kill himself and his rival
-    SCARECROW,  // dummy player - only revelas his rival
-    FARMER,     // king
-    CRYSTAL,    // king
-    NO_TYPE
+    PITCHFORK = 0,  // pitchfork > axe
+    CLUB = 1,       // club > pitchfork
+    AXE = 2,        // axe > club
+    SCYTHE = 3,     // scythe == throwing weapon??
+    SHIELD = 4,     // kamikazee . kill himself and his rival
+    SCARECROW = 5,  // dummy player - only revelas his rival
+    FARMER = 6,     // king
+    CRYSTAL = 7,    // king
+    NO_TYPE = 8
 }
 
 public enum MatchStatus {

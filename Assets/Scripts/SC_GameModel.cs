@@ -161,10 +161,76 @@ public class SC_GameModel : MonoBehaviour {
 
         //shuffle (internaly) the soldiers list:
         soldiers.Sort((x, y) => UnityEngine.Random.value < 0.5f ? -1 : 1);
-
         UpdateShuffledPositions(soldiers, startingTileIdx);
 
-;    }
+        if (SharedDataHandler.isMultiplayer) {
+            string data = ACTION_SHUFFLE + FormAShuffledSoldiersIndexList(soldiers);;
+            SendDataToServer(data);
+        }
+    }
+
+    private string FormAShuffledSoldiersIndexList(List<GameObject> soldiers) {
+        string data = null;
+
+        foreach (var soldier in soldiers) {
+            data += GetActiveWeaponAsJsonCode(soldier.GetComponent<SC_Soldier>().GetActiveWeapon());
+        }
+
+        //mirrored string for easier assignment on the other device:
+        return ReverseString(data);
+    }
+
+    private string ReverseString(string data) {
+        char[] dataCharArray = data.ToCharArray();
+        Array.Reverse(dataCharArray);
+        return new string(dataCharArray);
+    }
+
+    private string GetActiveWeaponAsJsonCode(GameObject weapon) {
+
+        string weaponJsonCode = null;
+
+        if (!weapon) {
+            Debug.Log("Weapon group is null.");
+            return null;
+        }
+            
+        if (weapon.name.Contains(SoldierType.PITCHFORK.ToString().ToLower())) {
+            weaponJsonCode = ((int)SoldierType.PITCHFORK).ToString();
+        }
+        else if (weapon.name.Contains(SoldierType.AXE.ToString().ToLower())) {
+            weaponJsonCode = ((int)SoldierType.AXE).ToString();
+        }
+        else if (weapon.name.Contains(SoldierType.CLUB.ToString().ToLower())) {
+            weaponJsonCode = ((int)SoldierType.CLUB).ToString();
+        }
+        else if (weapon.name.Contains(SoldierType.SHIELD.ToString().ToLower())) {
+            weaponJsonCode = ((int)SoldierType.SHIELD).ToString();
+        }
+        else if (weapon.name.Contains(SoldierType.CRYSTAL.ToString().ToLower())) {
+            weaponJsonCode = ((int)SoldierType.CRYSTAL).ToString();
+        }
+
+        return weaponJsonCode;
+    }
+
+    public void UpdateShuffledPositions(string data) {
+        const int WEAPON_AS_INT_CODE_IDX = 0;
+        const int NEXT_IDX = 1;
+        int soldiersCount = data.Length;
+        int weaponKeyCode = 0;
+        GameObject tile, soldier;
+
+        //iterate over by children order in scene and assign new weapons to their soldiers according
+        //to the data received from shuffle ack:
+        for (int i = 0; i < soldiersCount ; i++) {
+            tile = board.transform.GetChild(i).gameObject;
+            soldier = tile.GetComponent<SC_Tile>().soldier;
+            weaponKeyCode = (int)Char.GetNumericValue(data[WEAPON_AS_INT_CODE_IDX]);
+            soldier.GetComponent<SC_Soldier>().RefreshWeapon((SoldierType)weaponKeyCode);
+            data = data.Substring(NEXT_IDX);
+        }
+    }
 
     private void UpdateShuffledPositions(List<GameObject> soldierList, int startingTileIdx) {
 
@@ -213,7 +279,7 @@ public class SC_GameModel : MonoBehaviour {
                 HandleEnemyMovement(data);
                 break;
             case ACTION_SHUFFLE:
-                //HandleEnemyShuffle(data);
+                HandleEnemyShuffle(data);
                 break;
             case ACTION_TIE:
                 //HandleEnemyTie(data);
@@ -221,6 +287,13 @@ public class SC_GameModel : MonoBehaviour {
             default:
                 break;
         }
+    }
+
+    private void HandleEnemyShuffle(string data) {
+        const int SOLDIER_TYPES_STARTING_IDX = 1;
+        
+        //cut the ACTION_SHUFFLE string identifier, send raw data:
+        UpdateShuffledPositions(data.Substring(SOLDIER_TYPES_STARTING_IDX));
     }
 
     private void HandleEnemyMovement(string data) {

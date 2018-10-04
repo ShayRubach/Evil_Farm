@@ -108,7 +108,7 @@ public class SC_Soldier : MonoBehaviour {
             Type = fetchedType;
     }
 
-    private GameObject GetActiveWeapon() {
+    internal GameObject GetActiveWeapon() {
         GameObject child = null;
         GameObject weapons = GetAllWeapons();
 
