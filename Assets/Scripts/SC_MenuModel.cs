@@ -11,7 +11,7 @@ public class SC_MenuModel : MonoBehaviour {
     public static int VALUE_RATIO = 200;
     public static readonly int SLIDER_STARTING_VALUE = 50;
     public static readonly int INITIAL_ROOM_IDX = 0;
-    public static readonly int MAX_TURN_TIME = 30;
+    public static readonly int MAX_TURN_TIME = 120;
 
     public static readonly string SLIDER_SFX_VAR_NAME = "slider_sfx";
     public static readonly string SLIDER_BG_MUSIC_VAR_NAME = "slider_bg_music";

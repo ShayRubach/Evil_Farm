@@ -135,6 +135,7 @@ public class SC_MenuController : MonoBehaviour {
     public void OnClickedMultiplayer() {
         Debug.Log("Connecting...");
         SharedDataHandler.SetMultiplayerMode(true);
+        SharedDataHandler.isPlayerStarting = false;
         SharedDataHandler.client.Connect(model.GetUserName());
     }
 
@@ -303,6 +304,9 @@ public class SC_MenuController : MonoBehaviour {
 
             SharedDataHandler.client.JoinRoom(roomId);
             SharedDataHandler.client.SubscribeRoom(roomId);
+
+            //if we created the room, we have the first turn when game starts:
+            SharedDataHandler.isPlayerStarting = true;
         }
         else { 
             Debug.Log("Error creating room");

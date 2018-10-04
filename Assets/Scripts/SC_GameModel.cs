@@ -59,9 +59,11 @@ public class SC_GameModel : MonoBehaviour {
     public static readonly string CRYSTAL_VAR_NAME = "Crystal";
     public static readonly string ANNOUNCER_VAR_NAME = "announcer";
 
+
     private static readonly string DATA_KEY_VAR_NAME = "Data";
     private static readonly string PLAYER_TURN_INDICATOR_VAR_NAME = "player_turn_indicator";
     private static readonly string ENEMY_TURN_INDICATOR_VAR_NAME = "enemy_turn_indicator";
+    private static readonly string SHUFFLE_HANDLER_VAR_NAME = "shuffle_handler";
 
     public static readonly string PREVIEW_ANIMATION_TRIGGER_PREFIX = "Preview";
     public static readonly string ANNOUNCER_WIN_TRIGGER = "Win";
@@ -86,7 +88,7 @@ public class SC_GameModel : MonoBehaviour {
     public MovementDirections nextMovement;
 
     private GameObject pathIndicators;
-    private GameObject playerTurnIndicator, enemyTurnIndicator;
+    private GameObject playerTurnIndicator, enemyTurnIndicator, shuffleHandler;
     private Vector3 relativePos;
     private Point nextMoveCoord;
     private SoldierTeam winningTeam;
@@ -143,6 +145,7 @@ public class SC_GameModel : MonoBehaviour {
         pathIndicators = objects[PATH_INDICATORS_NAME_VAR];
         playerTurnIndicator = objects[PLAYER_TURN_INDICATOR_VAR_NAME];
         enemyTurnIndicator = objects[ENEMY_TURN_INDICATOR_VAR_NAME];
+        shuffleHandler = objects[SHUFFLE_HANDLER_VAR_NAME];
     }
 
     private void SortList(List<GameObject> list) {
@@ -156,7 +159,7 @@ public class SC_GameModel : MonoBehaviour {
 
     public void ShuffleTeam(SoldierTeam team) {
 
-        List<GameObject> soldiers = (team == SoldierTeam.PLAYER) ? players : enemies;
+        List <GameObject> soldiers = (team == SoldierTeam.PLAYER) ? players : enemies;
         int startingTileIdx = (team == SoldierTeam.PLAYER) ? board.transform.childCount - soldiers.Count : 0;
 
         //shuffle (internaly) the soldiers list:
@@ -164,8 +167,8 @@ public class SC_GameModel : MonoBehaviour {
         UpdateShuffledPositions(soldiers, startingTileIdx);
 
         if (SharedDataHandler.isMultiplayer) {
-            string data = ACTION_SHUFFLE + FormAShuffledSoldiersIndexList(soldiers);;
-            SendDataToServer(data);
+            string data = ACTION_SHUFFLE + FormAShuffledSoldiersIndexList(soldiers);
+            SendShuffleAck(data);
         }
     }
 
@@ -215,8 +218,6 @@ public class SC_GameModel : MonoBehaviour {
     }
 
     public void UpdateShuffledPositions(string data) {
-        const int WEAPON_AS_INT_CODE_IDX = 0;
-        const int NEXT_IDX = 1;
         int soldiersCount = data.Length;
         int weaponKeyCode = 0;
         GameObject tile, soldier;
@@ -226,9 +227,8 @@ public class SC_GameModel : MonoBehaviour {
         for (int i = 0; i < soldiersCount ; i++) {
             tile = board.transform.GetChild(i).gameObject;
             soldier = tile.GetComponent<SC_Tile>().soldier;
-            weaponKeyCode = (int)Char.GetNumericValue(data[WEAPON_AS_INT_CODE_IDX]);
+            weaponKeyCode = (int)Char.GetNumericValue(data[i]);
             soldier.GetComponent<SC_Soldier>().RefreshWeapon((SoldierType)weaponKeyCode);
-            data = data.Substring(NEXT_IDX);
         }
     }
 
@@ -254,9 +254,9 @@ public class SC_GameModel : MonoBehaviour {
     }
 
     internal bool HandleMoveAck(MoveEvent move) {
-        Debug.Log("sender=" + move.getSender() + ", data=" + move.getMoveData() + ", nextTurn=" + move.getNextTurn());
-
+        
         if (move.getSender() != SharedDataHandler.username) {
+            Debug.Log("sender=" + move.getSender() + ", data=" + move.getMoveData() + ", nextTurn=" + move.getNextTurn());
             if (move.getMoveData() != null) {
                 receivedData.Clear();
                 receivedData = MiniJSON.Json.Deserialize(move.getMoveData()) as Dictionary<string, object>;
@@ -264,8 +264,11 @@ public class SC_GameModel : MonoBehaviour {
                     ParseJsonData(receivedData[DATA_KEY_VAR_NAME].ToString());
                 }
             }
-            else
+            else {
+                Debug.LogError("data is null!");
                 SharedDataHandler.client.stopGame();
+            }
+                
         }
 
         //returns whether its our turn or rival's:
@@ -290,10 +293,15 @@ public class SC_GameModel : MonoBehaviour {
     }
 
     private void HandleEnemyShuffle(string data) {
+        Debug.Log("HandleEnemyShuffle: data = " + data);
         const int SOLDIER_TYPES_STARTING_IDX = 1;
         
         //cut the ACTION_SHUFFLE string identifier, send raw data:
         UpdateShuffledPositions(data.Substring(SOLDIER_TYPES_STARTING_IDX));
+
+        if (!SharedDataHandler.isPlayerStarting)
+            shuffleHandler.SetActive(true);
+
     }
 
     private void HandleEnemyMovement(string data) {
@@ -600,8 +608,7 @@ public class SC_GameModel : MonoBehaviour {
     }
 
     private void SendShuffleAck(string shuffleJson) {
-        string msg = null;
-        SendDataToServer(msg);
+        SendDataToServer(shuffleJson);
     }
 
     private void SendDataToServer(string data) {

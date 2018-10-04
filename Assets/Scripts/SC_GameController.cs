@@ -53,11 +53,11 @@ public class SC_GameController : MonoBehaviour {
     private void Init() {
         HidePreviewSoldier();
         countdownManager.SetActive(true);
-        shuffleHandler.SetActive(true);
-        isMyTurn = SharedDataHandler.isPlayerStarting;
+        
+        //todo: refactor this part
+        shuffleHandler.SetActive(SharedDataHandler.isPlayerStarting);
 
-        //force shuffle when game starts to invoke HandleShuffleAck() on remote player side
-        model.ShuffleTeam(SoldierTeam.PLAYER);
+        isMyTurn = SharedDataHandler.isPlayerStarting;
     }
 
     void FixedUpdate() {
@@ -140,8 +140,9 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void OnGameStarted(string sender, string thisRoomId, string nextTurn) {
+
         //force shuffle when game starts to invoke HandleShuffleAck() on remote player side
-        model.ShuffleTeam(SoldierTeam.PLAYER);
+        //model.ShuffleTeam(SoldierTeam.PLAYER);
     }
 
     private void OnMoveCompleted(MoveEvent move) {
@@ -174,6 +175,7 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void OnShuffleClicked() {
+        shuffleHandler.SetActive(false);
         model.ShuffleTeam(SoldierTeam.PLAYER);
     }
 
