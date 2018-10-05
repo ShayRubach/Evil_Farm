@@ -265,7 +265,7 @@ public class SC_GameModel : MonoBehaviour {
                 }
             }
             else {
-                Debug.LogError("data is null!");
+                Debug.Log("data is null!");
                 SharedDataHandler.client.stopGame();
             }
                 
@@ -309,9 +309,6 @@ public class SC_GameModel : MonoBehaviour {
         string tile = JsonToTileIndex(data);
         MovementDirections direction = JsonToMovementDirection(data);
         FocusedPlayer = objects[TILE_NAME_VAR + tile].GetComponent<SC_Tile>().soldier;
-
-        Debug.Log("FocusedPlayer = " + FocusedPlayer);
-        Debug.Log("FocusedPlayer.transform.parent.gameObject= " + FocusedPlayer.transform.parent.gameObject);
 
         PerformMove(FocusedPlayer.transform.parent.gameObject, FocusedPlayer.transform.position, direction, false);
     }
@@ -474,6 +471,7 @@ public class SC_GameModel : MonoBehaviour {
             //only move if its within board borders:
             if (IsValidMove(exactSoldierPosition, soldierMovementDirection)) {
 
+                nextMovement = soldierMovementDirection;
                 //check if next movement will initiate a fight (as landing on a rival tile): 
                 if (IsPossibleMatch(GetNextMoveCoord())) {
                     Match();
@@ -488,6 +486,22 @@ public class SC_GameModel : MonoBehaviour {
         }
 
         return rc;
+    }
+
+    //use this inside Movesoldier - refactor.
+    private void SendAckIfNeeded(Vector3 exactSoldierPosition, MovementDirections soldierMovementDirection) {
+
+        if(MatchInitiatedByMe() && SharedDataHandler.isMultiplayer) {
+            int x = (int)(Math.Round(exactSoldierPosition.x));
+            int y = (int)(Math.Round(Mathf.Abs(exactSoldierPosition.z)));
+            Debug.Log("SendAckIfNeeded from + " + SharedDataHandler.username);
+            SendMovementAck(soldierMovementDirection, x, y);
+        }
+
+    }
+
+    private bool MatchInitiatedByMe() {
+        return FocusedPlayer.GetComponent<SC_Soldier>().Team == SoldierTeam.PLAYER;
     }
 
     public GameObject GetObject(string name) {
@@ -564,7 +578,7 @@ public class SC_GameModel : MonoBehaviour {
         ResetTileReference(currTile);
         UpdateTileAndSoldierRefs(newTile, exactSoldierObj, true, false);
 
-        //save old positions for SendMovementAck():
+        //move inside next if stsmnt and move the position assignment afterwards:
         int x = (int)(Math.Round(exactSoldierObj.transform.position.x));
         int y = (int)(Math.Round(Mathf.Abs(exactSoldierObj.transform.position.z)));
 
@@ -572,8 +586,6 @@ public class SC_GameModel : MonoBehaviour {
         exactSoldierObj.transform.position = newPosition;
 
         if (SharedDataHandler.isMultiplayer && sendAck) {
-            //string newSoldierPosStr = exactSoldierObj.transform.position.x.ToString() + Mathf.Abs(exactSoldierObj.transform.position.z).ToString();
-            //SendMovementAck(soldierMovementDirection, newSoldierPosStr);
             SendMovementAck(soldierMovementDirection, x, y);
         }
 
@@ -581,7 +593,6 @@ public class SC_GameModel : MonoBehaviour {
     }
 
     internal void DisplayTurnIndicator() {
-        Debug.Log("DisplayTurnIndicator");
         objects[PLAYER_TURN_INDICATOR_VAR_NAME].SetActive(!objects[PLAYER_TURN_INDICATOR_VAR_NAME].activeSelf);
         objects[ENEMY_TURN_INDICATOR_VAR_NAME].SetActive(!objects[ENEMY_TURN_INDICATOR_VAR_NAME].activeSelf);
     }
@@ -660,6 +671,7 @@ public class SC_GameModel : MonoBehaviour {
         HandleMatchResult(result);
 
         if (result != MatchStatus.TIE) {
+            SendAckIfNeeded(FocusedPlayer.transform.position, nextMovement);
             DisplayTurnIndicator();
         }
     }
