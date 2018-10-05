@@ -488,16 +488,17 @@ public class SC_GameModel : MonoBehaviour {
         return rc;
     }
 
-    //use this inside Movesoldier - refactor.
     private void SendAckIfNeeded(Vector3 exactSoldierPosition, MovementDirections soldierMovementDirection) {
-
-        if(MatchInitiatedByMe() && SharedDataHandler.isMultiplayer) {
-            int x = (int)(Math.Round(exactSoldierPosition.x));
-            int y = (int)(Math.Round(Mathf.Abs(exactSoldierPosition.z)));
-            Debug.Log("SendAckIfNeeded from + " + SharedDataHandler.username);
-            SendMovementAck(soldierMovementDirection, x, y);
+        //only send ack if match was initiated by the user:
+        if (MatchInitiatedByMe() && SharedDataHandler.isMultiplayer) {
+            FixCoordAndSendMovementAck(soldierMovementDirection, exactSoldierPosition);
         }
+    }
 
+    private void FixCoordAndSendMovementAck(MovementDirections soldierMovementDirection, Vector3 exactSoldierPosition) {
+        int x = (int)(Math.Round(exactSoldierPosition.x));
+        int y = (int)(Math.Round(Mathf.Abs(exactSoldierPosition.z)));
+        SendMovementAck(soldierMovementDirection, x, y);
     }
 
     private bool MatchInitiatedByMe() {
@@ -578,16 +579,12 @@ public class SC_GameModel : MonoBehaviour {
         ResetTileReference(currTile);
         UpdateTileAndSoldierRefs(newTile, exactSoldierObj, true, false);
 
-        //move inside next if stsmnt and move the position assignment afterwards:
-        int x = (int)(Math.Round(exactSoldierObj.transform.position.x));
-        int y = (int)(Math.Round(Mathf.Abs(exactSoldierObj.transform.position.z)));
+        if (SharedDataHandler.isMultiplayer && sendAck) {
+            FixCoordAndSendMovementAck(soldierMovementDirection, exactSoldierObj.transform.position);
+        }
 
         //physically move the soldier
         exactSoldierObj.transform.position = newPosition;
-
-        if (SharedDataHandler.isMultiplayer && sendAck) {
-            SendMovementAck(soldierMovementDirection, x, y);
-        }
 
         DisplayTurnIndicator();
     }
