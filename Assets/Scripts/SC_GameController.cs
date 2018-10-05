@@ -53,9 +53,14 @@ public class SC_GameController : MonoBehaviour {
     private void Init() {
         HidePreviewSoldier();
         countdownManager.SetActive(true);
-        
-        //todo: refactor this part
-        shuffleHandler.SetActive(SharedDataHandler.isPlayerStarting);
+
+        if (SharedDataHandler.isMultiplayer) {
+            //todo: refactor this part
+            shuffleHandler.SetActive(SharedDataHandler.isPlayerStarting);
+        }
+        else {
+            shuffleHandler.SetActive(true);
+        }
 
         isMyTurn = SharedDataHandler.isPlayerStarting;
     }

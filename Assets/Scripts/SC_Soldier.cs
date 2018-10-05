@@ -179,7 +179,7 @@ public class SC_Soldier : MonoBehaviour {
 
         if (AttemptingToMoveEnemySoldier())
             return;
-
+        /*
         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out hit)) {
 
@@ -194,6 +194,7 @@ public class SC_Soldier : MonoBehaviour {
                 RemoveEnemyMark(currEnemy);
             }
         }
+        */
     }
 
     void OnMouseUp() {
