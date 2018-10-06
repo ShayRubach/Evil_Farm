@@ -51,7 +51,6 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void Init() {
-        Debug.LogError("TEST ALERT MSG");
         HidePreviewSoldier();
         countdownManager.SetActive(true);
         shuffleHandler.SetActive(true);
