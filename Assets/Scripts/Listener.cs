@@ -53,7 +53,10 @@ namespace AssemblyCSharp
 		public delegate void MoveCompletedHandler(MoveEvent _Move);
 		public static event MoveCompletedHandler OnMoveCompleted;
 
-		int state = 0;
+        public delegate void ChatHandler(string sender, string msg);
+        public static event ChatHandler OnPrivateChatReceived;
+
+        int state = 0;
 		public void sendMsg(string msg)
 		{
 			if(state == 1)
@@ -313,10 +316,13 @@ namespace AssemblyCSharp
 			
 		public void onPrivateChatReceived(string sender, string message)
 		{
-			Debug.Log ("onPrivateChatReceived : " + sender);
-		}
-		
-		public void onMoveCompleted(MoveEvent move)
+            if (OnPrivateChatReceived != null) {
+                OnPrivateChatReceived(sender, message);
+            }
+            //Debug.Log ("onPrivateChatReceived : " + sender);
+        }
+
+        public void onMoveCompleted(MoveEvent move)
 		{
 			if (OnMoveCompleted != null)
 				OnMoveCompleted(move);

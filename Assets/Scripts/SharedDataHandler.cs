@@ -31,6 +31,8 @@ public static class SharedDataHandler {
     public delegate void OnGetLiveRoomInfoHandler(LiveRoomInfoEvent eventObj);
     public static event OnGetLiveRoomInfoHandler OnGetLiveRoomInfo;
 
+    public delegate void OnChatReceivedHandler(string sender, string msg);
+    public static event OnChatReceivedHandler OnPrivateChatReceived;
 
     public static string nextScreenRequested {get;set;}
     public static string username { get; set; }
@@ -128,6 +130,12 @@ public static class SharedDataHandler {
         Debug.Log("SharedDataHandler: OnRoomsInRangeBroadcast called");
         if (OnRoomsInRange != null)
             OnRoomsInRange(isSuccess, eventObj);
+    }
+
+    private static void OnPrivateChatReceivedBroadcast(string sender, string msg) {
+        Debug.Log("SharedDataHandler: OnPrivateChatReceived called");
+        if (OnPrivateChatReceived != null)
+            OnPrivateChatReceived(sender, msg);
     }
 
     internal static void SetMultiplayerMode(bool mode) {
