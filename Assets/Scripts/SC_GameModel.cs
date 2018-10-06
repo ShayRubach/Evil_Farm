@@ -150,7 +150,7 @@ public class SC_GameModel : MonoBehaviour {
         enemyTurnIndicator = objects[ENEMY_TURN_INDICATOR_VAR_NAME];
     }
 
-    private void ResetWeaponPicksStatus() {
+    internal void ResetWeaponPicksStatus() {
         iPickedNewWeapon = false;
         rivalPickedNewWeapon = false;
     }
@@ -267,7 +267,7 @@ public class SC_GameModel : MonoBehaviour {
     internal bool HandleMsgAck(MoveEvent move) {
         
         if (move.getSender() != SharedDataHandler.username) {
-            Debug.Log("HandleMsgAck: sender=" + move.getSender() + ", data=" + move.getMoveData() + ", nextTurn=" + move.getNextTurn());
+            //Debug.Log("HandleMsgAck: sender=" + move.getSender() + ", data=" + move.getMoveData() + ", nextTurn=" + move.getNextTurn());
             if (move.getMoveData() != null) {
                 receivedData.Clear();
                 receivedData = MiniJSON.Json.Deserialize(move.getMoveData()) as Dictionary<string, object>;
@@ -287,7 +287,7 @@ public class SC_GameModel : MonoBehaviour {
     }
 
     internal void HandlePrivateMsgAck(string msg) {
-        Debug.LogError("HandlePrivateMsgAck: data = " + msg);
+        //Debug.Log("HandlePrivateMsgAck: data = " + msg);
         if (msg != null) {
             ParseJsonData(msg);
         }
@@ -302,15 +302,33 @@ public class SC_GameModel : MonoBehaviour {
                 HandleShuffleAck(data);
                 break;
             case ACTION_TIE:
-                //HandleTieAck(data);
+                HandleTieAck(data);
                 break;
             default:
                 break;
         }
     }
 
+    private void HandleTieAck(string data) {
+        const int NEW_WEAPON_KEY_CODE_IDX = 1;
+        SoldierType newWeapon = (SoldierType)(int.Parse(data.Substring(NEW_WEAPON_KEY_CODE_IDX)));
+        //FocusedEnemy.GetComponent<SC_Soldier>().Type = newWeapon;
+        FocusedEnemy.GetComponent<SC_Soldier>().RefreshWeapon(newWeapon, false);
+        rivalPickedNewWeapon = true;
+
+        if (iPickedNewWeapon) {
+            //Debug.Log("HandleTieAck: both players picked new weapons. invoking Match()");
+            DisplayTurnIndicator();
+            ResetWeaponPicksStatus();
+            Match(false);
+        }
+        else {
+            //Debug.LogError("i didnt choose a weapon just yet..");
+        }
+    }
+
     internal void HandleShuffleAck(string data) {
-        Debug.Log("HandleEnemyShuffle: data = " + data);
+        //Debug.Log("HandleEnemyShuffle: data = " + data);
         const int SOLDIER_TYPES_STARTING_IDX = 1;
         
         //cut the ACTION_SHUFFLE string identifier, send raw data:
@@ -318,7 +336,7 @@ public class SC_GameModel : MonoBehaviour {
     }
 
     private void HandleMovementAck(string data) {
-        Debug.Log("HandleEnemyMovement: called.");
+        //Debug.Log("HandleEnemyMovement: called.");
         string tile = JsonToTileIndex(data);
         MovementDirections direction = JsonToMovementDirection(data);
         FocusedPlayer = objects[TILE_NAME_VAR + tile].GetComponent<SC_Tile>().soldier;
@@ -330,7 +348,7 @@ public class SC_GameModel : MonoBehaviour {
         const int TILE_IDX_START = 2;
         const int TILE_IDX_STR_LEN = 2;
         string fixedTileStr = data.Substring(TILE_IDX_START, TILE_IDX_STR_LEN);
-        Debug.Log("JsonToTileIndex: fixedTileStr = " + fixedTileStr);
+        //Debug.Log("JsonToTileIndex: fixedTileStr = " + fixedTileStr);
 
         return fixedTileStr;
     }
@@ -625,11 +643,12 @@ public class SC_GameModel : MonoBehaviour {
     }
 
     internal void SendTieAck(string tieJson) {
+        //Debug.Log("SendTieAck");
         SharedDataHandler.client.sendPrivateChat(SharedDataHandler.enemyUsername, ACTION_TIE + tieJson);
     }
 
     private void SendShuffleAck(string shuffleJson) {
-        //SendDataToServer(shuffleJson);
+        //Debug.Log("SendShuffleAck");
         SharedDataHandler.client.sendPrivateChat(SharedDataHandler.enemyUsername, shuffleJson);
     }
 
@@ -672,26 +691,50 @@ public class SC_GameModel : MonoBehaviour {
         return true;
     }
 
-    public void Match() {
+    public void Match(bool sendAck = true) {
 
         if (OnMatchStarted != null) {
             OnMatchStarted();
         }
+
+        FixFocus();
         MatchStatus result = MatchHandler.GetInstance.EvaluateMatchResult(FocusedPlayer, FocusedEnemy);
         HandleMatchResult(result);
+
         DisplayTurnIndicator();
-        SendAckIfNeeded(FocusedPlayer.transform.position, nextMovement);
+
+        if (sendAck)
+            SendAckIfNeeded(FocusedPlayer.transform.position, nextMovement);
+    }
+
+    /*
+     * in contrary to playing vs AI, on multiplayer there are further uses of Focused<Type> so it has
+     * to match the local logic where Player = local user amd Enemy = remote user.
+    */
+    private void FixFocus() {
+        if (!SharedDataHandler.isMultiplayer || FocusedPlayer.GetComponent<SC_Soldier>().Team == SoldierTeam.PLAYER) {
+            return;
+        }
+        else {
+            GameObject temp = FocusedPlayer;
+            FocusedPlayer = FocusedEnemy;
+            FocusedEnemy = temp;
+        }
     }
 
     /*
      * take the necessary actions by the result: remove losing soldier, call MoveSoldier() ,update new references etc..
      */
     private void HandleMatchResult(MatchStatus result) {
-        
-    //get the initiator's movement direction:
-    //MovementDirections direction = CalculateMovementDirectionByAngle(Mathf.Atan2(-relativePos.y, -relativePos.x) * Mathf.Rad2Deg);
 
-    switch (result) {
+        //get the initiator's movement direction:
+        //MovementDirections direction = CalculateMovementDirectionByAngle(Mathf.Atan2(-relativePos.y, -relativePos.x) * Mathf.Rad2Deg);
+
+        Debug.Log("Match: after evaluate, before ack");
+        Debug.Log("player=" + FocusedPlayer.GetComponent<SC_Soldier>().Type + ", active weapon=" + FocusedPlayer.GetComponent<SC_Soldier>().GetActiveWeapon().name);
+        Debug.Log("enemy=" + FocusedEnemy.GetComponent<SC_Soldier>().Type + ", active weapon=" + FocusedEnemy.GetComponent<SC_Soldier>().GetActiveWeapon().name);
+
+        switch (result) {
         case MatchStatus.INITIATOR_WON_THE_MATCH:
         case MatchStatus.INITIATOR_REVEALED:
             RemoveSoldier(FocusedEnemy);
@@ -918,8 +961,11 @@ public class SC_GameModel : MonoBehaviour {
 
     private bool OverlayingTeamMember(Point moveCoord) {
         SC_Tile nextTile = objects[TILE_NAME_VAR + moveCoord.x + moveCoord.y].GetComponent<SC_Tile>();
-        
+
+
         if (nextTile.IsOcuupied) {
+            //Debug.Log("OverlayingTeamMember: nextTile.soldier.GetComponent<SC_Soldier>() = " + nextTile.soldier.GetComponent<SC_Soldier>());
+            //Debug.Log("OverlayingTeamMember: FocusedPlayer.GetComponent<SC_Soldier>()    = " + FocusedPlayer.GetComponent<SC_Soldier>());
             //if the next tile has one of our team members, restirct movement:
             if(nextTile.soldier.GetComponent<SC_Soldier>().Team == FocusedPlayer.GetComponent<SC_Soldier>().Team) {
                 return true;

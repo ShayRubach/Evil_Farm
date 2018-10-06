@@ -51,6 +51,7 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void Init() {
+        Debug.LogError("TEST ALERT MSG");
         HidePreviewSoldier();
         countdownManager.SetActive(true);
         shuffleHandler.SetActive(true);
@@ -216,12 +217,30 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void OnNewWeaponChoice(SoldierType newWeapon) {
-        model.GetPlayerSoldier().GetComponent<SC_Soldier>().RefreshWeapon(newWeapon);
+
+        model.iPickedNewWeapon = true;
         ShowTieWeapons(false);
 
-        //rematch:
+        if (SharedDataHandler.isMultiplayer) {
+            model.FocusedPlayer.GetComponent<SC_Soldier>().RefreshWeapon(newWeapon, false);
+            if (model.rivalPickedNewWeapon) {
+                //Debug.LogError("OnNewWeaponChoice: both players picked new weapons. invoking Match()");
+                model.SendTieAck(((int)newWeapon).ToString());
+                model.DisplayTurnIndicator();
+                model.ResetWeaponPicksStatus();
+                Match(false);
+            }
+            else {
+                model.SendTieAck(((int)newWeapon).ToString());
+            }
+        }
+        else {
+            //vs. AI will result in an instant rematch. no need to wait for the other player choice of weapon.
+            model.GetPlayerSoldier().GetComponent<SC_Soldier>().RefreshWeapon(newWeapon);
+            Match();
+        }
+
         duringTie = false;
-        Match();
     }
 
     /* 
@@ -320,8 +339,8 @@ public class SC_GameController : MonoBehaviour {
         return model.PerformMove(focusedPlayerParent, exactSoldierPosition, soldierMovementDirection);
     }
 
-    private void Match() {
-        model.Match();
+    private void Match(bool sendAck = true) {
+        model.Match(sendAck);
         soldierSpotlight.RemoveHighlight();
     }
 

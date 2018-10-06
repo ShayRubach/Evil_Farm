@@ -259,7 +259,7 @@ public class SC_Soldier : MonoBehaviour {
      * setting new weapon & refreshing the ui with the new weapon.
      * disables curr weapon and enables new weapon.
      */
-    internal void RefreshWeapon(SoldierType newWeapon) {
+    internal void RefreshWeapon(SoldierType newWeapon, bool conceal = true) {
         GameObject child = null;
         GameObject weapons;
         weapons = GetAllWeapons();
@@ -277,7 +277,10 @@ public class SC_Soldier : MonoBehaviour {
             //turn on new weapon
             if (child.name.Contains(newWeapon.ToString().ToLower())) {
                 child.SetActive(true);
-                ConcealWeapon(child);
+                //RevealWeapon();
+
+                if(conceal)
+                    ConcealWeapon(child);
             }
         }
     }

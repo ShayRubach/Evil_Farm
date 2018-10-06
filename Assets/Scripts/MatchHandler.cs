@@ -32,7 +32,6 @@ public class MatchHandler {
     public MatchStatus EvaluateMatchResult(GameObject initiator, GameObject opponent) {
 
         Debug.Log("player=" + initiator.GetComponent<SC_Soldier>() + "\nenemy=" + opponent.GetComponent<SC_Soldier>());
-        //todo: add all weapons in the future:
 
         switch (initiator.GetComponent<SC_Soldier>().Type) {
             case SoldierType.PITCHFORK:

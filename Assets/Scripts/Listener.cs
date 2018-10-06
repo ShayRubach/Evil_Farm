@@ -258,7 +258,7 @@ namespace AssemblyCSharp
 		
 		public void onSendPrivateChatDone(byte result)
 		{
-			Debug.Log ("onSendPrivateChatDone : " + result);
+			//Debug.Log ("onSendPrivateChatDone : " + result);
 		}
 		#endregion
 		

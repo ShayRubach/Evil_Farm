@@ -84,61 +84,61 @@ public static class SharedDataHandler {
     }
 
     private static void OnMoveCompletedBroadcast(MoveEvent move) {
-        Debug.Log("SharedDataHandler: OnMoveCompletedBroadcast called");
+        //Debug.Log("SharedDataHandler: OnMoveCompletedBroadcast called");
         if (OnMoveCompleted != null)
             OnMoveCompleted(move);
     }
 
     private static void OnDisconnectBroadcast(bool isSuccess) {
-        Debug.Log("SharedDataHandler: OnDisconnectBroadcast called");
+        //Debug.Log("SharedDataHandler: OnDisconnectBroadcast called");
         if (OnDisconnect != null)
             OnDisconnect(isSuccess);
     }
 
     private static void OnGameStartedBroadcast(string sender, string thisRoomId, string nextTurn) {
-        Debug.Log("SharedDataHandler: OnGameStartedBroadcast called");
+        //Debug.Log("SharedDataHandler: OnGameStartedBroadcast called");
         if (OnGameStarted != null)
             OnGameStarted(sender, thisRoomId, nextTurn);
     }
 
     private static void OnUserJoinRoomBroadcast(RoomData eventObj, string userName) {
-        Debug.Log("SharedDataHandler: OnUserJoinRoomBroadcast called");
+        //Debug.Log("SharedDataHandler: OnUserJoinRoomBroadcast called");
         if (OnUserJoinRoom != null)
             OnUserJoinRoom(eventObj, userName);
     }
 
     private static void OnJoinRoomBroadcast(bool isSuccess, string roomId) {
-        Debug.Log("SharedDataHandler: OnJoinRoomBroadcast called");
+        //Debug.Log("SharedDataHandler: OnJoinRoomBroadcast called");
         if (OnJoinRoom != null)
             OnJoinRoom(isSuccess, roomId);
     }
 
     private static void OnGetLiveRoomInfoBroadcast(LiveRoomInfoEvent eventObj) {
-        Debug.Log("SharedDataHandler: OnGetLiveRoomInfoBroadcast called");
+        //Debug.Log("SharedDataHandler: OnGetLiveRoomInfoBroadcast called");
         if (OnGetLiveRoomInfo != null)
             OnGetLiveRoomInfo(eventObj);
     }
 
     private static void OnCreateRoomBroadcast(bool isSuccess, string createdRoomId) {
-        Debug.Log("SharedDataHandler: OnCreateRoomBroadcast called");
+        //Debug.Log("SharedDataHandler: OnCreateRoomBroadcast called");
         if (OnCreateRoom != null)
             OnCreateRoom(isSuccess, createdRoomId);
     }
 
     private static void OnConnectBroadcast(bool isSuccess) {
-        Debug.Log("SharedDataHandler: OnConnectBroadcast called");
+        //Debug.Log("SharedDataHandler: OnConnectBroadcast called");
         if (OnConnect != null)
             OnConnect(isSuccess);
     }
 
     private static void OnRoomsInRangeBroadcast(bool isSuccess, MatchedRoomsEvent eventObj) {
-        Debug.Log("SharedDataHandler: OnRoomsInRangeBroadcast called");
+        //Debug.Log("SharedDataHandler: OnRoomsInRangeBroadcast called");
         if (OnRoomsInRange != null)
             OnRoomsInRange(isSuccess, eventObj);
     }
 
     private static void OnPrivateChatReceivedBroadcast(string sender, string msg) {
-        Debug.Log("SharedDataHandler: OnPrivateChatReceived called");
+        //Debug.Log("SharedDataHandler: OnPrivateChatReceived called");
         if (OnPrivateChatReceived != null)
             OnPrivateChatReceived(sender, msg);
     }
