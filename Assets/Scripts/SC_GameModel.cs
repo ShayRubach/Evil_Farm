@@ -501,8 +501,9 @@ public class SC_GameModel : MonoBehaviour {
         SendMovementAck(soldierMovementDirection, x, y);
     }
 
-    private bool MatchInitiatedByMe() {
-        return FocusedPlayer.GetComponent<SC_Soldier>().Team == SoldierTeam.PLAYER;
+    internal bool MatchInitiatedByMe() {
+        //if the turn is passed to the enemy, it means we initiated the fight.
+        return enemyTurnIndicator.activeSelf;
     }
 
     public GameObject GetObject(string name) {
@@ -663,14 +664,10 @@ public class SC_GameModel : MonoBehaviour {
         if (OnMatchStarted != null) {
             OnMatchStarted();
         }
-        //call our MatchHandler to evaluate the match result:
         MatchStatus result = MatchHandler.GetInstance.EvaluateMatchResult(FocusedPlayer, FocusedEnemy);
         HandleMatchResult(result);
-
-        if (result != MatchStatus.TIE) {
-            SendAckIfNeeded(FocusedPlayer.transform.position, nextMovement);
-            DisplayTurnIndicator();
-        }
+        DisplayTurnIndicator();
+        SendAckIfNeeded(FocusedPlayer.transform.position, nextMovement);
     }
 
     /*

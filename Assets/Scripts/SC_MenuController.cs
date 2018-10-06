@@ -273,6 +273,7 @@ public class SC_MenuController : MonoBehaviour {
             foreach (var roomData in eventObj.getRoomsData()) {
                 Debug.Log("Room Id: " + roomData.getId());
                 Debug.Log("Room Owner: " + roomData.getRoomOwner());
+                SharedDataHandler.enemyUsername = roomData.getRoomOwner();
                 model.Rooms.Add(roomData.getId());
             }
 
@@ -348,6 +349,7 @@ public class SC_MenuController : MonoBehaviour {
 
     public void OnUserJoinRoom(RoomData eventObj, string userJoinedName) {
         Debug.Log("User: " + userJoinedName + " joined the room");
+        SharedDataHandler.enemyUsername = userJoinedName;
         if (userJoinedName != model.GetUserName()) {
             Debug.Log("OnUserJoinRoom ");
             SharedDataHandler.client.startGame();
