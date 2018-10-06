@@ -252,13 +252,13 @@ public class SC_Soldier : MonoBehaviour {
         return "Team = " + Team + " | "
             + "Type = " + Type + " | "
             + "Tile  = {" + Tile.GetComponent<SC_Tile>().transform.position.x
-            + "," + Tile.GetComponent<SC_Tile>().transform.position.y + "}";
+            + "," + Mathf.Abs(Tile.GetComponent<SC_Tile>().transform.position.z) + "}";
     }
 
     /*
      * setting new weapon & refreshing the ui with the new weapon.
      * disables curr weapon and enables new weapon.
-     */ 
+     */
     internal void RefreshWeapon(SoldierType newWeapon) {
         GameObject child = null;
         GameObject weapons;

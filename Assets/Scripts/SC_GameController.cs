@@ -138,7 +138,7 @@ public class SC_GameController : MonoBehaviour {
 
     private void OnPrivateChatReceived(string sender, string msg) {
         if(sender != null && sender != SharedDataHandler.username) {
-            model.HandleShuffleAck(msg);
+            model.HandlePrivateMsgAck(msg);
         }
     }
 

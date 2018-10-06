@@ -31,9 +31,7 @@ public class MatchHandler {
 
     public MatchStatus EvaluateMatchResult(GameObject initiator, GameObject opponent) {
 
-        //Debug.Log("initiator is " + initiator.name + ": " + initiator.GetComponent<SC_Soldier>());
-        //Debug.Log("victim  is " + opponent.name + ": " + opponent.GetComponent<SC_Soldier>());
-
+        Debug.Log("player=" + initiator.GetComponent<SC_Soldier>() + "\nenemy=" + opponent.GetComponent<SC_Soldier>());
         //todo: add all weapons in the future:
 
         switch (initiator.GetComponent<SC_Soldier>().Type) {

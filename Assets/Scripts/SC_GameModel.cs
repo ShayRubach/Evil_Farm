@@ -27,6 +27,8 @@ public class SC_GameModel : MonoBehaviour {
     public static event NotifyToController CallTieBreaker;
 
     private bool playingVsAI = true;
+    public bool iPickedNewWeapon { get; set; }
+    public bool rivalPickedNewWeapon { get; set; }
     private const int COLS = 7;
     private const int ROWS = 6;
     private const int MIRROR_OFFSET = 1;
@@ -136,6 +138,7 @@ public class SC_GameModel : MonoBehaviour {
         objects[ENEMY_TURN_INDICATOR_VAR_NAME].SetActive(false);
 
         SetStartingPlayer(SharedDataHandler.isPlayerStarting);
+        ResetWeaponPicksStatus();
 
         nextMoveCoord.x = 0;
         nextMoveCoord.y = 0;
@@ -145,6 +148,15 @@ public class SC_GameModel : MonoBehaviour {
         pathIndicators = objects[PATH_INDICATORS_NAME_VAR];
         playerTurnIndicator = objects[PLAYER_TURN_INDICATOR_VAR_NAME];
         enemyTurnIndicator = objects[ENEMY_TURN_INDICATOR_VAR_NAME];
+    }
+
+    private void ResetWeaponPicksStatus() {
+        iPickedNewWeapon = false;
+        rivalPickedNewWeapon = false;
+    }
+
+    internal bool BothPlayersPickedWeapon() {
+        return (iPickedNewWeapon && rivalPickedNewWeapon);
     }
 
     private void SortList(List<GameObject> list) {
@@ -255,7 +267,7 @@ public class SC_GameModel : MonoBehaviour {
     internal bool HandleMsgAck(MoveEvent move) {
         
         if (move.getSender() != SharedDataHandler.username) {
-            Debug.Log("sender=" + move.getSender() + ", data=" + move.getMoveData() + ", nextTurn=" + move.getNextTurn());
+            Debug.Log("HandleMsgAck: sender=" + move.getSender() + ", data=" + move.getMoveData() + ", nextTurn=" + move.getNextTurn());
             if (move.getMoveData() != null) {
                 receivedData.Clear();
                 receivedData = MiniJSON.Json.Deserialize(move.getMoveData()) as Dictionary<string, object>;
@@ -274,8 +286,14 @@ public class SC_GameModel : MonoBehaviour {
         return (move.getNextTurn() == SharedDataHandler.username);
     }
 
+    internal void HandlePrivateMsgAck(string msg) {
+        Debug.LogError("HandlePrivateMsgAck: data = " + msg);
+        if (msg != null) {
+            ParseJsonData(msg);
+        }
+    }
+
     private void ParseJsonData(string data) {
-        Debug.Log("ParseJsonData: data[0].ToString() = " + data[0].ToString());
         switch (data[0].ToString()) {
             case ACTION_MOVE:
                 HandleMovementAck(data);
@@ -606,9 +624,8 @@ public class SC_GameModel : MonoBehaviour {
         SendDataToServer(action + mirroredTile);
     }
 
-    private void SendTieAck(string tieJson) {
-        string msg = null ;
-        SendDataToServer(msg);
+    internal void SendTieAck(string tieJson) {
+        SharedDataHandler.client.sendPrivateChat(SharedDataHandler.enemyUsername, ACTION_TIE + tieJson);
     }
 
     private void SendShuffleAck(string shuffleJson) {
