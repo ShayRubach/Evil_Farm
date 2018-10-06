@@ -88,7 +88,7 @@ public class SC_GameModel : MonoBehaviour {
     public MovementDirections nextMovement;
 
     private GameObject pathIndicators;
-    private GameObject playerTurnIndicator, enemyTurnIndicator, shuffleHandler;
+    private GameObject playerTurnIndicator, enemyTurnIndicator;
     private Vector3 relativePos;
     private Point nextMoveCoord;
     private SoldierTeam winningTeam;
@@ -145,7 +145,6 @@ public class SC_GameModel : MonoBehaviour {
         pathIndicators = objects[PATH_INDICATORS_NAME_VAR];
         playerTurnIndicator = objects[PLAYER_TURN_INDICATOR_VAR_NAME];
         enemyTurnIndicator = objects[ENEMY_TURN_INDICATOR_VAR_NAME];
-        shuffleHandler = objects[SHUFFLE_HANDLER_VAR_NAME];
     }
 
     private void SortList(List<GameObject> list) {
@@ -253,7 +252,7 @@ public class SC_GameModel : MonoBehaviour {
         }
     }
 
-    internal bool HandleMoveAck(MoveEvent move) {
+    internal bool HandleMsgAck(MoveEvent move) {
         
         if (move.getSender() != SharedDataHandler.username) {
             Debug.Log("sender=" + move.getSender() + ", data=" + move.getMoveData() + ", nextTurn=" + move.getNextTurn());
@@ -279,32 +278,28 @@ public class SC_GameModel : MonoBehaviour {
         Debug.Log("ParseJsonData: data[0].ToString() = " + data[0].ToString());
         switch (data[0].ToString()) {
             case ACTION_MOVE:
-                HandleEnemyMovement(data);
+                HandleMovementAck(data);
                 break;
             case ACTION_SHUFFLE:
-                HandleEnemyShuffle(data);
+                HandleShuffleAck(data);
                 break;
             case ACTION_TIE:
-                //HandleEnemyTie(data);
+                //HandleTieAck(data);
                 break;
             default:
                 break;
         }
     }
 
-    private void HandleEnemyShuffle(string data) {
+    internal void HandleShuffleAck(string data) {
         Debug.Log("HandleEnemyShuffle: data = " + data);
         const int SOLDIER_TYPES_STARTING_IDX = 1;
         
         //cut the ACTION_SHUFFLE string identifier, send raw data:
         UpdateShuffledPositions(data.Substring(SOLDIER_TYPES_STARTING_IDX));
-
-        if (!SharedDataHandler.isPlayerStarting)
-            shuffleHandler.SetActive(true);
-
     }
 
-    private void HandleEnemyMovement(string data) {
+    private void HandleMovementAck(string data) {
         Debug.Log("HandleEnemyMovement: called.");
         string tile = JsonToTileIndex(data);
         MovementDirections direction = JsonToMovementDirection(data);
@@ -617,7 +612,8 @@ public class SC_GameModel : MonoBehaviour {
     }
 
     private void SendShuffleAck(string shuffleJson) {
-        SendDataToServer(shuffleJson);
+        //SendDataToServer(shuffleJson);
+        SharedDataHandler.client.sendPrivateChat(SharedDataHandler.enemyUsername, shuffleJson);
     }
 
     private void SendDataToServer(string data) {

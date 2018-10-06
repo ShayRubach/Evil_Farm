@@ -65,6 +65,7 @@ public static class SharedDataHandler {
         Listener.OnGameStarted += OnGameStartedBroadcast;
         Listener.OnDisconnect += OnDisconnectBroadcast;
         Listener.OnMoveCompleted += OnMoveCompletedBroadcast;
+        Listener.OnPrivateChatReceived += OnPrivateChatReceivedBroadcast;
     }
 
     public static void AddEvents(string apiKey, string secretKey) {
@@ -79,6 +80,7 @@ public static class SharedDataHandler {
         WarpClient.GetInstance().AddRoomRequestListener(listener);
         WarpClient.GetInstance().AddZoneRequestListener(listener);
         WarpClient.GetInstance().AddTurnBasedRoomRequestListener(listener);
+        WarpClient.GetInstance().AddChatRequestListener(listener);
     }
 
     private static void OnMoveCompletedBroadcast(MoveEvent move) {

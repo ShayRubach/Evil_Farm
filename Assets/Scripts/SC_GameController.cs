@@ -53,15 +53,7 @@ public class SC_GameController : MonoBehaviour {
     private void Init() {
         HidePreviewSoldier();
         countdownManager.SetActive(true);
-
-        if (SharedDataHandler.isMultiplayer) {
-            //todo: refactor this part
-            shuffleHandler.SetActive(SharedDataHandler.isPlayerStarting);
-        }
-        else {
-            shuffleHandler.SetActive(true);
-        }
-
+        shuffleHandler.SetActive(true);
         isMyTurn = SharedDataHandler.isPlayerStarting;
     }
 
@@ -116,7 +108,7 @@ public class SC_GameController : MonoBehaviour {
         SC_ShuffleIcon.OnShuffleClicked += OnShuffleClicked;
         SC_BattleAnimations.BattleAnimationFinish += OnBattleAnimationFinish;
         SharedDataHandler.OnMoveCompleted += OnMoveCompleted;
-        SharedDataHandler.OnGameStarted += OnGameStarted;
+        SharedDataHandler.OnPrivateChatReceived += OnPrivateChatReceived;
         SC_Cart.GodMode += GodMode;
     }
 
@@ -140,18 +132,18 @@ public class SC_GameController : MonoBehaviour {
         SC_ShuffleIcon.OnShuffleClicked -= OnShuffleClicked;
         SC_BattleAnimations.BattleAnimationFinish -= OnBattleAnimationFinish;
         SharedDataHandler.OnMoveCompleted -= OnMoveCompleted;
-        SharedDataHandler.OnGameStarted -= OnGameStarted;
+        SharedDataHandler.OnPrivateChatReceived -= OnPrivateChatReceived;
         SC_Cart.GodMode -= GodMode;
     }
 
-    private void OnGameStarted(string sender, string thisRoomId, string nextTurn) {
-
-        //force shuffle when game starts to invoke HandleShuffleAck() on remote player side
-        //model.ShuffleTeam(SoldierTeam.PLAYER);
+    private void OnPrivateChatReceived(string sender, string msg) {
+        if(sender != null && sender != SharedDataHandler.username) {
+            model.HandleShuffleAck(msg);
+        }
     }
 
     private void OnMoveCompleted(MoveEvent move) {
-        isMyTurn = model.HandleMoveAck(move);
+        isMyTurn = model.HandleMsgAck(move);
     }
 
     private void OnMatchStarted() {
@@ -180,7 +172,6 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void OnShuffleClicked() {
-        shuffleHandler.SetActive(false);
         model.ShuffleTeam(SoldierTeam.PLAYER);
     }
 
