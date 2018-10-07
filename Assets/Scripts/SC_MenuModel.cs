@@ -25,7 +25,10 @@ public class SC_MenuModel : MonoBehaviour {
     public static readonly string MENU_SCRIPTS_VAR_NAME = "scripts_menu";
     public static readonly string USERNAME_INPUT_FILED_VAR_NAME = "inf_username";
     public static readonly string PASSWORD_INPUT_FILED_VAR_NAME = "inf_pass";
-    
+    public static readonly string BG_MUSIC_MENU_VAR_NAME = "bg_music_menu";
+    public static readonly string BG_MUSIC_PREFIX_VAR_NAME = "bg";
+
+
     public static readonly string ROOM_ID_WILDCARD = "?";
     public static readonly string WAITING_FOR_PLAYER_PREFIX = "Joined room ? \nWaiting for another player...";
     public static readonly string CONNECTED_AS_PREFIX = "Connected as\n";

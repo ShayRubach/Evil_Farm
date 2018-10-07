@@ -2,6 +2,7 @@
 using com.shephertz.app42.gaming.multiplayer.client.events;
 using com.shephertz.app42.gaming.multiplayer.client;
 using AssemblyCSharp;
+using System;
 
 /*
  * a simple utility class to transfer data between scenes
@@ -34,9 +35,18 @@ public static class SharedDataHandler {
     public delegate void OnChatReceivedHandler(string sender, string msg);
     public static event OnChatReceivedHandler OnPrivateChatReceived;
 
+    public delegate void GlobalSoundHandler (string sliderName, float value);
+    public static event GlobalSoundHandler OnGlobalSoundValueChanged;
+
+
     public static string nextScreenRequested {get;set;}
     public static string username { get; set; }
     public static string enemyUsername { get; set; }
+
+    public static float globalSfxVolume { get; set; }
+    public static float globalBgmVolume { get; set; }
+
+
 
     public static int wins {get;set;}
     public static int loses {get;set;}
@@ -147,4 +157,13 @@ public static class SharedDataHandler {
         isMultiplayer = mode;
     }
 
+    internal static void UpdateGlobalSoundValues(string textValueName, float value) {
+        if (textValueName == SC_MenuModel.SFX_VALUE_VAR_NAME)
+            globalSfxVolume = value;
+        else
+            globalBgmVolume = value;
+
+        if(OnGlobalSoundValueChanged != null)
+            OnGlobalSoundValueChanged(textValueName, value);
+    }
 }

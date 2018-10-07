@@ -10,6 +10,11 @@ public class SC_MenuController : MonoBehaviour {
 
     [SerializeField]
     private GameObject menuModelObject;
+
+    [SerializeField]
+    private GameObject audioManagerObject;
+    private SC_AudioManager audioManager;
+
     private SC_MenuModel model;
 
     private static Dictionary<string, GameObject> objects;
@@ -21,8 +26,6 @@ public class SC_MenuController : MonoBehaviour {
     private string usernameStr, passwordStr;
     private static int sfxValue = SC_MenuModel.SLIDER_STARTING_VALUE;
     private static int bgMusicValue = SC_MenuModel.SLIDER_STARTING_VALUE;
-    //private static int coinsValue = SC_MenuModel.SLIDER_STARTING_VALUE;
-    //private static int valueRatio = SC_MenuModel.VALUE_RATIO;
 
     private int roomIndex = SC_MenuModel.INITIAL_ROOM_IDX;
     private string roomId = SC_MenuModel.INITIAL_ROOM_ID;
@@ -51,12 +54,15 @@ public class SC_MenuController : MonoBehaviour {
     }
 
     void Start () {
+        SharedDataHandler.UpdateGlobalSoundValues(SC_MenuModel.SFX_VALUE_VAR_NAME, .3f);
+        SharedDataHandler.UpdateGlobalSoundValues(SC_MenuModel.BG_MUSIC_VALUE_VAR_NAME, .3f);
         Init();
     }
 
     private void Init() {
         model = menuModelObject.GetComponent<SC_MenuModel>();
         objects = model.GetObjects();
+        audioManager = audioManagerObject.GetComponent<SC_AudioManager>();
         scenes = new List<GameObject>();
 
         foreach (KeyValuePair<string,GameObject> obj in objects) {
@@ -70,6 +76,9 @@ public class SC_MenuController : MonoBehaviour {
 
         InitGameObjectInitialStates();
         AddRoomEvents();
+
+        audioManager.Play(SC_MenuModel.BG_MUSIC_MENU_VAR_NAME);
+        
     }
 
     private void InitGameObjectInitialStates() {
@@ -129,6 +138,7 @@ public class SC_MenuController : MonoBehaviour {
 
     public void OnClickedSinglePlayer() {
         SharedDataHandler.SetMultiplayerMode(false);
+        audioManager.Stop(SC_MenuModel.BG_MUSIC_MENU_VAR_NAME);
         MoveToScene(Scenes.SinglePlayer.ToString());
     }
 
@@ -171,6 +181,19 @@ public class SC_MenuController : MonoBehaviour {
         Slider slider = objects[sliderName].GetComponent<Slider>();
         objects[textValueName].GetComponent<Text>().text = slider.value.ToString();
         permanentValueHolder = (int)slider.value;
+        SharedDataHandler.UpdateGlobalSoundValues(textValueName, slider.value/100);
+        UpdateSoundValues(sliderName, slider.value / 100);
+    }
+
+    private void UpdateSoundValues(string sliderName, float value) {
+        if(sliderName == SC_MenuModel.SLIDER_SFX_VAR_NAME) {
+            foreach (AudioSource s in audioManager.sounds) 
+                if (!s.name.Contains(SC_MenuModel.BG_MUSIC_PREFIX_VAR_NAME))
+                    s.volume = value;
+        }
+        else {
+            audioManager.sounds.Find(sound => sound.name == SC_MenuModel.BG_MUSIC_MENU_VAR_NAME).volume = value;
+        }
     }
 
     public void OnSfxValueChanged() {
@@ -358,7 +381,7 @@ public class SC_MenuController : MonoBehaviour {
 
     public void OnGameStarted(string sender, string thisRoomId, string nextTurn) {
         Debug.Log("OnGameStarted called");
-
+        audioManager.Stop(SC_MenuModel.BG_MUSIC_MENU_VAR_NAME);
         MoveToScene(Scenes.SinglePlayer.ToString());
     }
 

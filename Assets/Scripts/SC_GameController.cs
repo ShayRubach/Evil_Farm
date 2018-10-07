@@ -18,6 +18,9 @@ public class SC_GameController : MonoBehaviour {
     private GameObject countdownManager;
     [SerializeField]
     private GameObject shuffleHandler;
+    [SerializeField]
+    private GameObject audioManagerObject;
+    private SC_AudioManager audioManager;
 
     private SC_Spotlight soldierSpotlight;                  //highlights the rival on drag
     private Vector3 nextPosition, startDragPos, endDragPos;
@@ -51,10 +54,15 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void Init() {
+        audioManager = audioManagerObject.GetComponent<SC_AudioManager>();
         HidePreviewSoldier();
         countdownManager.SetActive(true);
         shuffleHandler.SetActive(true);
         isMyTurn = SharedDataHandler.isPlayerStarting;
+
+        //audioManager.sounds.Find(sound => sound.name == SC_GameModel.BG_MUSIC_GAMEPLAY_VAR_NAME).volume = SharedDataHandler.globalBgmVolume;
+        InitSoundValues();
+        audioManager.Play(SC_GameModel.BG_MUSIC_GAMEPLAY_VAR_NAME);
     }
 
     void FixedUpdate() {
@@ -94,6 +102,8 @@ public class SC_GameController : MonoBehaviour {
         SC_GameModel.CallTieBreaker += TieBreaker;
         SC_GameModel.OnMatchStarted += OnMatchStarted;
         SC_GameModel.OnMatchFinished += OnMatchFinished;
+        SC_GameModel.OnSoldierMovementComplete += OnSoldierMovementComplete;
+        SC_GameModel.Shuffling += Shuffling;
         SC_Soldier.OnStartDragging += OnStartDraggingSoldier;
         SC_Soldier.OnFinishDragging += OnFinishDraggingSoldier;
         SC_Soldier.OnSoldierMovementAnimationEnd += OnSoldierMovementAnimationEnd;
@@ -118,6 +128,8 @@ public class SC_GameController : MonoBehaviour {
         SC_GameModel.CallTieBreaker -= TieBreaker;
         SC_GameModel.OnMatchStarted -= OnMatchStarted;
         SC_GameModel.OnMatchFinished -= OnMatchFinished;
+        SC_GameModel.OnSoldierMovementComplete -= OnSoldierMovementComplete;
+        SC_GameModel.Shuffling -= Shuffling;
         SC_Soldier.UnmarkSoldier -= UnmarkSoldier;
         SC_Soldier.OnStartDragging -= OnStartDraggingSoldier;
         SC_Soldier.OnFinishDragging -= OnFinishDraggingSoldier;
@@ -134,6 +146,40 @@ public class SC_GameController : MonoBehaviour {
         SharedDataHandler.OnMoveCompleted -= OnMoveCompleted;
         SharedDataHandler.OnPrivateChatReceived -= OnPrivateChatReceived;
         SC_Cart.GodMode -= GodMode;
+    }
+
+    private void InitSoundValues() {
+        foreach (AudioSource s in audioManager.sounds) {
+            //refactor:
+            if (s.name.Contains("bg"))
+                s.volume = SharedDataHandler.globalBgmVolume;
+            else {
+                s.volume = SharedDataHandler.globalSfxVolume;
+            }
+        }
+    }
+
+    private void OnSoldierMovementComplete() {
+        PlayMoveSound();
+    }
+
+    private void Shuffling() {
+        PlayShuffleSound();
+    }
+
+    private void PlayShuffleSound() {
+        float MAX_SHUFFLE_SFX_PITCH = 3f;
+        float BASE_SHUFFLE_SFX_PITCH = 1f;
+        float PITCH_INC_VALUE = .1f;
+
+        audioManager.Play(SC_GameModel.SHUFFLE_VAR_NAME);
+        AudioSource source = audioManager.sounds.Find(sound => sound.name == SC_GameModel.SHUFFLE_VAR_NAME);
+        if(source.pitch >= MAX_SHUFFLE_SFX_PITCH) {
+            source.pitch = BASE_SHUFFLE_SFX_PITCH;
+        }
+        else {
+            source.pitch += PITCH_INC_VALUE;
+        }
     }
 
     private void OnPrivateChatReceived(string sender, string msg) {
@@ -185,7 +231,10 @@ public class SC_GameController : MonoBehaviour {
     }
 
     private void OnEndGameOptionChoice(EndGameOption choice) {
-        if(choice == EndGameOption.RESTART) {
+
+        audioManager.Stop(SC_GameModel.BG_MUSIC_GAMEPLAY_VAR_NAME);
+
+        if (choice == EndGameOption.RESTART) {
             endGameOptionsAnimator.SetBool(SC_GameModel.END_GAME_TRIGGER, false);
             model.RestartGame();
             Init();
@@ -361,6 +410,11 @@ public class SC_GameController : MonoBehaviour {
 
     private void MoveSoldier(GameObject soldierParent, MovementDirections soldierMovementDirection) {
         model.MoveSoldier(soldierParent, soldierMovementDirection);
+    }
+
+    private void PlayMoveSound() {
+        string moveSound = model.playerTurnIndicator.activeSelf ? SC_GameModel.PLAYER_MOVE_VAR_NAME : SC_GameModel.ENEMY_MOVE_VAR_NAME;
+        audioManager.Play(moveSound);
     }
 
     private void DisplayMovementAnimation() {

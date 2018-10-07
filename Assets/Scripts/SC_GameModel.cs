@@ -24,7 +24,11 @@ public class SC_GameModel : MonoBehaviour {
     public delegate void NotifyToController();
     public static event NotifyToController AIMoveFinished;
     public static event NotifyToController OnMatchStarted;
+    public static event NotifyToController OnSoldierMovementComplete;
     public static event NotifyToController CallTieBreaker;
+    public static event NotifyToController Shuffling;
+
+
 
     private bool playingVsAI = true;
     public bool iPickedNewWeapon { get; set; }
@@ -60,6 +64,11 @@ public class SC_GameModel : MonoBehaviour {
     public static readonly string BATTLE_ANIMATOR_VAR_NAME = "battle_animations";
     public static readonly string CRYSTAL_VAR_NAME = "Crystal";
     public static readonly string ANNOUNCER_VAR_NAME = "announcer";
+    public static readonly string BG_MUSIC_GAMEPLAY_VAR_NAME = "bg_music_gameplay";
+    public static readonly string PLAYER_MOVE_VAR_NAME = "move_self";
+    public static readonly string ENEMY_MOVE_VAR_NAME = "move_enemy";
+    public static readonly string SHUFFLE_VAR_NAME = "shuffle";
+
 
 
     private static readonly string DATA_KEY_VAR_NAME = "Data";
@@ -90,7 +99,7 @@ public class SC_GameModel : MonoBehaviour {
     public MovementDirections nextMovement;
 
     private GameObject pathIndicators;
-    private GameObject playerTurnIndicator, enemyTurnIndicator;
+    internal GameObject playerTurnIndicator, enemyTurnIndicator;
     private Vector3 relativePos;
     private Point nextMoveCoord;
     private SoldierTeam winningTeam;
@@ -248,6 +257,9 @@ public class SC_GameModel : MonoBehaviour {
         Vector3 newPos;
         GameObject tile;
 
+        if(Shuffling != null) {
+            Shuffling();
+        }
         for (int i = startingTileIdx, j = 0; j < soldierList.Count; i++, j++) {
             tile = board.transform.GetChild(i).gameObject;
 
@@ -617,6 +629,10 @@ public class SC_GameModel : MonoBehaviour {
 
         //physically move the soldier
         exactSoldierObj.transform.position = newPosition;
+
+        if (OnSoldierMovementComplete != null) {
+            OnSoldierMovementComplete();
+        }
 
         DisplayTurnIndicator();
     }
