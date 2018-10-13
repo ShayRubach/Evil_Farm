@@ -628,7 +628,9 @@ public class SC_GameModel : MonoBehaviour {
         }
 
         //physically move the soldier
-        exactSoldierObj.transform.position = newPosition;
+        //exactSoldierObj.transform.position = newPosition;
+        exactSoldierObj.GetComponent<SC_Soldier>().NewFixedPosition = newPosition;
+        exactSoldierObj.GetComponent<SC_Soldier>().StartMovingAnimation(soldierMovementDirection);
 
         if (OnSoldierMovementComplete != null) {
             OnSoldierMovementComplete();

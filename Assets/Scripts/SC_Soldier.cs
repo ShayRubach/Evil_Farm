@@ -22,6 +22,7 @@ public class SC_Soldier : MonoBehaviour {
     public GameObject Tile { get; set; }
     public bool Revealed { get; set; }
     public bool Alive { get; set; }
+    public Vector3 NewFixedPosition { get; set; }
 
     private GameObject initialWeapon;
     private Vector3 initialPos;
@@ -31,6 +32,13 @@ public class SC_Soldier : MonoBehaviour {
     private RaycastHit hit;
     private bool markEnemy = false;
     private GameObject currEnemy = null;
+
+    private Vector3 startPos;
+    private MovementDirections lastDirection;
+    private bool isMoving = false;
+    private int zCoefficient = 1;
+    private int xyCoefficient = 1;
+    private const int MAX_JUMP_HEIGHT = 1;
 
     void Awake() {
         
@@ -53,7 +61,24 @@ public class SC_Soldier : MonoBehaviour {
         ConcealWeapon(initialWeapon);
         RemoveFocus();
     }
-    
+
+    void FixedUpdate() {
+
+        if (isMoving) {
+            InvokeAnimation();
+        }
+        //else {
+        //    if (Input.GetKeyDown(KeyCode.UpArrow))
+        //        StartMovingAnimation(MovementDirections.UP);
+        //    if (Input.GetKeyDown(KeyCode.DownArrow))
+        //        StartMovingAnimation(MovementDirections.DOWN);
+        //    if (Input.GetKeyDown(KeyCode.LeftArrow))
+        //        StartMovingAnimation(MovementDirections.LEFT);
+        //    if (Input.GetKeyDown(KeyCode.RightArrow))
+        //        StartMovingAnimation(MovementDirections.RIGHT);
+        //}
+    }
+
     /* 
      * remove red spotlight focus that procs after a kill.
      */
@@ -296,5 +321,92 @@ public class SC_Soldier : MonoBehaviour {
 
         Debug.Log("GetAllWeapons: from " + gameObject.name + " :couldn't find all weapons. returns null");
         return null;
+    }
+
+    internal void StartMovingAnimation(MovementDirections dir) {
+        startPos = transform.position;
+        lastDirection = dir;
+        FreezRotationByDir();
+        isMoving = true;
+    }
+
+    private void ResetFreezeRotations() {
+        GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+    }
+
+    private void FreezRotationByDir() {
+        ResetFreezeRotations();
+        Rigidbody rbc = GetComponent<Rigidbody>();
+        rbc.constraints |= RigidbodyConstraints.FreezeRotationY;
+
+        if (lastDirection == MovementDirections.LEFT || lastDirection == MovementDirections.RIGHT)
+            rbc.constraints |= RigidbodyConstraints.FreezeRotationX;
+        else
+            rbc.constraints |= RigidbodyConstraints.FreezeRotationZ;
+    }
+
+
+    private void InvokeAnimation() {
+        const int Z_AXIS = 1;
+        const int MAX_TRAVEL_DISTANCE = 1;
+        int movementAxis = MovementDirToAxis();        //index identifier to the correposnding movement axis (x or y):
+        float angle = MovementDirToAngle();        //index identifier to the correposnding movement axis (x or y):
+
+        Vector3 newPos = transform.position;
+
+        if (Mathf.Abs(newPos[movementAxis] - startPos[movementAxis]) < MAX_TRAVEL_DISTANCE) {
+
+            //transform.Rotate(new Vector3(1, 0, 0), MovementDirToAngle());
+            transform.Rotate(MovementDirToRotationVector(), MovementDirToAngle());
+
+            //increasing or decreasing altitude of the jump:
+            zCoefficient = (newPos[Z_AXIS] >= MAX_JUMP_HEIGHT) ? -1 : 1;
+            xyCoefficient = CalculateXyCoefficient();
+
+            newPos[Z_AXIS] += zCoefficient * 0.1f;
+            newPos[movementAxis] += xyCoefficient * 0.05f;
+
+            transform.position = newPos;
+
+        }
+        else {
+            Debug.Log(gameObject + ": movement animation ended");
+            isMoving = false;
+            transform.position = NewFixedPosition;
+            transform.rotation = Quaternion.identity;
+            newPos = transform.position;
+            newPos[Z_AXIS] = 0;
+        }
+    }
+
+    private Vector3 MovementDirToRotationVector() {
+        if (MovementDirToAxis() == 2)       //up or down
+            return new Vector3(1, 0, 0);
+        else                                //left or right
+            return new Vector3(0, 0, 1);
+    }
+
+    private int MovementDirToAxis() {
+        return (lastDirection == MovementDirections.LEFT || lastDirection == MovementDirections.RIGHT) ? 0 : 2;
+    }
+
+    private float MovementDirToAngle() {
+        switch (lastDirection) {
+            case MovementDirections.UP:
+            case MovementDirections.LEFT: return 17.0f;
+            case MovementDirections.RIGHT:
+            case MovementDirections.DOWN: return -17.0f;
+        }
+        return 0;
+    }
+
+    private int CalculateXyCoefficient() {
+        switch (lastDirection) {
+            case MovementDirections.UP:
+            case MovementDirections.RIGHT: return 1;
+            case MovementDirections.DOWN:
+            case MovementDirections.LEFT: return -1;
+        }
+        return 0;
     }
 }
